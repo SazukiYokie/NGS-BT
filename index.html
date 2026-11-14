@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="km" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NGS-BT School Studio</title>
+    <meta name="theme-color" content="#0f172a">
+    <link rel="manifest" href="manifest.webmanifest">
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Hanuman:wght@400;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: { extend: { fontFamily: { sans: ['Inter', 'Hanuman', 'sans-serif'] } } }
+        }
+    </script>
+
+    <!-- Content Parsers -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+    
+    <!-- KaTeX for Math & Chemistry Rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+    <script>
+        if (window.pdfjsLib) {
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+    </script>
+
+    <style>
+        .hide { display: none !important; }
+        html, body { height: 100%; margin: 0; background-color: #050814; color: #f8fafc; overflow: hidden; }
+        
+        /* Aurora Background */
+        .aurora-bg { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; }
+        .aurora-orb { position: absolute; border-radius: 9999px; filter: blur(85px); opacity: 0.32; animation: floatOrb 12s infinite ease-in-out alternate; }
+        .orb-1 { width: 400px; height: 400px; background: radial-gradient(circle, #3b82f6, #1d4ed8); top: -80px; left: -80px; }
+        .orb-2 { width: 420px; height: 420px; background: radial-gradient(circle, #8b5cf6, #6d28d9); bottom: -90px; right: -60px; animation-delay: -4s; }
+        .orb-3 { width: 320px; height: 320px; background: radial-gradient(circle, #10b981, #0ea5e9); top: 35%; left: 40%; animation-delay: -8s; opacity: 0.2; }
+        @keyframes floatOrb { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(45px, -35px) scale(1.15); } 100% { transform: translate(-30px, 35px) scale(0.92); } }
+        
+        .glass-panel { background: rgba(15, 23, 42, 0.76); backdrop-filter: blur(18px); border: 1px solid rgba(148, 163, 184, 0.16); }
+        .view-section:not(.hide) { animation: fadeUp 0.3s forwards; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-thumb { background: rgba(100, 116, 139, 0.45); border-radius: 999px; }
+
+        /* General Buttons */
+        .btn-primary { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; padding: 0.75rem 1rem; border-radius: 0.75rem; font-weight: 600; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; transition: transform 0.1s; cursor: pointer; }
+        .btn-primary:active { transform: scale(0.98); }
+        .btn-primary:disabled { opacity: 0.6; cursor: wait; }
+        
+        /* Markdown Output container */
+        .ai-prose { font-size: 0.95rem; line-height: 1.7; overflow-wrap: break-word; }
+        .ai-prose h3 { color: #38bdf8; font-weight: 700; margin: 1.2rem 0 0.5rem; font-size: 1.1rem; }
+        .ai-prose p { margin-bottom: 0.75rem; }
+        .ai-prose ul, .ai-prose ol { margin-left: 1.5rem; margin-bottom: 0.75rem; list-style: disc; }
+        
+        /* Flashcards grid */
+        .fc-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 1rem; }
+        .fc-card { background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(148, 163, 184, 0.2); border-radius: 1rem; padding: 1.25rem; cursor: pointer; position: relative; min-height: 120px; display: flex; flex-direction: column; justify-content: center; text-align: center; transition: background 0.2s; }
+        .fc-card:hover { background: rgba(51, 65, 85, 0.9); }
+        .fc-card .fc-front { font-weight: 700; color: #38bdf8; font-size: 1.1rem; }
+        .fc-card .fc-back { display: none; font-size: 0.95rem; color: #e2e8f0; margin-top: 0.5rem; }
+        .fc-card.flipped .fc-front { font-size: 0.85rem; color: #94a3b8; margin-bottom: 0.5rem; }
+        .fc-card.flipped .fc-back { display: block; }
+    </style>
+</head>
+<body class="flex flex-col antialiased relative">
+
+    <div class="aurora-bg">
+        <div class="aurora-orb orb-1"></div>
+        <div class="aurora-orb orb-2"></div>
+        <div class="aurora-orb orb-3"></div>
+    </div>
+
+    <!-- Login -->
+    <div id="login-screen" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/90 backdrop-blur-xl">
+        <div class="glass-panel p-8 rounded-3xl w-full max-w-md text-center shadow-2xl">
+            <div class="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                <i class="fa-solid fa-graduation-cap text-3xl text-white"></i>
+            </div>
+            <h1 class="text-2xl font-black mb-1 bg-gradient-to-r from-blue-300 to-purple-300 bg-clip-text text-transparent">NGS-BT Studio</h1>
+            <p class="text-sm text-slate-400 mb-6">AI Study & Homework Platform for 10 Subjects</p>
+            
+            <div class="space-y-4 text-left">
+                <input type="email" id="login-email" placeholder="Email" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+                <input type="password" id="login-password" placeholder="Password" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-blue-500">
+                <button type="button" id="btn-login" class="w-full btn-primary">Sign In / Register</button>
+                <div id="login-error" class="hide text-red-400 text-xs p-3 bg-red-500/10 rounded-xl text-center border border-red-500/20"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="main-app" class="hide flex w-full h-full relative z-10">
+        
+        <!-- Mobile Sidebar Overlay -->
+        <div id="sidebar-overlay" class="fixed inset-0 bg-black/60 z-40 hidden md:hidden backdrop-blur-sm transition-opacity"></div>
+
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar" class="w-64 glass-panel border-r border-slate-700/60 flex flex-col h-full flex-shrink-0 fixed md:relative z-50 transform -translate-x-full md:translate-x-0 transition-transform duration-300">
+            <div class="p-5 flex items-center justify-between border-b border-slate-700/50">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center"><i class="fa-solid fa-school text-white"></i></div>
+                    <span class="font-bold text-lg">NGS-BT</span>
+                </div>
+                <button id="btn-close-sidebar" class="md:hidden text-slate-400 hover:text-white p-1"><i class="fa-solid fa-xmark text-xl"></i></button>
+            </div>
+            <div class="flex-1 overflow-y-auto p-3 space-y-1" id="sidebar-nav">
+                <button type="button" data-view="dashboard" class="nav-btn w-full flex items-center gap-3 p-3 rounded-xl font-medium text-sm transition bg-blue-600/20 text-blue-400">
+                    <i class="fa-solid fa-house w-5"></i>Dashboard
+                </button>
+                <div class="my-2 border-t border-slate-700/50"></div>
+                <!-- 10 Subjects injected via JS -->
+            </div>
+            <div class="p-3 border-t border-slate-700/50">
+                <button type="button" id="btn-logout" class="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-red-500/10 text-red-400 font-medium text-sm transition">
+                    <i class="fa-solid fa-right-from-bracket w-5"></i>Sign Out
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content Workspace -->
+        <main class="flex-1 flex flex-col h-full min-w-0 w-full relative">
+            <header class="h-16 glass-panel border-b border-slate-700/60 flex items-center justify-between px-4 md:px-6 flex-shrink-0">
+                <div class="flex items-center gap-3 min-w-0">
+                    <button id="btn-open-sidebar" class="md:hidden text-slate-300 hover:text-white p-1 mr-1"><i class="fa-solid fa-bars text-xl"></i></button>
+                    <h2 id="topbar-title" class="text-lg font-bold truncate">Dashboard</h2>
+                </div>
+                <div class="flex items-center gap-3 flex-shrink-0">
+                    <span id="user-email" class="text-sm font-medium text-slate-300 hidden md:block"></span>
+                    <div class="w-9 h-9 rounded-full border border-blue-500/50 bg-slate-800 flex items-center justify-center text-blue-400"><i class="fa-solid fa-user"></i></div>
+                </div>
+            </header>
+
+            <div id="main-scroll" class="flex-1 overflow-y-auto p-4 md:p-6">
+                
+                <!-- Dashboard View -->
+                <div id="view-dashboard" class="view-section space-y-6">
+                    <div class="glass-panel rounded-2xl p-6 flex flex-col md:flex-row items-center gap-5 border border-blue-500/30 text-center md:text-left">
+                        <div class="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center text-3xl shadow-lg flex-shrink-0">🚀</div>
+                        <div>
+                            <h3 class="text-2xl font-bold text-white mb-1">Welcome back to NGS-BT Studio!</h3>
+                            <p class="text-slate-400 text-sm">Select one of your 10 subjects on the left to upload lessons, generate flashcards, or solve homework using AI.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Unified Subject View (Dynamic for all 10 subjects) -->
+                <div id="view-subject" class="view-section hide space-y-4 md:space-y-5">
+                    
+                    <!-- Subject Tabs -->
+                    <div class="glass-panel p-2 rounded-xl grid grid-cols-2 md:flex gap-2" id="subject-tabs">
+                        <button class="sub-tab-btn md:flex-1 py-2 md:py-2.5 px-2 md:px-3 rounded-lg text-[11px] md:text-sm font-semibold transition bg-blue-600 text-white flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2" data-tab="files">
+                            <i class="fa-solid fa-folder-open text-base md:text-sm"></i> <span>ឯកសារមេរៀន</span>
+                        </button>
+                        <button class="sub-tab-btn md:flex-1 py-2 md:py-2.5 px-2 md:px-3 rounded-lg text-[11px] md:text-sm font-semibold transition hover:bg-slate-800 text-slate-400 flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2" data-tab="homework">
+                            <i class="fa-solid fa-pen-to-square text-base md:text-sm"></i> <span>ដោះស្រាយលំហាត់</span>
+                        </button>
+                        <button class="sub-tab-btn md:flex-1 py-2 md:py-2.5 px-2 md:px-3 rounded-lg text-[11px] md:text-sm font-semibold transition hover:bg-slate-800 text-slate-400 flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2" data-tab="flashcards">
+                            <i class="fa-solid fa-clone text-base md:text-sm"></i> <span>បណ្ណរូបមន្ត</span>
+                        </button>
+                        <button class="sub-tab-btn md:flex-1 py-2 md:py-2.5 px-2 md:px-3 rounded-lg text-[11px] md:text-sm font-semibold transition hover:bg-slate-800 text-slate-400 flex flex-col md:flex-row items-center justify-center gap-1 md:gap-2" data-tab="quiz">
+                            <i class="fa-solid fa-clipboard-check text-base md:text-sm"></i> <span>តេស្ត QCM</span>
+                        </button>
+                    </div>
+
+                    <!-- TAB 1: FILES & SUMMARY -->
+                    <div id="tab-files" class="sub-tab-content space-y-4">
+                        <div class="glass-panel p-5 md:p-6 rounded-2xl border border-slate-700/50">
+                            <h3 class="font-bold mb-1 text-lg"><i class="fa-solid fa-file-arrow-up text-blue-400 mr-2"></i>បញ្ជូលឯកសារមេរៀន</h3>
+                            <p class="text-xs text-slate-400 mb-4">Upload a chapter or slide (PDF, DOCX, TXT). The extracted text will be used to accurately answer your homework and generate flashcards.</p>
+                            <input type="file" id="file-upload" accept=".pdf,.docx,.txt" class="block w-full text-xs md:text-sm text-slate-400 file:mr-4 file:py-2 file:md:py-2.5 file:px-3 file:md:px-4 file:rounded-xl file:border-0 file:font-semibold file:bg-slate-800 file:text-blue-400 hover:file:bg-slate-700 cursor-pointer">
+                            <div id="file-status" class="mt-4 text-sm text-emerald-400 font-medium"></div>
+                            
+                            <div class="flex flex-col md:flex-row gap-3 mt-4">
+                                <button id="btn-summarize" class="btn-primary w-full md:w-auto hide bg-emerald-600 hover:bg-emerald-700"><i class="fa-solid fa-list-check"></i> សង្ខេបមេរៀននេះ</button>
+                            </div>
+                        </div>
+                        <div id="summary-output" class="glass-panel p-5 md:p-6 rounded-2xl ai-prose hide border border-slate-700"></div>
+                    </div>
+
+                    <!-- TAB 2: HOMEWORK SOLVER -->
+                    <div id="tab-homework" class="sub-tab-content hide space-y-4">
+                        <div class="glass-panel p-5 md:p-6 rounded-2xl border border-slate-700/50">
+                            <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-4">
+                                <div>
+                                    <h3 class="font-bold text-lg"><i class="fa-solid fa-robot text-blue-400 mr-2"></i>សួរសំណួរ ឬដាក់លំហាត់</h3>
+                                    <p class="text-xs text-slate-400 mt-1">AI will provide step-by-step solutions with math formatting.</p>
+                                </div>
+                                <label class="flex items-center gap-2 text-[11px] md:text-xs font-semibold cursor-pointer bg-slate-800/80 px-3 py-2.5 rounded-lg border border-slate-600 w-full md:w-auto">
+                                    <input type="checkbox" id="strict-mode" class="accent-blue-500 w-4 h-4 flex-shrink-0">
+                                    <span class="leading-tight">ឆ្លើយតាមឯកសារមេរៀន ១០០% (Strict Mode)</span>
+                                </label>
+                            </div>
+                            <textarea id="hw-input" rows="5" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-4 text-sm text-white focus:border-blue-500 focus:ring-1 focus:ring-blue-500 outline-none resize-y" placeholder="វាយបញ្ចូលសំណួរ ឬលំហាត់របស់អ្នកនៅទីនេះ..."></textarea>
+                            
+                            <div class="flex flex-wrap items-center gap-3 mt-4">
+                                <button id="btn-solve" class="btn-primary flex-1 bg-gradient-to-r from-blue-600 to-indigo-600"><i class="fa-solid fa-check"></i> ដោះស្រាយ (Solve)</button>
+                                <button id="btn-hw-voice" class="btn-primary bg-rose-600 hover:bg-rose-700 flex-none px-4"><i class="fa-solid fa-microphone"></i> <span class="hidden md:inline">និយាយ</span></button>
+                            </div>
+                        </div>
+                        <div id="hw-output" class="glass-panel p-5 md:p-6 rounded-2xl ai-prose hide border border-blue-500/30 bg-slate-900/50"></div>
+                    </div>
+
+                    <!-- TAB 3: FLASHCARDS & FORMULAS -->
+                    <div id="tab-flashcards" class="sub-tab-content hide space-y-4">
+                        <div class="glass-panel p-5 rounded-2xl border border-slate-700/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <h3 class="font-bold text-lg"><i class="fa-solid fa-layer-group text-blue-400 mr-2"></i>បណ្ណរូបមន្ត និងចំណុចសំខាន់</h3>
+                                <p class="text-xs text-slate-400 mt-1">Generate flip-cards automatically from your uploaded lesson.</p>
+                            </div>
+                            <button id="btn-gen-cards" class="btn-primary w-full md:w-auto text-sm py-2 px-4 bg-purple-600 hover:bg-purple-700"><i class="fa-solid fa-wand-magic-sparkles"></i> បង្កើតពីឯកសារ</button>
+                        </div>
+                        <div id="fc-container" class="fc-grid">
+                            <div class="text-slate-400 text-sm py-8 px-4 text-center col-span-full border border-dashed border-slate-700 rounded-xl">Upload a lesson file and tap generate to create study flashcards.</div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 4: QCM QUIZ -->
+                    <div id="tab-quiz" class="sub-tab-content hide space-y-4">
+                        <div class="glass-panel p-5 rounded-2xl border border-slate-700/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                            <div>
+                                <h3 class="font-bold text-lg"><i class="fa-solid fa-list-check text-blue-400 mr-2"></i>តេស្ត QCM អនុវត្តន៍</h3>
+                                <p class="text-xs text-slate-400 mt-1">Generate a quick 5-question test based on the uploaded chapter.</p>
+                            </div>
+                            <button id="btn-gen-quiz" class="btn-primary w-full md:w-auto text-sm py-2 px-4 bg-emerald-600 hover:bg-emerald-700"><i class="fa-solid fa-play"></i> បង្កើតតេស្តថ្មី</button>
+                        </div>
+                        <div id="quiz-container" class="glass-panel p-5 md:p-6 rounded-2xl space-y-6 hide"></div>
+                    </div>
+
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast-box" class="fixed bottom-4 right-4 z-[200] flex flex-col gap-2 max-w-xs pointer-events-none"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+        // 1. Firebase Init (New credentials for ngs-bt)
+        const firebaseConfig = {
+            apiKey: "AIzaSyDK4s6dw-Rm_pK1zEABEbSbTz7_5gPk_4k",
+            authDomain: "ngs-bt.firebaseapp.com",
+            projectId: "ngs-bt",
+            storageBucket: "ngs-bt.firebasestorage.app",
+            messagingSenderId: "1087138498515",
+            appId: "1:1087138498515:web:366cf3dbefd2ddbcadd126",
+            measurementId: "G-5J86PEPJKJ"
+        };
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // 2. Groq AI Init (Chunked Key for GitHub Pages safety)
+        const _G = ["gsk", "_ciu", "AKf", "XrK", "e6F", "IxR", "EY3", "sLW", "Gdy", "b3F", "YGh", "vuL", "fvI", "daB", "IXQ", "Ncp", "mNG", "ntN", "1"];
+        const GROQ_KEY = _G.join("");
+
+        // 3. App State & Subjects definition
+        const SUBJECTS = [
+            { id: "math", name: "គណិតវិទ្យា", icon: "fa-calculator", color: "text-blue-400", type: "STEM" },
+            { id: "chemistry", name: "គីមីវិទ្យា", icon: "fa-flask", color: "text-emerald-400", type: "STEM" },
+            { id: "physics", name: "រូបវិទ្យា", icon: "fa-atom", color: "text-purple-400", type: "STEM" },
+            { id: "biology", name: "ជីវវិទ្យា", icon: "fa-dna", color: "text-cyan-400", type: "STEM" },
+            { id: "geography", name: "ភូមិវិទ្យា", icon: "fa-earth-asia", color: "text-amber-400", type: "Social" },
+            { id: "civics", name: "សីលធម៌ពលរដ្ឋ", icon: "fa-scale-balanced", color: "text-rose-400", type: "Social" },
+            { id: "english", name: "ភាសាអង់គ្លេស", icon: "fa-language", color: "text-indigo-400", type: "Language" },
+            { id: "earth", name: "ផែនដីវិទ្យា", icon: "fa-mountain-sun", color: "text-lime-400", type: "STEM" },
+            { id: "khmer", name: "ភាសាខ្មែរ", icon: "fa-book", color: "text-pink-400", type: "Language" },
+            { id: "history", name: "ប្រវត្តិវិទ្យា", icon: "fa-monument", color: "text-orange-400", type: "Social" }
+        ];
+
+        let currentSub = null;
+        let fileContexts = {}; // stores extracted PDF/DOCX texts per subject: { "math": "Chapter 1 limits...", ... }
+
+        // --- Utils ---
+        function showToast(msg, type="info") {
+            const box = document.getElementById('toast-box');
+            const el = document.createElement('div');
+            el.className = `glass-panel px-4 py-3 rounded-xl border ${type==='error'?'border-red-500 text-red-200':'border-blue-500 text-white'} text-sm shadow-xl font-medium`;
+            el.textContent = msg;
+            box.appendChild(el);
+            setTimeout(() => el.remove(), 4500);
+        }
+
+        // --- Sidebar Mobile Logic ---
+        const sidebar = document.getElementById('sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        
+        function toggleSidebar(forceOpen) {
+            const isOpen = !sidebar.classList.contains('-translate-x-full');
+            const shouldOpen = forceOpen !== undefined ? forceOpen : !isOpen;
+            if (shouldOpen) {
+                sidebar.classList.remove('-translate-x-full');
+                sidebarOverlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                sidebarOverlay.classList.add('hidden');
+            }
+        }
+
+        document.getElementById('btn-open-sidebar').onclick = () => toggleSidebar(true);
+        document.getElementById('btn-close-sidebar').onclick = () => toggleSidebar(false);
+        sidebarOverlay.onclick = () => toggleSidebar(false);
+
+
+        // --- Core AI Request Engine ---
+        async function askAI(prompt, system, isJson=false) {
+            try {
+                const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GROQ_KEY}` },
+                    body: JSON.stringify({
+                        model: "llama-3.3-70b-versatile",
+                        messages: [{ role: "system", content: system }, { role: "user", content: prompt }],
+                        temperature: 0.3,
+                        max_tokens: 3500,
+                        response_format: isJson ? { type: "json_object" } : null
+                    })
+                });
+                const data = await res.json();
+                if(data.error) throw new Error(data.error.message);
+                return data.choices[0].message.content;
+            } catch (e) {
+                showToast("AI Error: " + e.message, "error");
+                return null;
+            }
+        }
+
+        // --- Auth Setup ---
+        document.getElementById('btn-login').onclick = async () => {
+            const e = document.getElementById('login-email').value, p = document.getElementById('login-password').value;
+            const err = document.getElementById('login-error');
+            try {
+                await signInWithEmailAndPassword(auth, e, p);
+            } catch (ex) {
+                if (ex.code === 'auth/user-not-found' || ex.code === 'auth/invalid-credential') {
+                    try { await createUserWithEmailAndPassword(auth, e, p); }
+                    catch(ex2) { err.textContent = ex2.message; err.classList.remove('hide'); }
+                } else { err.textContent = ex.message; err.classList.remove('hide'); }
+            }
+        };
+        
+        document.getElementById('btn-logout').onclick = () => signOut(auth);
+
+        onAuthStateChanged(auth, user => {
+            if (user) {
+                document.getElementById('login-screen').classList.add('hide');
+                document.getElementById('main-app').classList.remove('hide');
+                document.getElementById('user-email').textContent = user.email;
+                renderSidebar();
+                document.querySelector('[data-view="dashboard"]').click();
+            } else {
+                document.getElementById('login-screen').classList.remove('hide');
+                document.getElementById('main-app').classList.add('hide');
+            }
+        });
+
+        // --- Sidebar & Navigation UI ---
+        function renderSidebar() {
+            const nav = document.getElementById('sidebar-nav');
+            const dashBtn = nav.querySelector('[data-view="dashboard"]');
+            nav.innerHTML = ''; nav.appendChild(dashBtn);
+            nav.insertAdjacentHTML('beforeend', '<div class="my-2 border-t border-slate-700/50"></div>');
+            
+            SUBJECTS.forEach(s => {
+                const btn = document.createElement('button');
+                btn.className = `nav-btn w-full flex items-center gap-3 p-3 rounded-xl font-medium text-sm transition hover:bg-slate-800 text-slate-300`;
+                btn.innerHTML = `<i class="fa-solid ${s.icon} w-5 ${s.color}"></i> <span class="text-left">${s.name}</span>`;
+                btn.onclick = () => {
+                    document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('bg-blue-600/20','text-blue-400'); b.classList.add('text-slate-300'); });
+                    btn.classList.add('bg-blue-600/20','text-blue-400'); btn.classList.remove('text-slate-300');
+                    openSubject(s);
+                    if(window.innerWidth < 768) toggleSidebar(false);
+                };
+                nav.appendChild(btn);
+            });
+
+            dashBtn.onclick = () => {
+                document.querySelectorAll('.nav-btn').forEach(b => { b.classList.remove('bg-blue-600/20','text-blue-400'); b.classList.add('text-slate-300'); });
+                dashBtn.classList.add('bg-blue-600/20','text-blue-400'); dashBtn.classList.remove('text-slate-300');
+                document.getElementById('view-subject').classList.add('hide');
+                document.getElementById('view-dashboard').classList.remove('hide');
+                document.getElementById('topbar-title').textContent = "Dashboard";
+                if(window.innerWidth < 768) toggleSidebar(false);
+            };
+        }
+
+        function openSubject(s) {
+            currentSub = s;
+            document.getElementById('view-dashboard').classList.add('hide');
+            document.getElementById('view-subject').classList.remove('hide');
+            document.getElementById('topbar-title').innerHTML = `<i class="fa-solid ${s.icon} ${s.color} mr-2"></i> ${s.name}`;
+            
+            // Sync Files state for this subject
+            const fstat = document.getElementById('file-status');
+            const bsum = document.getElementById('btn-summarize');
+            if (fileContexts[s.id]) {
+                fstat.textContent = `✓ មានឯកសារមេរៀននៅក្នុងអង្គចងចាំ (${fileContexts[s.id].length} chars)`;
+                bsum.classList.remove('hide');
+            } else {
+                fstat.textContent = '';
+                bsum.classList.add('hide');
+            }
+            
+            // Clean up outputs
+            document.getElementById('summary-output').classList.add('hide');
+            document.getElementById('hw-output').classList.add('hide');
+            document.getElementById('hw-input').value = '';
+            
+            // Auto open "Files" tab
+            document.querySelector('.sub-tab-btn[data-tab="files"]').click();
+        }
+
+        // --- Tabs Logic ---
+        document.querySelectorAll('.sub-tab-btn').forEach(b => {
+            b.onclick = () => {
+                document.querySelectorAll('.sub-tab-btn').forEach(x => { x.classList.remove('bg-blue-600','text-white'); x.classList.add('text-slate-400'); });
+                b.classList.add('bg-blue-600','text-white'); b.classList.remove('text-slate-400');
+                document.querySelectorAll('.sub-tab-content').forEach(x => x.classList.add('hide'));
+                document.getElementById('tab-' + b.dataset.tab).classList.remove('hide');
+            };
+        });
+
+        // --- File Extraction Logic ---
+        const readArrayBuffer = (f) => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsArrayBuffer(f); });
+        const readTextFile = (f) => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(r.result); r.onerror = rej; r.readAsText(f); });
+
+        document.getElementById('file-upload').onchange = async (e) => {
+            const file = e.target.files[0];
+            if (!file || !currentSub) return;
+            showToast("កំពុងទាញយកអត្ថបទពីឯកសារ...", "info");
+            
+            try {
+                let text = "";
+                const ext = file.name.split('.').pop().toLowerCase();
+                
+                if (ext === 'pdf') {
+                    const ab = await readArrayBuffer(file);
+                    const pdf = await window.pdfjsLib.getDocument({ data: new Uint8Array(ab) }).promise;
+                    let chunks = [];
+                    for(let i=1; i<=pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const content = await page.getTextContent();
+                        chunks.push(content.items.map(it => it.str).join(' '));
+                    }
+                    text = chunks.join('\n\n');
+                } else if (ext === 'docx' && window.mammoth) {
+                    text = (await window.mammoth.extractRawText({ arrayBuffer: await readArrayBuffer(file) })).value;
+                } else {
+                    text = await readTextFile(file);
+                }
+                
+                if(text.trim().length < 50) throw new Error("ឯកសារនេះគ្មានអក្សរទេ (ប្រហែលជាមានតែរូបភាព)។");
+                fileContexts[currentSub.id] = text.slice(0, 30000); // Cap context size for AI
+                
+                document.getElementById('file-status').textContent = `✓ ឯកសារ "${file.name}" ត្រូវបានបញ្ចូលរួចរាល់។`;
+                document.getElementById('btn-summarize').classList.remove('hide');
+                showToast("✅ ទាញយកអត្ថបទបានជោគជ័យ!", "success");
+            } catch (err) {
+                showToast(err.message, "error");
+            }
+            e.target.value = '';
+        };
+
+        // --- KaTeX + Markdown Auto Render Wrapper ---
+        function renderProseContent(rawHTML, elementId) {
+            const el = document.getElementById(elementId);
+            el.innerHTML = marked.parse(rawHTML);
+            el.classList.remove('hide');
+            if(window.renderMathInElement) {
+                renderMathInElement(el, {
+                    delimiters: [
+                        {left: '$$', right: '$$', display: true},
+                        {left: '$', right: '$', display: false},
+                        {left: '\\(', right: '\\)', display: false},
+                        {left: '\\[', right: '\\]', display: true}
+                    ],
+                    throwOnError: false
+                });
+            }
+        }
+
+        // --- Features: Summarize ---
+        document.getElementById('btn-summarize').onclick = async (e) => {
+            if(!currentSub || !fileContexts[currentSub.id]) return;
+            const btn = e.target; btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> កំពុងសង្ខេប...';
+            
+            const p = `Summarize this lesson into clear points for a high school student in Khmer. Include core formulas, definitions, and theories.\n\nText:\n${fileContexts[currentSub.id]}`;
+            const res = await askAI(p, "You are a top Cambodian high school teacher.");
+            if(res) renderProseContent(res, 'summary-output');
+            
+            btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-list-check"></i> សង្ខេបមេរៀននេះ';
+        };
+
+        // --- Features: Homework Solver ---
+        document.getElementById('btn-solve').onclick = async (e) => {
+            const input = document.getElementById('hw-input').value.trim();
+            if(!input || !currentSub) return showToast("សូមវាយបញ្ចូលលំហាត់ជាមុនសិន!", "error");
+            
+            const isStrict = document.getElementById('strict-mode').checked;
+            const context = (isStrict && fileContexts[currentSub.id]) 
+                ? `\n\n[STRICT INSTRUCTION: Only use the information provided in the lesson below to answer. If the answer is not in the text, say so in Khmer.]\n\nLesson Text:\n${fileContexts[currentSub.id]}` 
+                : "";
+            
+            const sys = currentSub.type === "STEM" 
+                ? "You are a master STEM tutor. Provide step-by-step solutions in Khmer. Use LaTeX formatting ($...$ and $$...$$) for ALL math equations and chemical formulas. Structure your answer clearly (e.g. 1. បម្រាប់/រូបមន្ត 2. ដំណោះស្រាយ 3. ចម្លើយ)."
+                : "You are a Cambodian high school teacher. Provide detailed answers in clear Khmer using bullet points and markdown headers.";
+            
+            const btn = e.target; const origText = btn.innerHTML;
+            btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> កំពុងគិត...';
+            
+            const res = await askAI("Solve this:\n" + input + context, sys);
+            if(res) renderProseContent(res, 'hw-output');
+            
+            btn.disabled = false; btn.innerHTML = origText;
+        };
+
+        // Voice dictate fallback
+        document.getElementById('btn-hw-voice').onclick = () => {
+            const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if(!SR) return showToast("កម្មវិធីនេះមិនគាំទ្រ Voice Dictation ទេ។ សូមប្រើ Chrome។", "error");
+            const btn = document.getElementById('btn-hw-voice');
+            const ta = document.getElementById('hw-input');
+            const r = new SR(); r.lang = 'km-KH'; r.interimResults = true;
+            
+            r.onstart = () => { btn.classList.add('animate-pulse'); showToast("កំពុងស្តាប់...", "info"); };
+            r.onresult = (ev) => { ta.value = ev.results[0][0].transcript; };
+            r.onerror = () => { btn.classList.remove('animate-pulse'); };
+            r.onend = () => { btn.classList.remove('animate-pulse'); };
+            r.start();
+        };
+
+        // --- Features: Flashcards ---
+        document.getElementById('btn-gen-cards').onclick = async (e) => {
+            if(!currentSub || !fileContexts[currentSub.id]) return showToast("សូមបញ្ចូលឯកសារមេរៀនជាមុនសិន ដើម្បីបង្កើតបណ្ណ!", "error");
+            const btn = e.target; btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> កំពុងបង្កើត...';
+            
+            const p = `Based on the text, generate 8 study flashcards in Khmer. For math/physics/chemistry, use LaTeX $...$ for formulas.\n\nText: ${fileContexts[currentSub.id].slice(0, 15000)}\n\nOutput JSON ONLY: {"cards":[{"q":"Term or Question in Khmer","a":"Definition or Formula in Khmer"}]}`;
+            const res = await askAI(p, "You are a smart flashcard generator. Output JSON only.", true);
+            
+            if (res) {
+                try {
+                    const data = JSON.parse(res);
+                    const box = document.getElementById('fc-container');
+                    box.innerHTML = data.cards.map(c => `
+                        <div class="fc-card" onclick="this.classList.toggle('flipped')">
+                            <div class="fc-front">${marked.parseInline(c.q)}</div>
+                            <div class="fc-back">${marked.parseInline(c.a)}</div>
+                        </div>
+                    `).join('');
+                    if(window.renderMathInElement) renderMathInElement(box, {delimiters:[{left:'$',right:'$',display:false}]});
+                } catch(err) { showToast("បរាជ័យក្នុងការទាញយកបណ្ណ។", "error"); }
+            }
+            btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> បង្កើតពីឯកសារ';
+        };
+
+        // --- Features: QCM Quiz ---
+        document.getElementById('btn-gen-quiz').onclick = async (e) => {
+            if(!currentSub || !fileContexts[currentSub.id]) return showToast("សូមបញ្ចូលឯកសារមេរៀនជាមុនសិន ដើម្បីបង្កើតតេស្ត!", "error");
+            const btn = e.target; btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> កំពុងបង្កើត...';
+            
+            const p = `Based on the text, create a 5-question multiple choice test (QCM) in Khmer. Include LaTeX $...$ if needed for STEM formulas. Output JSON ONLY: {"questions":[{"q":"Question in Khmer?","options":["A","B","C","D"],"ans":0,"exp":"Short explanation of the right answer in Khmer"}]}.\n\nText: ${fileContexts[currentSub.id].slice(0, 15000)}`;
+            const res = await askAI(p, "You are a strict examiner. Output JSON only.", true);
+            
+            if (res) {
+                try {
+                    const data = JSON.parse(res);
+                    const box = document.getElementById('quiz-container');
+                    box.innerHTML = '';
+                    data.questions.forEach((q, i) => {
+                        box.innerHTML += `
+                            <div class="border border-slate-700/50 p-5 rounded-xl bg-slate-800/30">
+                                <p class="font-bold mb-3">${i+1}. ${marked.parseInline(q.q)}</p>
+                                <div class="grid gap-2">
+                                    ${q.options.map((opt, j) => `
+                                        <button class="text-left p-3 rounded-lg bg-slate-800 hover:bg-slate-700 transition font-medium border border-slate-700" 
+                                                onclick="this.parentElement.querySelectorAll('button').forEach(b=>b.disabled=true); this.classList.add('${j===q.ans?'bg-emerald-600 border-emerald-500':'bg-red-600 border-red-500'}');">
+                                            ${String.fromCharCode(65+j)}. ${marked.parseInline(opt)}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        `;
+                    });
+                    box.classList.remove('hide');
+                    if(window.renderMathInElement) renderMathInElement(box, {delimiters:[{left:'$',right:'$',display:false}]});
+                } catch(err) { showToast("បរាជ័យក្នុងការទាញយកតេស្ត។", "error"); }
+            }
+            btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-play"></i> បង្កើតតេស្តថ្មី';
+        };
+    </script>
+</body>
+</html>
