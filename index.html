@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Study Hub — My School Space</title>
+<meta name="theme-color" content="#0f172a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Study Hub">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232563eb'/%3E%3Cpath d='M32 14 8 26l24 12 24-12-24-12zm-14 20v10c0 4 6 8 14 8s14-4 14-8V34l-14 7-14-7z' fill='white'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Hanuman:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={darkMode:'class',theme:{extend:{fontFamily:{sans:['Inter','Hanuman','sans-serif']}}}}</script>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+html,body{height:100%;height:100dvh;margin:0;background:#050814;color:#f8fafc;overflow-x:hidden}
+.hide{display:none!important}
+.orb{position:fixed;border-radius:9999px;filter:blur(85px);opacity:.3;pointer-events:none;z-index:0;animation:fl 12s infinite ease-in-out alternate}
+@keyframes fl{to{transform:translate(40px,-30px) scale(1.15)}}
+.glass{background:rgba(15,23,42,.76);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid rgba(148,163,184,.16)}
+.btn{background:linear-gradient(90deg,#2563eb,#4f46e5);color:#fff;font-weight:600;padding:.6rem 1rem;border-radius:.75rem;font-size:.85rem}
+.btn:disabled{opacity:.5}
+.inp{width:100%;min-width:0;background:rgba(2,6,23,.6);border:1px solid rgba(148,163,184,.25);border-radius:.75rem;padding:.6rem .8rem;font-size:.9rem;color:#f8fafc}
+.inp option{background:#0f172a}
+.tab{padding:.5rem .9rem;border-radius:.75rem;font-size:.8rem;font-weight:600;white-space:nowrap;color:#cbd5e1}
+.tab.on{background:var(--c);color:#fff}
+.katex-display{overflow-x:auto;overflow-y:hidden}.md p{margin:.4rem 0}.md ul{list-style:disc;padding-left:1.2rem}.md ol{list-style:decimal;padding-left:1.2rem}
+.md code{background:#0008;padding:0 .25rem;border-radius:.25rem}.md pre{background:#0008;padding:.6rem;border-radius:.5rem;overflow-x:auto}
+</style>
+</head>
+<body class="font-sans">
+<div class="orb" style="width:380px;height:380px;background:#3b82f6;top:-80px;left:-80px"></div>
+<div class="orb" style="width:400px;height:400px;background:#8b5cf6;bottom:-90px;right:-60px;animation-delay:-4s"></div>
+
+<!-- LOGIN -->
+<div id="auth" class="relative z-10 min-h-full flex items-center justify-center p-4">
+  <div class="glass rounded-2xl p-6 w-full max-w-sm space-y-3">
+    <div class="text-center">
+      <div class="w-12 h-12 mx-auto rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center"><i class="fa-solid fa-graduation-cap text-xl"></i></div>
+      <h1 class="font-extrabold text-xl mt-2">Study Hub<span class="text-blue-400">.</span></h1>
+      <p class="text-xs text-slate-400">My school space · កន្លែងសិក្សារបស់ខ្ញុំ</p>
+    </div>
+    <input id="em" type="email" class="inp" placeholder="Email" autocomplete="email">
+    <input id="pw" type="password" class="inp" placeholder="Password (6+ characters)" autocomplete="current-password">
+    <p id="amsg" class="text-xs text-amber-300 hide"></p>
+    <button id="bgo" class="btn w-full">Log in</button>
+    <p class="text-[11px] text-slate-500 text-center">Share this link with friends. Everyone makes their own account and each person’s data stays private.</p>
+    <div class="flex justify-between text-xs text-blue-300"><button id="bmode">Create account</button><button id="bforgot">Forgot password?</button></div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hide relative z-10 h-full flex">
+  <div id="ov" class="hide fixed inset-0 bg-black/60 z-30 md:hidden"></div>
+  <aside id="side" class="glass fixed md:static z-40 inset-y-0 left-0 w-64 -translate-x-full md:translate-x-0 transition-transform flex flex-col">
+    <div class="p-4 font-extrabold border-b border-slate-700/50"><i class="fa-solid fa-graduation-cap text-blue-400 mr-2"></i>Study Hub<span class="text-blue-400">.</span></div>
+    <nav id="nav" class="p-2 space-y-1 overflow-y-auto flex-1"></nav>
+    <button id="prof" class="mx-2 mt-2 p-2 rounded-xl flex items-center gap-2.5 text-left hover:bg-slate-800/60"></button>
+    <button id="out" class="mx-2 mb-2 p-2.5 rounded-xl text-red-400 text-sm text-left hover:bg-red-500/10"><i class="fa-solid fa-right-from-bracket w-5"></i>ចាកចេញ · Sign out</button>
+  </aside>
+  <main class="flex-1 min-w-0 flex flex-col h-full">
+    <header class="glass md:hidden flex items-center gap-3 p-3"><button id="burger" aria-label="Menu"><i class="fa-solid fa-bars"></i></button><span id="ttl" class="font-bold text-sm">Dashboard</span></header>
+    <div id="main" class="flex-1 overflow-y-auto p-4 md:p-6"></div>
+  </main>
+</div>
+<div id="toast" class="hide fixed bottom-5 left-1/2 -translate-x-1/2 z-50 glass rounded-xl px-4 py-2 text-sm"></div>
+
+<script type="module">
+import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+import {getAuth,signInWithEmailAndPassword as si,createUserWithEmailAndPassword as su,sendPasswordResetEmail as fp,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {initializeFirestore,persistentLocalCache,persistentMultipleTabManager,doc,setDoc,getDoc,getDocs,deleteDoc,collection} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+const firebaseConfig={apiKey:"AIzaSyDK4s6dw-Rm_pK1zEABEbSbTz7_5gPk_4k",authDomain:"ngs-bt.firebaseapp.com",projectId:"ngs-bt",storageBucket:"ngs-bt.firebasestorage.app",messagingSenderId:"1087138498515",appId:"1:1087138498515:web:366cf3dbefd2ddbcadd126"};
+const GROQ="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";
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=initializeFirestore(app,{localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})});
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+// key, Khmer name, English name, icon, colour
+const S=[["math","គណិតវិទ្យា","Math","fa-square-root-variable","#3b82f6"],["chem","គីមីវិទ្យា","Chemistry","fa-flask","#10b981"],["phys","រូបវិទ្យា","Physics","fa-atom","#8b5cf6"],["bio","ជីវវិទ្យា","Biology","fa-dna","#22c55e"],["geo","ភូមិវិទ្យា","Geography","fa-earth-asia","#06b6d4"],["civ","សីលធម៍ពលរដ្ឋ","Civics & Morality","fa-scale-balanced","#f59e0b"],["eng","ភាសាអង់គ្លេស","English","fa-language","#ec4899"],["earth","ផែនដីវិទ្យា","Earth Science","fa-mountain","#f97316"],["khm","ភាសាខ្មែរ","Khmer Language","fa-book-open","#ef4444"],["hist","ប្រវត្តិវិទ្យា","History","fa-landmark","#a78bfa"]];
+const T=[["files","ឯកសារ","Files","fa-folder-open"],["notes","កំណត់ត្រា","Notes","fa-note-sticky"],["hw","កិច្ចការផ្ទះ","Homework","fa-list-check"],["ai","គ្រូ AI","AI Tutor","fa-wand-magic-sparkles"],["quiz","សំណួរ","Quiz","fa-circle-question"],["cards","ប័ណ្ណចងចាំ","Cards","fa-clone"],["time","ម៉ោងសិក្សា","Timer","fa-stopwatch"]];
+
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const today=()=>new Date().toLocaleDateString('en-CA');
+const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.remove('hide');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.add('hide'),2600)};
+const subj=k=>S.find(x=>x[0]==k);
+let U,D={},view='dash',tab='files',chat={},Q,streakN=1,ME={},TM=null,IMG=null,X=null;
+const sd=k=>D[k]||(D[k]={notes:'',hw:[],files:[],scores:[],lang:'km'});
+const save=k=>setDoc(doc(db,'users',U.uid,'subjects',k),sd(k)).catch(e=>toast('Save failed: '+e.code));
+const txtRef=(k,id)=>doc(db,'users',U.uid,'subjects',k,'texts',id);
+
+// original files stay on this device (free, no Storage plan needed)
+const idb=new Promise(r=>{const q=indexedDB.open('studyhub',1);q.onupgradeneeded=()=>q.result.createObjectStore('f');q.onsuccess=()=>r(q.result)});
+const idbPut=async(k,v)=>(await idb).transaction('f','readwrite').objectStore('f').put(v,k);
+const idbDel=async k=>(await idb).transaction('f','readwrite').objectStore('f').delete(k);
+const idbGet=async k=>{const d=await idb;return new Promise(r=>{const q=d.transaction('f').objectStore('f').get(k);q.onsuccess=()=>r(q.result);q.onerror=()=>r()})};
+
+// ---------- AUTH ----------
+let mode='in';
+const am=t=>{const e=$('#amsg');e.textContent=t;e.classList.remove('hide')};
+$('#bmode').onclick=()=>{mode=mode=='in'?'up':'in';$('#bgo').textContent=mode=='in'?'Log in':'Create account';$('#bmode').textContent=mode=='in'?'Create account':'I have an account'};
+$('#bgo').onclick=async()=>{try{await (mode=='in'?si:su)(auth,$('#em').value.trim(),$('#pw').value)}catch(e){am((e.code||e.message).replace('auth/','').replace(/-/g,' '))}};
+$('#bforgot').onclick=async()=>{try{await fp(auth,$('#em').value.trim());am('Reset email sent. Check your inbox.')}catch(e){am('Type your email first.')}};
+$('#out').onclick=()=>signOut(auth);
+const side=o=>{$('#side').classList.toggle('-translate-x-full',!o);$('#ov').classList.toggle('hide',!o)};
+$('#burger').onclick=()=>side(true);$('#ov').onclick=()=>side(false);
+
+async function streak(){const r=doc(db,'users',U.uid),s=(await getDoc(r)).data()||{},t=today(),y=new Date(Date.now()-864e5).toLocaleDateString('en-CA');
+  if(s.last!==t){s.streak=s.last===y?(s.streak||0)+1:1;s.best=Math.max(s.best||0,s.streak);s.last=t;await setDoc(r,s,{merge:true}).catch(()=>{})}
+  ME=s;return s.streak||1}
+
+onAuthStateChanged(auth,async u=>{U=u;$('#auth').classList.toggle('hide',!!u);$('#app').classList.toggle('hide',!u);
+  if(!u){D={};chat={};if(TM){clearInterval(TM.iv);TM=null}if(X){clearInterval(X.iv);X=null;$('#xo')?.remove()}return}
+  try{(await getDocs(collection(db,'users',u.uid,'subjects'))).forEach(d=>D[d.id]={...sd(d.id),...d.data()});streakN=await streak()}catch(e){toast('Could not load your data: '+(e.code||''))}
+  pbtn();syncPub();if(ME.profile?.name)go('dash');else{go('profile');toast('Welcome! Set your name and grade first 👋')}});
+
+// ---------- NAV ----------
+function nav(){$('#nav').innerHTML=[['dash','ទំព័រដើម','fa-house','#60a5fa'],['report','របាយការណ៍','fa-chart-simple','#f472b6'],['friends','មិត្តភក្តិ','fa-user-group','#34d399'],...S.map(s=>[s[0],s[1],s[3],s[4]])].map(([k,n,i,c])=>`<button data-k="${k}" class="w-full flex items-center gap-3 p-2.5 rounded-xl text-sm text-slate-300 hover:bg-slate-800/60 text-left ${view==k?'bg-slate-800 font-semibold':''}"><i class="fa-solid ${i} w-5" style="color:${c}"></i>${n}</button>`).join('')}
+$('#nav').onclick=e=>{const b=e.target.closest('[data-k]');if(b)go(b.dataset.k)};
+function go(k){view=k;tab='files';side(false);nav();render()}
+
+function render(){
+  if(view=='dash')return dash();if(view=='profile')return profile();if(view=='report')return report();if(view=='friends')return friends();
+  const s=subj(view);$('#ttl').textContent=s[1];
+  $('#main').innerHTML=`<div class="max-w-3xl mx-auto space-y-4" style="--c:${s[4]}">
+  <div class="flex items-center gap-3"><div class="w-11 h-11 rounded-xl flex items-center justify-center" style="background:${s[4]}33;color:${s[4]}"><i class="fa-solid ${s[3]} text-lg"></i></div><div><h2 class="font-extrabold text-xl">${s[1]}</h2><p class="text-xs text-slate-400">${s[2]}</p></div></div>
+  <div class="flex gap-1 overflow-x-auto">${T.map(([k,kh,en,i])=>`<button data-t="${k}" class="tab text-center ${tab==k?'on':''}"><i class="fa-solid ${i}"></i><span class="block leading-tight mt-0.5">${kh}</span><span class="block text-[9px] opacity-70">${en}</span></button>`).join('')}</div>
+  <div id="pane" class="glass rounded-2xl p-4"></div></div>`;
+  pane()}
+const pane=()=>({files,notes,hw,ai,quiz,cards,time})[tab]();
+const A={};
+$('#main').onclick=e=>{const b=e.target.closest('[data-t],[data-a]');if(!b)return;if(b.dataset.t){tab=b.dataset.t;render();return}A[b.dataset.a]?.(b.dataset.v,b)};
+
+// ---------- DASHBOARD ----------
+function dash(){$('#ttl').textContent='Dashboard';
+  const due=[];S.forEach(s=>sd(s[0]).hw.filter(h=>!h.done).forEach(h=>due.push({...h,s})));
+  due.sort((a,b)=>(a.due||'9').localeCompare(b.due||'9'));
+  const avg=k=>{const x=sd(k).scores;return x.length?Math.round(x.reduce((a,b)=>a+b.s/b.n,0)/x.length*100):null};
+  const wk=S.map(s=>[s,avg(s[0])]).filter(x=>x[1]!=null).sort((a,b)=>a[1]-b[1])[0];
+  $('#main').innerHTML=`<div class="max-w-3xl mx-auto space-y-4">
+  <div class="glass rounded-2xl p-4 flex items-center gap-4"><div class="text-4xl">🔥</div><div><p class="text-2xl font-extrabold">${streakN} day${streakN>1?'s':''} streak</p><p class="text-xs text-slate-400">today ${minsOn(today())}/${ME.profile?.goal||60} min · ${weekMin()} min this week${wk?` · Needs practice: ${wk[0][1]} (${wk[1]}%)`:''}</p></div></div>${examCard()}${mockCard()}
+  <div class="glass rounded-2xl p-4"><h3 class="font-bold text-sm mb-2">កិច្ចការផ្ទះ · Homework to do</h3>${due.slice(0,8).map(h=>`<button data-a="gos" data-v="${h.s[0]}" class="w-full flex items-center gap-2 text-left text-sm py-1.5"><i class="fa-solid ${h.s[3]} w-5" style="color:${h.s[4]}"></i><span class="flex-1 truncate">${esc(h.t)}</span><span class="text-[11px] ${h.due&&h.due<today()?'text-red-400':'text-slate-400'}">${h.due||''}</span></button>`).join('')||'<p class="text-sm text-slate-400">Nothing due 🎉</p>'}</div>
+  <div class="grid grid-cols-2 gap-3">${S.map(s=>{const p=sd(s[0]).hw.filter(h=>!h.done).length,a=avg(s[0]),cd=dueC(s[0]).length;return `<button data-a="gos" data-v="${s[0]}" class="glass rounded-2xl p-3 text-left hover:-translate-y-0.5 transition"><i class="fa-solid ${s[3]}" style="color:${s[4]}"></i><p class="font-bold text-sm mt-1">${s[1]}</p><p class="text-[11px] text-slate-400">${p} to do${a!=null?` · quiz ${a}%`:''}${cd?` · ${cd} cards`:''}</p></button>`}).join('')}</div></div>`}
+A.gos=k=>go(k);
+
+// ---------- FILES ----------
+function files(){const d=sd(view);
+  $('#pane').innerHTML=`<div class="flex gap-2 mb-3"><select id="tag" class="inp"><option>Lesson</option><option>Homework</option><option>Exam</option></select><label class="btn cursor-pointer whitespace-nowrap"><i class="fa-solid fa-upload mr-1"></i>Upload<input id="up" type="file" multiple accept=".pdf,.docx,.txt,.md,image/*" class="hide"></label></div>
+  <div class="space-y-2">${d.files.map(f=>`<div class="flex items-center gap-2 bg-slate-900/60 rounded-xl p-2.5"><i class="fa-solid ${f.n?'fa-file-lines':'fa-image'} text-slate-400"></i><div class="min-w-0 flex-1"><p class="text-sm truncate">${esc(f.name)}</p><p class="text-[11px] text-slate-400">${f.tag} · ${f.d}${f.n?'':' · no text (AI cannot read it)'}</p></div><button data-a="open" data-v="${f.id}" class="text-blue-300 px-2" aria-label="Open"><i class="fa-solid fa-eye"></i></button><button data-a="delf" data-v="${f.id}" class="text-red-400 px-2" aria-label="Delete"><i class="fa-solid fa-trash"></i></button></div>`).join('')||'<p class="text-sm text-slate-400">No files yet. Upload a lesson, homework sheet or exam.</p>'}</div>
+  <p class="text-[11px] text-slate-500 mt-3">The text of each file is saved to your account for the AI. The original file stays on the device you uploaded it from.</p>`;
+  $('#up').onchange=upload}
+async function extract(f){const n=f.name.toLowerCase();
+  if(n.endsWith('.pdf')){const p=await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise;let t='';for(let i=1;i<=p.numPages;i++)t+=(await(await p.getPage(i)).getTextContent()).items.map(x=>x.str).join(' ')+'\n';return t}
+  if(n.endsWith('.docx'))return (await mammoth.extractRawText({arrayBuffer:await f.arrayBuffer()})).value;
+  if(/\.(txt|md)$/.test(n))return f.text();
+  if(f.type.startsWith('image/'))return await ask([{role:'user',content:[{type:'text',text:'Extract all the text in this image exactly as written (Khmer and English). Write maths in plain text. Return only the text.'},{type:'image_url',image_url:{url:await shrink(f,1600)}}]}],false,true)||'';
+  return ''}
+async function upload(e){const k=view,d=sd(k),tag=$('#tag').value;toast('Reading files…');
+  for(const f of e.target.files){try{
+    const t=(await extract(f)).trim().slice(0,200000),id=Date.now().toString(36)+Math.random().toString(36).slice(2,5);
+    await idbPut(id,f);if(t)await setDoc(txtRef(k,id),{t});
+    d.files.push({id,name:f.name,tag,d:today(),n:t.length})
+  }catch(x){toast('Could not read '+f.name)}}
+  await save(k);if(view==k&&tab=='files')pane();toast('Saved ✓')}
+A.open=async id=>{const b=await idbGet(id);if(!b)return toast('The original is on another device. Its text is still saved here.');const a=document.createElement('a');a.href=URL.createObjectURL(b);a.target='_blank';a.click()};
+A.delf=async id=>{if(!confirm('Delete this file?'))return;const k=view;sd(k).files=sd(k).files.filter(f=>f.id!=id);idbDel(id);deleteDoc(txtRef(k,id)).catch(()=>{});await save(k);pane()};
+
+// ---------- NOTES ----------
+function notes(){const k=view;
+  $('#pane').innerHTML=`<textarea id="nt" rows="14" class="inp" placeholder="Write your notes…">${esc(sd(k).notes)}</textarea><p id="ns" class="text-[11px] text-slate-500 mt-1">Saves automatically</p>`;
+  $('#nt').oninput=e=>{sd(k).notes=e.target.value;clearTimeout(notes.t);$('#ns').textContent='Saving…';notes.t=setTimeout(async()=>{await save(k);const n=$('#ns');if(n)n.textContent='Saved ✓'},800)}}
+
+// ---------- HOMEWORK ----------
+function hw(){const l=[...sd(view).hw].sort((a,b)=>a.done-b.done||(a.due||'9').localeCompare(b.due||'9'));
+  $('#pane').innerHTML=`<div class="flex gap-2 mb-3 flex-wrap"><input id="ht" class="inp flex-1" placeholder="New homework…"><input id="hd" type="date" class="inp w-auto"><button data-a="addhw" class="btn" aria-label="Add"><i class="fa-solid fa-plus"></i></button></div>`+
+  (l.map(h=>`<div class="flex items-center gap-2.5 p-2.5 rounded-xl bg-slate-900/60 mb-2"><input type="checkbox" data-a="tg" data-v="${h.id}" ${h.done?'checked':''} class="w-5 h-5 accent-emerald-500"><span class="flex-1 text-sm ${h.done?'line-through text-slate-500':''}">${esc(h.t)}</span>${h.due?`<span class="text-[11px] ${!h.done&&h.due<today()?'text-red-400':'text-slate-400'}">${h.due}</span>`:''}<button data-a="dh" data-v="${h.id}" class="text-red-400 px-1" aria-label="Delete"><i class="fa-solid fa-xmark"></i></button></div>`).join('')||'<p class="text-sm text-slate-400">No homework yet 🎉</p>');
+  $('#ht').onkeydown=e=>{if(e.key=='Enter')A.addhw()}}
+A.addhw=()=>{const t=$('#ht').value.trim();if(!t)return;sd(view).hw.push({id:Date.now().toString(36),t,due:$('#hd').value,done:false});save(view);pane()};
+A.tg=id=>{const h=sd(view).hw.find(x=>x.id==id);h.done=!h.done;save(view);pane()};
+A.dh=id=>{sd(view).hw=sd(view).hw.filter(x=>x.id!=id);save(view);pane()};
+
+// ---------- AI ----------
+const VIS=['qwen/qwen3.8-27b','qwen/qwen3.6-27b','meta-models/muse-spark-open','meta-llama/llama-4-maverick-17b-128e-instruct','meta-llama/llama-4-scout-17b-16e-instruct'];
+const PREF=['openai/gpt-oss-120b','llama-3.3-70b-versatile','qwen/qwen3.8-27b','openai/gpt-oss-20b','llama-3.1-8b-instant'];
+const GEM=['gemini-flash-latest','gemini-2.5-flash','gemini-2.5-flash-lite'];
+const PUT=['nex-agi/nex-n2.5-pro:free','nex-agi/nex-n2.5-mini:free','liquid/lfm-2.5-2.6b:free'];
+const GEMINI="AQ.Ab8RN6KdVe2h5P6hxhlyxNYP-ati7P6ZmhFQ7wczwJyyheeY7w";
+const gown=()=>{try{return localStorage.getItem('sh_gemini')||''}catch(e){return ''}};
+const gkey=()=>gown()||GEMINI;
+const gp=()=>{try{return localStorage.getItem('sh_puter')=='1'}catch(e){return false}};
+const jparse=t=>JSON.parse(String(t||'').replace(/^[\s\S]*?(\{[\s\S]*\})[\s\S]*$/,'$1'));
+let AV=null,ERR='',WHO='',PT=null;
+async function avail(){if(!AV?.length)try{const r=await fetch('https://api.groq.com/openai/v1/models',{headers:{Authorization:'Bearer '+GROQ}});AV=(await r.json()).data.map(x=>x.id)}catch(e){AV=[]}return AV}
+const puterReady=()=>window.puter?Promise.resolve(true):PT||(PT=new Promise(res=>{const e=document.createElement('script');e.src='https://js.puter.com/v2/';e.onload=()=>res(true);e.onerror=()=>res(false);document.head.appendChild(e)}));
+async function oaCall(u,k,m,messages,json,vision){
+  const r=await fetch(u,{method:'POST',headers:{'Content-Type':'application/json',...(k?{Authorization:'Bearer '+k}:{})},body:JSON.stringify({model:m,messages,temperature:.4,max_tokens:vision?4000:3000,...(m.startsWith('openai/gpt-oss')?{reasoning_effort:'low'}:{}),...(json?{response_format:{type:'json_object'}}:{})})});
+  if(!r.ok){let j={};try{j=await r.json()}catch(e){}throw new Error(r.status+' '+(j.error?.message||j[0]?.error?.message||'').slice(0,120))}
+  return (await r.json()).choices?.[0]?.message?.content||''}
+async function geminiCall(m,messages,json){
+  const sm=messages.filter(x=>x.role=='system').map(x=>x.content).join('\n');
+  const conv=messages.filter(x=>x.role!='system').map(x=>({role:x.role=='assistant'?'model':'user',parts:(Array.isArray(x.content)?x.content:[{type:'text',text:x.content}]).map(c=>{if(c.type=='image_url'){const [h,d]=c.image_url.url.split(',');return {inlineData:{mimeType:h.slice(5,h.indexOf(';')),data:d}}}return {text:c.text}})}));
+  const r=await fetch('https://generativelanguage.googleapis.com/v1beta/models/'+m+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':gkey()},body:JSON.stringify({...(sm?{systemInstruction:{parts:[{text:sm}]}}:{}),contents:conv,generationConfig:{temperature:.4,maxOutputTokens:6000,...(json?{responseMimeType:'application/json'}:{})}})});
+  if(!r.ok){let j={};try{j=await r.json()}catch(e){}throw new Error(r.status+' '+(j.error?.message||'').slice(0,120))}
+  return ((await r.json()).candidates?.[0]?.content?.parts||[]).map(x=>x.text||'').join('')}
+async function puterCall(m,messages){
+  if(!(await puterReady()))throw new Error('Puter did not load');
+  if(!puter.auth.isSignedIn())throw new Error('Puter not connected (Profile → Connect)');
+  const r=await puter.ai.chat(messages.map(x=>({role:x.role,content:typeof x.content=='string'?x.content:x.content.map(c=>c.text||'').join('')})),{model:m});
+  const c=r?.message?.content??r;return typeof c=='string'?c:Array.isArray(c)?c.map(x=>x.text||'').join(''):''}
+async function ask(messages,json,vision){
+  const av=await avail(),bad=/whisper|tts|orpheus|guard|embed/i;ERR='';
+  let gl=(vision?VIS:PREF).filter(m=>!av.length||av.includes(m));
+  const more=av.filter(m=>!bad.test(m)&&!gl.includes(m));
+  gl=[...gl,...(vision?more.filter(m=>/qwen|vision|scout|maverick|muse|gemma|pixtral/i.test(m)):more)].slice(0,vision?6:8);
+  const L=[...(gkey()?GEM.map(m=>({t:'g',m})):[]),...gl.map(m=>({t:'o',m,u:'https://api.groq.com/openai/v1/chat/completions',k:GROQ})),...(!vision&&gp()?PUT.map(m=>({t:'p',m})):[]),...(vision?[]:[{t:'o',m:'openai',u:'https://text.pollinations.ai/openai',k:''}])];
+  for(const x of L){try{
+    let t=x.t=='g'?await geminiCall(x.m,messages,json):x.t=='p'?await puterCall(x.m,messages):await oaCall(x.u,x.k,x.m,messages,json,vision);
+    t=(t||'').replace(/<think>[\s\S]*?<\/think>/g,'').trim();if(t){WHO=x.m;return t}ERR=x.m+': empty answer'
+  }catch(e){ERR=x.m+': '+(e.message||'network error')}}
+  return null}
+const sys=k=>`You are an expert, kind ${subj(k)[2]} (${subj(k)[1]}) teacher in Cambodia, tutoring ${ME.profile?.name||'a student'}${ME.profile?.grade?`, ${ME.profile.grade}`:''}, following the Cambodian national curriculum. Reply in ${sd(k).lang=='en'?'English':'simple Khmer, with key technical terms in English in brackets'}. Give the answer first, then short numbered steps. Write all maths and chemistry formulas in LaTeX between $...$ (inline) or $$...$$ (display). If the wording is unclear or has typos, guess what a Cambodian textbook means, say your guess in one line, and answer it. Ask a question back only if you truly cannot answer. Never invent facts; if unsure, say so.`;
+const srcSel=k=>`<select id="src" class="inp"><option value="">No file (general)</option><option value="notes">My notes</option>${sd(k).files.filter(f=>f.n).map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join('')}</select>`;
+async function getSrc(k,v){if(!v)return'';if(v=='notes')return sd(k).notes;const r=await getDoc(txtRef(k,v));return r.exists()?r.data().t:''}
+function md(t){const M=[];t=t.replace(/\$\$[\s\S]+?\$\$|\$[^$\n]+?\$|\\\([\s\S]+?\\\)|\\\[[\s\S]+?\\\]/g,m=>{M.push(m);return '@@M'+(M.length-1)+'@@'});return marked.parse(t.replace(/</g,'&lt;')).replace(/@@M(\d+)@@/g,(_,i)=>esc(M[i]))}
+const rm=el=>{try{renderMathInElement(el,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$',right:'$',display:false}],throwOnError:false})}catch(e){}};
+const bub=(m,i)=>m.role=='user'?`<div class="ml-8 bg-blue-600/30 rounded-xl p-2.5 text-sm">${esc(m.content)}</div>`:`<div class="mr-8 bg-slate-900/70 rounded-xl p-2.5 text-sm"><div class="md">${md(m.content)}</div><button data-a="say" data-v="${i}" class="text-slate-400 text-xs mt-1" aria-label="Read aloud"><i class="fa-solid fa-volume-high"></i></button></div>`;
+const draw=(el,c,wait)=>{if(!el)return;el.innerHTML=c.map(bub).join('')+(wait?'<p class="text-xs text-slate-400">Thinking…</p>':'');rm(el);el.scrollTop=1e9};
+const shrink=(f,mx=1280)=>new Promise(r=>{const i=new Image();i.onload=()=>{const k=Math.min(1,mx/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=i.width*k;c.height=i.height*k;c.getContext('2d').drawImage(i,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',.82))};i.src=URL.createObjectURL(f)});
+function ai(){const k=view,c=chat[k]||(chat[k]=[]);IMG=null;
+  $('#pane').innerHTML=`<div class="flex gap-2 mb-3">${srcSel(k)}<select id="lg" class="inp w-auto"><option value="km">ខ្មែរ</option><option value="en">English</option></select></div>
+  <div id="cl" class="space-y-3 mb-3 max-h-[55vh] overflow-y-auto"><p class="text-sm text-slate-400">Ask anything, pick a file above, or tap the camera to photograph a problem.</p></div>
+  <div class="flex gap-1.5 overflow-x-auto mb-2">${CH.map(([kh,en],i)=>`<button data-a="chip" data-v="${i}" class="tab bg-slate-800/70 !py-1.5"><span class="block leading-tight">${kh}</span><span class="block text-[9px] opacity-70">${en}</span></button>`).join("")}</div>
+  <p id="pc" class="hide text-xs text-emerald-300 mb-2">📷 Photo attached · <button data-a="rmph" class="underline">remove</button></p>
+  <div class="flex gap-2"><label class="btn cursor-pointer" style="background:#334155" aria-label="Photo"><i class="fa-solid fa-camera"></i><input id="ph" type="file" accept="image/*" class="hide"></label><button data-a="mic" class="btn" style="background:#334155" aria-label="Speak"><i class="fa-solid fa-microphone"></i></button><input id="ci" class="inp" placeholder="Ask your tutor…"><button data-a="send" class="btn" aria-label="Send"><i class="fa-solid fa-paper-plane"></i></button></div>`;
+  if(c.length)draw($('#cl'),c);
+  $('#lg').value=sd(k).lang;$('#lg').onchange=e=>{sd(k).lang=e.target.value;save(k)};
+  $('#ci').onkeydown=e=>{if(e.key=='Enter')A.send()};
+  $('#ph').onchange=async e=>{const f=e.target.files[0];if(!f)return;IMG=await shrink(f);$('#pc').classList.remove('hide')}}
+A.rmph=()=>{IMG=null;$('#pc').classList.add('hide')};
+A.send=async()=>{const k=view,i=$('#ci'),q=i.value.trim();if(!q&&!IMG)return;
+  const c=chat[k],ctx=await getSrc(k,$('#src').value),img=IMG;IMG=null;$('#pc').classList.add('hide');
+  c.push({role:'user',content:(img?'📷 ':'')+(q||'Solve this problem')});i.value='';draw($('#cl'),c,true);
+  const h=c.slice(-10);
+  if(img)h[h.length-1]={role:'user',content:[{type:'text',text:q||'Read the problem in this photo and solve it step by step.'},{type:'image_url',image_url:{url:img}}]};
+  const r=await ask([{role:'system',content:sys(k)+(ctx?`\n\nStudent's material:\n"""${ctx.slice(0,7000)}"""`:'')},...h],false,!!img);
+  c.push({role:'assistant',content:r||'⚠ '+(img?'I could not read the photo. Try a clearer picture or type the question.':'The AI could not answer. Try again in a moment.')+(ERR?` (${ERR})`:'')});
+  if(view==k&&tab=='ai')draw($('#cl'),c)};
+
+// ---------- TUTOR CHIPS ----------
+const CH=[['សង្ខេប','Summarize','Summarize this in 8 clear bullet points.'],['ពន្យល់ងាយ','Explain simply','Explain this in the simplest way, with an everyday example.'],['សន្លឹកកំណត់','Cheat sheet','Make a one-page cheat sheet: key formulas, definitions and common mistakes.'],['គន្លឹះប្រឡង','Exam tips','Which parts of this are most likely to come up in an exam? Give me 5 tips.']];
+A.chip=i=>{if(!$('#src').value)return toast('Pick a file or your notes above first');$('#ci').value=CH[i][2];A.send()};
+
+// ---------- FLASHCARDS (spaced repetition) ----------
+let CQ=[],CI=0,CF=false;
+const dueC=k=>(sd(k).cards||[]).filter(c=>c.due<=today());
+function cards(){const k=view,n=(sd(k).cards||[]).length,d=dueC(k).length;
+  $('#pane').innerHTML=`<div class="space-y-2 mb-3">${srcSel(k)}<div class="flex gap-2"><input id="qt" class="inp" placeholder="Topic (optional)"><button data-a="mkc" class="btn whitespace-nowrap">Make 10 cards</button></div></div>
+  <p class="text-xs text-slate-400 mb-2">${n} cards · ${d} due today · wrong quiz answers are added here automatically</p>
+  ${d?'<button data-a="cstudy" class="btn w-full">Study now</button>':''}<div id="cs" class="mt-3"></div>${n?'<button data-a="cclear" class="text-[11px] text-red-400 mt-3">Delete all cards</button>':''}`}
+A.mkc=async(_,b)=>{const k=view;b.disabled=true;$('#cs').innerHTML='<p class="text-sm text-slate-400">Making cards…</p>';
+  const ctx=await getSrc(k,$('#src').value),top=$('#qt').value.trim();
+  const r=await ask([{role:'system',content:sys(k)+' Return ONLY JSON like {"cards":[{"f":"question or term","b":"short answer"}]} with exactly 10 flashcards. Keep each side under 25 words. No LaTeX or backslashes.'},{role:'user',content:`Make 10 flashcards${top?` about: ${top}`:''}.${ctx?`\nBase them on:\n"""${ctx.slice(0,7000)}"""`:''}`}],true);
+  b.disabled=false;let cs;try{cs=jparse(r).cards.filter(x=>x.f&&x.b)}catch(e){}
+  if(!cs?.length){if($('#cs'))$('#cs').innerHTML=`<p class="text-sm text-amber-300">The AI could not make cards. Try again.${ERR?` (${esc(ERR)})`:''}</p>`;return}
+  const d=sd(k);d.cards=[...(d.cards||[]),...cs.map(x=>({f:String(x.f),b:String(x.b),box:1,due:today()}))].slice(-200);await save(k);if(view==k&&tab=='cards')cards()};
+A.cstudy=()=>{CQ=dueC(view).sort(()=>Math.random()-.5);CI=0;CF=false;showC()};
+function showC(){const z=$('#cs'),c=CQ[CI];if(!z)return;
+  if(!c){z.innerHTML='<p class="text-center py-4 font-bold">🎉 All done for today!</p>';return}
+  z.innerHTML=`<p class="text-xs text-slate-400 mb-1">${CI+1}/${CQ.length}</p><button data-a="flip" class="w-full min-h-[9rem] rounded-2xl bg-slate-900/70 border border-slate-700 p-4 text-center ${CF?'':'font-semibold text-lg'}">${esc(CF?c.b:c.f)}</button>${CF?'<div class="flex gap-2 mt-2"><button data-a="cno" class="btn flex-1" style="background:#dc2626">Again</button><button data-a="cyes" class="btn flex-1" style="background:#059669">Got it</button></div>':'<p class="text-[11px] text-slate-500 text-center mt-2">Tap the card to see the answer</p>'}`}
+A.flip=()=>{CF=true;showC()};
+const gradeC=ok=>{const c=CQ[CI];c.box=ok?Math.min((c.box||1)+1,5):1;c.due=ok?new Date(Date.now()+[1,2,4,8,16][c.box-1]*864e5).toLocaleDateString('en-CA'):today();if(!ok)CQ.push(c);CI++;CF=false;save(view);showC()};
+A.cyes=()=>gradeC(true);A.cno=()=>gradeC(false);
+A.cclear=()=>{if(confirm('Delete all cards?')){sd(view).cards=[];save(view);cards()}};
+
+// ---------- INSTALL (PWA) ----------
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+let IP=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();IP=e});
+A.inst=()=>IP?IP.prompt():toast('Chrome menu ⋮ → Add to Home screen');
+
+// ---------- MOCK EXAM (timed, mixed subjects) ----------
+const mockCard=()=>{const l=(ME.mocks||[]).slice(-3).reverse();return `<div class="glass rounded-2xl p-4"><h3 class="font-bold text-sm mb-1"><i class="fa-solid fa-file-pen text-rose-400 mr-1"></i>ប្រឡងសាកល្បង · Mock exam</h3><p class="text-xs text-slate-400 mb-2">Timed questions from your own files, mixed across subjects.</p><div class="flex gap-2"><select id="mn" class="inp"><option value="10">10 questions</option><option value="20">20 questions</option></select><button data-a="mock" class="btn whitespace-nowrap">Start exam</button></div><div id="mx" class="mt-2"></div>${l.length?`<p class="text-[11px] text-slate-400 mt-2">Recent: ${l.map(m=>`${m.s}/${m.n} (${m.d})`).join(' · ')}</p>`:''}</div>`};
+function ov(h){let o=$('#xo');if(!o){o=document.createElement('div');o.id='xo';o.className='fixed inset-0 z-50 overflow-y-auto p-4';o.style.background='#050814';document.body.appendChild(o)}o.innerHTML=`<div class="max-w-2xl mx-auto">${h}</div>`;rm(o)}
+A.mock=async(_,b)=>{const N=+$('#mn').value,z=$('#mx');b.disabled=true;z.innerHTML='<p class="text-sm text-slate-400">Building your exam…</p>';
+  const pool=S.filter(s=>sd(s[0]).files.some(f=>f.n)||sd(s[0]).notes.length>80);
+  const pick=[...(pool.length?pool:S)].sort(()=>Math.random()-.5).slice(0,4),per=Math.ceil(N/pick.length);
+  const parts=await Promise.all(pick.map(async s=>{const k=s[0],d=sd(k),fs=d.files.filter(f=>f.n);let ctx=d.notes.slice(0,2500);
+    if(fs.length)ctx=(await getSrc(k,fs[Math.floor(Math.random()*fs.length)].id)).slice(0,4000);
+    const r=await ask([{role:'system',content:sys(k)+' Return ONLY JSON like {"questions":[{"q":"","options":["","","",""],"answer":0,"why":""}]} with exactly '+per+' medium multiple-choice questions. "answer" is the index 0-3. No LaTeX or backslashes; write maths as plain text like x^2.'},{role:'user',content:`Make ${per} exam questions${ctx?`\nBase them on:\n"""${ctx}"""`:' from the Cambodian curriculum.'}`}],true);
+    try{return jparse(r).questions.filter(x=>x.q&&x.options?.length==4).map(x=>({...x,k}))}catch(e){return []}}));
+  b.disabled=false;const qs=parts.flat().sort(()=>Math.random()-.5).slice(0,N);
+  if(!qs.length){if($('#mx'))$('#mx').innerHTML=`<p class="text-sm text-amber-300">The AI could not build the exam. Try again.${ERR?` (${esc(ERR)})`:''}</p>`;return}
+  X={qs,a:[],i:0,end:Date.now()+qs.length*9e4};
+  X.iv=setInterval(()=>{const e=X.end-Date.now(),c=$('#xt');if(c)c.textContent=fmt(e);if(e<=0)xend()},1000);showX()};
+function showX(){const q=X.qs[X.i];
+  ov(`<div class="flex justify-between items-center mb-3"><span class="text-xs text-slate-400">Question ${X.i+1}/${X.qs.length} · ${subj(q.k)[1]}</span><span id="xt" class="font-bold tabular-nums text-amber-300">${fmt(X.end-Date.now())}</span></div><p class="font-semibold mb-3">${esc(q.q)}</p>`+q.options.map((o,j)=>`<button data-x="${j}" class="w-full text-left p-3 mb-2 rounded-xl bg-slate-900/70 border border-slate-700 text-sm">${esc(o)}</button>`).join('')+'<button data-x="q" class="text-xs text-red-400 mt-3">Quit exam</button>')}
+function xend(quit){const x=X;clearInterval(x.iv);X=null;if(quit){$('#xo')?.remove();return}
+  const by={};let sc=0;
+  x.qs.forEach((q,i)=>{const ok=x.a[i]===+q.answer,b=by[q.k]||(by[q.k]={s:0,n:0});b.n++;if(ok){sc++;b.s++}else{const d=sd(q.k);(d.cards=d.cards||[]).push({f:q.q,b:q.options[+q.answer],box:1,due:today()})}});
+  Object.entries(by).forEach(([k,v])=>{const d=sd(k);d.scores=[...d.scores,{s:v.s,n:v.n,d:today()}].slice(-20);save(k)});
+  ME.mocks=[...(ME.mocks||[]),{s:sc,n:x.qs.length,d:today()}].slice(-10);setDoc(doc(db,'users',U.uid),{mocks:ME.mocks},{merge:true}).catch(()=>{});
+  ov(`<p class="text-center text-4xl font-extrabold mt-4">${sc}/${x.qs.length}</p><p class="text-center text-sm text-slate-400 mb-4">${Math.round(sc/x.qs.length*100)}% · saved to your subject scores · mistakes added to flashcards</p>`+Object.entries(by).map(([k,v])=>`<p class="text-sm"><i class="fa-solid ${subj(k)[3]} w-5" style="color:${subj(k)[4]}"></i>${subj(k)[1]}: ${v.s}/${v.n}</p>`).join('')+'<h3 class="font-bold text-sm mt-4 mb-2">Review</h3>'+x.qs.map((q,i)=>{const ok=x.a[i]===+q.answer;return `<div class="rounded-xl p-3 mb-2 text-sm ${ok?'bg-emerald-600/15':'bg-red-600/15'}"><p class="font-semibold">${i+1}. ${esc(q.q)}</p><p class="mt-1">${ok?'✅':'❌'} ${x.a[i]==null?'No answer':esc(q.options[x.a[i]])}${ok?'':` → <b>${esc(q.options[+q.answer])}</b>`}</p><p class="text-slate-400 text-xs mt-1">${esc(q.why||'')}</p></div>`}).join('')+'<button data-x="c" class="btn w-full mt-3">Close</button>')}
+document.addEventListener('click',e=>{const b=e.target.closest('#xo [data-x]');if(!b)return;const v=b.dataset.x;
+  if(v=='c'){$('#xo').remove();if(view=='dash')dash();return}
+  if(!X)return;if(v=='q'){if(confirm('Quit the exam?'))xend(true);return}
+  X.a[X.i]=+v;X.i++;X.i<X.qs.length?showX():xend()});
+
+// ---------- STATS, WEEKLY REPORT, AI COACH ----------
+const dayStr=i=>new Date(Date.now()-i*864e5).toLocaleDateString('en-CA');
+const minsOn=d=>S.reduce((t,s)=>t+(sd(s[0]).log?.[d]||0),0);
+const subMins=(k,n=7)=>{let t=0;for(let i=0;i<n;i++)t+=sd(k).log?.[dayStr(i)]||0;return t};
+const subAvg=(k,n=7)=>{const c=dayStr(n-1),x=sd(k).scores.filter(y=>y.d>=c);return x.length?Math.round(x.reduce((a,b)=>a+b.s/b.n,0)/x.length*100):null};
+const avgQ=k=>subAvg(k,3650);
+const allMin=k=>Object.values(sd(k).log||{}).reduce((a,b)=>a+b,0);
+function statsHTML(){
+  const tot=S.reduce((t,s)=>t+allMin(s[0]),0),q=S.reduce((t,s)=>t+sd(s[0]).scores.length,0),mast=S.reduce((t,s)=>t+(sd(s[0]).cards||[]).filter(c=>c.box>=4).length,0);
+  const ra=S.map(s=>[s,avgQ(s[0])]).filter(x=>x[1]!=null).sort((a,b)=>b[1]-a[1]),mo=[...S].sort((a,b)=>allMin(b[0])-allMin(a[0]))[0];
+  const c=(i,l,v)=>`<div class="rounded-xl bg-slate-900/60 p-2.5"><p class="text-[11px] text-slate-400">${i} ${l}</p><p class="font-bold text-sm">${v}</p></div>`;
+  return `<h3 class="font-bold text-sm">ស្គាល់ខ្លួនឯង · Know yourself</h3><div class="grid grid-cols-2 gap-2">${c('⏱️','Total study',Math.floor(tot/60)+'h '+tot%60+'m')}${c('🔥','Best streak',(ME.best||streakN)+' days')}${c('📝','Quizzes taken',q)}${c('🃏','Cards mastered',mast)}${c('💪','Strongest',ra.length?`${ra[0][0][1]} (${ra[0][1]}%)`:'—')}${c('🎯','Needs work',ra.length>1?`${ra.at(-1)[0][1]} (${ra.at(-1)[1]}%)`:'—')}</div><p class="text-[11px] text-slate-400">Most studied: ${tot?mo[1]:'—'}</p><div class="flex flex-wrap gap-1.5">${BADGES(tot,q,mast,ra).map(([i,l,on])=>`<span class="text-[11px] px-2 py-1 rounded-full ${on?'bg-amber-500/20 text-amber-200':'bg-slate-800/60 text-slate-500'}">${i} ${l}</span>`).join('')}</div><button data-a="gorep" class="btn w-full" style="background:#334155"><i class="fa-solid fa-chart-simple mr-1"></i>Weekly report &amp; AI coach</button>`}
+A.gorep=()=>go('report');
+A.share=()=>{const u=location.origin+location.pathname;navigator.share?navigator.share({title:'Study Hub',text:'Join me on Study Hub! My friend code: '+U.uid,url:u}).catch(()=>{}):navigator.clipboard?.writeText(u).then(()=>toast('Link copied ✓'))};
+function report(){$('#ttl').textContent='របាយការណ៍';
+  const days=[...Array(7)].map((_,i)=>dayStr(6-i)),vals=days.map(minsOn),mx=Math.max(30,...vals);
+  const rows=S.map(s=>({s,m:subMins(s[0]),a:subAvg(s[0])})).sort((x,y)=>y.m-x.m),dn=d=>['Su','Mo','Tu','We','Th','Fr','Sa'][new Date(d+'T00:00').getDay()];
+  $('#main').innerHTML=`<div class="max-w-3xl mx-auto space-y-4"><div><h2 class="font-extrabold text-xl">របាយការណ៍ប្រចាំសប្តាហ៍</h2><p class="text-xs text-slate-400">Weekly report · last 7 days</p></div>
+  <div class="glass rounded-2xl p-4"><p class="text-sm mb-3"><b>${vals.reduce((a,b)=>a+b,0)}</b> min studied · 🔥 ${streakN} day streak · goal ${ME.profile?.goal||60} min/day</p><div class="flex items-end gap-2 h-32">${vals.map((v,i)=>`<div class="flex-1 flex flex-col items-center justify-end h-full"><span class="text-[10px] text-slate-400">${v||''}</span><div class="w-full rounded-t-md ${v>=(ME.profile?.goal||60)?'bg-emerald-500':'bg-blue-500'}" style="height:${Math.max(3,v/mx*80)}%"></div><span class="text-[10px] text-slate-500 mt-1">${dn(days[i])}</span></div>`).join('')}</div></div>
+  <div class="glass rounded-2xl p-4 space-y-2"><h3 class="font-bold text-sm">By subject</h3>${rows.map(r=>`<div><div class="flex justify-between text-xs"><span><i class="fa-solid ${r.s[3]} w-5" style="color:${r.s[4]}"></i>${r.s[1]}</span><span class="text-slate-400">${r.m} min${r.a!=null?` · quiz ${r.a}%`:''}</span></div><div class="h-1.5 rounded bg-slate-800 mt-1"><div class="h-1.5 rounded" style="width:${Math.min(100,r.m/Math.max(1,rows[0].m)*100)}%;background:${r.s[4]}"></div></div></div>`).join('')}</div>
+  <div class="glass rounded-2xl p-4"><button data-a="coach" class="btn w-full"><i class="fa-solid fa-user-graduate mr-1"></i>Ask my AI coach</button><button data-a="plan" class="btn w-full mt-2" style="background:#7c3aed"><i class="fa-solid fa-calendar-check mr-1"></i>Make my 7-day study plan</button><div id="co" class="md text-sm mt-3"></div></div></div>`}
+A.coach=async(_,b)=>{b.disabled=true;$('#co').innerHTML='<p class="text-slate-400">Thinking…</p>';
+  const rows=S.map(s=>{const a=subAvg(s[0]);return `${s[2]}: ${subMins(s[0])} min this week, ${a==null?'no quiz':'quiz '+a+'%'}, homework pending ${sd(s[0]).hw.filter(h=>!h.done).length}, cards due ${dueC(s[0]).length}`}).join('\n'),pf=ME.profile||{};
+  const r=await ask([{role:'system',content:`You are a warm, honest study coach for a Cambodian student${pf.grade?` (${pf.grade})`:''}. Reply in ${pf.lang=='en'?'English':'simple Khmer'}. Be specific and encouraging. Use short bullet points.`},{role:'user',content:`My week. Streak ${streakN} days, goal ${pf.goal||60} min/day.\n${rows}\nExam: ${ME.exam?`${ME.exam.name} on ${ME.exam.date}`:'not set'}.\nGive me: 1) what I did well, 2) my biggest risk, 3) a simple plan for the next 7 days.`}]);
+  b.disabled=false;const o=$('#co');if(o)o.innerHTML=r?md(r):`<p class="text-amber-300">The coach could not answer.${ERR?` (${esc(ERR)})`:''}</p>`};
+
+// ---------- FRIENDS (uses your publicProfiles rule) ----------
+async function syncPub(){if(!ME.profile?.pub)return;const r=doc(db,'publicProfiles',U.uid);let prev=0;try{prev=(await getDoc(r)).data()?.points||0}catch(e){}
+  const tot=S.reduce((t,x)=>t+allMin(x[0]),0),qa=S.map(x=>avgQ(x[0])).filter(x=>x!=null),pts=prev?Math.max(prev,Math.min(tot,prev+100)):tot;
+  await setDoc(r,{displayName:(ME.profile.name||'Student').slice(0,30),photoURL:ME.profile.avatar||'',status:ME.profile.grade||'',studyStreak:streakN,avgBand:qa.length?Math.round(qa.reduce((a,b)=>a+b,0)/qa.length):0,points:pts,updatedAt:Date.now()}).catch(()=>{})}
+async function friends(){$('#ttl').textContent='មិត្តភក្តិ';const ids=ME.friends||[];
+  $('#main').innerHTML=`<div class="max-w-md mx-auto space-y-4"><div class="glass rounded-2xl p-4 space-y-2"><h2 class="font-extrabold text-lg">មិត្តភក្តិ · Study friends</h2><p class="text-xs text-slate-400">Your friend code. Send it to a friend so they can add you.</p><div class="flex gap-2"><input class="inp" readonly value="${U.uid}"><button data-a="cpcode" class="btn" aria-label="Copy"><i class="fa-solid fa-copy"></i></button></div>${ME.profile?.pub?'':'<p class="text-xs text-amber-300">Turn on “Let friends see my name…” in Profile so friends can see you.</p>'}<div class="flex gap-2 pt-1"><input id="fc" class="inp" placeholder="Paste a friend code"><button data-a="addf" class="btn whitespace-nowrap">Add</button></div></div><div id="fl2" class="glass rounded-2xl p-4 space-y-3"><p class="text-sm text-slate-400">Loading…</p></div></div>`;
+  const rows=await Promise.all(ids.map(async id=>{try{const d=await getDoc(doc(db,'publicProfiles',id));return d.exists()?{id,...d.data()}:{id,gone:1}}catch(e){return {id,gone:1}}}));
+  const el=$('#fl2');if(!el||view!='friends')return;rows.sort((a,b)=>(b.points||0)-(a.points||0));
+  el.innerHTML=rows.length?rows.map(r=>r.gone?`<div class="flex items-center gap-2 text-xs text-slate-500"><span class="flex-1">Friend not visible yet</span><button data-a="rmf" data-v="${r.id}" class="text-red-400">Remove</button></div>`:`<div class="flex items-center gap-2.5">${avatar(36,{avatar:r.photoURL,name:r.displayName})}<div class="min-w-0 flex-1"><p class="text-sm font-semibold truncate">${esc(r.displayName)}</p><p class="text-[11px] text-slate-400">${esc(r.status||'')} · quiz ${r.avgBand||0}%</p></div><div class="text-right text-xs"><p>🔥 ${r.studyStreak||0}</p><p class="text-slate-400">${r.points||0} min</p></div><button data-a="rmf" data-v="${r.id}" class="text-red-400 px-1" aria-label="Remove"><i class="fa-solid fa-xmark"></i></button></div>`).join(''):'<p class="text-sm text-slate-400">No friends yet. Paste a code above 👆</p>'}
+const saveFr=()=>setDoc(doc(db,'users',U.uid),{friends:ME.friends},{merge:true}).catch(()=>{});
+A.addf=async()=>{const id=$('#fc').value.trim();if(!id||id==U.uid)return toast('Paste a friend code');if((ME.friends||[]).includes(id))return toast('Already added');
+  try{if(!(await getDoc(doc(db,'publicProfiles',id))).exists())return toast('Not visible yet. Ask them to turn it on in Profile.')}catch(e){return toast('That code is not valid')}
+  ME.friends=[...(ME.friends||[]),id];await saveFr();friends()};
+A.rmf=async id=>{ME.friends=(ME.friends||[]).filter(x=>x!=id);await saveFr();friends()};
+A.cpcode=()=>navigator.clipboard?.writeText(U.uid).then(()=>toast('Code copied ✓'));
+
+// ---------- VOICE ----------
+A.say=i=>{const t=(chat[view]?.[i]?.content||'').replace(/[*#$`\\_]/g,'');if(!t||!window.speechSynthesis)return toast('Read aloud is not supported here');speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang=sd(view).lang=='en'?'en-US':'km-KH';speechSynthesis.speak(u)};
+A.mic=()=>{const R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R)return toast('Voice input is not supported in this browser');const r=new R();r.lang=sd(view).lang=='en'?'en-US':'km-KH';r.onresult=e=>{const i=$('#ci');if(i)i.value=e.results[0][0].transcript};r.onerror=()=>toast('Could not hear you');r.start();toast('🎤 Listening…')};
+
+// ---------- PLAN, BADGES, BACKUP ----------
+const BADGES=(tot,q,mast,ra)=>[['🔥','7-day streak',(ME.best||streakN)>=7],['⏱️','10 hours studied',tot>=600],['📝','10 quizzes',q>=10],['🃏','50 cards mastered',mast>=50],['🎯','Quiz 80%+',ra.length>0&&ra[0][1]>=80],['📚','10 files saved',S.reduce((t,s)=>t+sd(s[0]).files.length,0)>=10],['🏆','Mock exam 80%+',(ME.mocks||[]).some(m=>m.s/m.n>=.8)],['🌟','Studied every subject',S.every(s=>allMin(s[0])>0)]];
+A.plan=async(_,b)=>{b.disabled=true;$('#co').innerHTML='<p class="text-slate-400">Planning…</p>';
+  const pf=ME.profile||{},ex=ME.exam,left=ex?Math.ceil((new Date(ex.date)-new Date(today()))/864e5):null;
+  const rows=S.map(s=>{const a=avgQ(s[0]);return `${s[2]}: ${a==null?'no quiz yet':'quiz avg '+a+'%'}, ${sd(s[0]).hw.filter(h=>!h.done).length} homework pending, ${dueC(s[0]).length} cards due`}).join('\n');
+  const r=await ask([{role:'system',content:`You are a study planner for a Cambodian student${pf.grade?` (${pf.grade})`:''}. Reply in ${pf.lang=='en'?'English':'simple Khmer'}. Make a realistic plan of ${pf.goal||60} minutes per day for the next 7 days. Give each day 2 subjects with a clear task (for example: do 10 quiz questions, review flashcards, finish homework). Put the weakest subjects and nearest deadlines first. One short line per day.`},{role:'user',content:`${ex?`Exam: ${ex.name} in ${left} days.`:'No exam date set.'}\n${rows}`}]);
+  b.disabled=false;const o=$('#co');if(o)o.innerHTML=r?md(r):`<p class="text-amber-300">Could not make a plan.${ERR?` (${esc(ERR)})`:''}</p>`};
+A.export=()=>{const o={exported:new Date().toISOString(),profile:{...ME.profile,avatar:undefined},subjects:D},a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(o,null,1)],{type:'application/json'}));a.download='study-hub-backup.json';a.click()};
+
+// ---------- AI TOOLS ----------
+A.puter=()=>{if(!window.puter)return toast('Loading Puter… tap again in a moment');puter.auth.signIn().then(()=>{try{localStorage.setItem('sh_puter','1')}catch(e){}toast('Puter AI connected ✓')}).catch(()=>toast('Puter sign-in was cancelled'))};
+A.testai=async(_,b)=>{b.disabled=true;toast('Testing the AI…');const r=await ask([{role:'user',content:'Reply with the single word OK'}]);b.disabled=false;alert(r?'✅ AI is working. Answered by: '+WHO:'❌ No AI answered. Last problem: '+(ERR||'unknown'))};
+
+// ---------- PROFILE ----------
+const GR=['ថ្នាក់ទី ៧','ថ្នាក់ទី ៨','ថ្នាក់ទី ៩','ថ្នាក់ទី ១០','ថ្នាក់ទី ១១','ថ្នាក់ទី ១២'];
+let PAV='';
+const avatar=(z,pf=ME.profile||{})=>pf.avatar?`<img src="${pf.avatar}" alt="" class="rounded-full object-cover flex-shrink-0" style="width:${z}px;height:${z}px">`:`<div class="rounded-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center font-bold flex-shrink-0" style="width:${z}px;height:${z}px">${esc((pf.name||U?.email||'?')[0].toUpperCase())}</div>`;
+function pbtn(){$('#prof').innerHTML=`${avatar(34)}<span class="min-w-0 flex-1"><b class="block text-sm truncate">${esc(ME.profile?.name||'My profile')}</b><span class="text-[11px] text-slate-400">ប្រវត្តិរូប · Profile</span></span>`}
+$('#prof').onclick=()=>go('profile');
+function profile(){const p=ME.profile||{};PAV=p.avatar||'';$('#ttl').textContent='ប្រវត្តិរូប';
+  $('#main').innerHTML=`<div class="max-w-md mx-auto glass rounded-2xl p-5 space-y-3">
+  <div class="flex flex-col items-center gap-2"><div id="pav">${avatar(88,p)}</div><label class="text-xs text-blue-300 cursor-pointer underline">Change photo<input id="pph" type="file" accept="image/*" class="hide"></label></div>
+  <label class="block text-xs text-slate-400">ឈ្មោះ · Name<input id="pn" class="inp mt-1" maxlength="30" value="${esc(p.name||'')}"></label>
+  <label class="block text-xs text-slate-400">ថ្នាក់ · Grade<select id="pg" class="inp mt-1"><option value="">—</option>${GR.map(g=>`<option ${p.grade==g?'selected':''}>${g}</option>`).join('')}</select></label>
+  <label class="block text-xs text-slate-400">AI answers in<select id="pl" class="inp mt-1"><option value="km">ខ្មែរ</option><option value="en">English</option></select></label>
+  <label class="block text-xs text-slate-400">គោលដៅប្រចាំថ្ងៃ · Daily goal<select id="pgl" class="inp mt-1">${[30,60,90,120].map(m=>`<option value="${m}">${m} min</option>`).join("")}</select></label>
+  <label class="flex items-center gap-2 text-xs text-slate-300"><input id="ppub" type="checkbox" class="w-4 h-4 accent-emerald-500">Let friends see my name, streak, quiz % and study minutes</label>
+  <button data-a="puter" class="btn w-full" style="background:#334155"><i class="fa-solid fa-plug mr-1"></i>Connect free Puter AI (more models)</button>
+  <label class="block text-xs text-slate-400">Gemini AI key (built in; paste your own to replace it)<input id="pgk" class="inp mt-1" placeholder="Free key from aistudio.google.com" value="${esc(gown())}"></label>
+  <p class="text-[11px] text-slate-500">${esc(U.email)}</p>
+  <button data-a="psave" class="btn w-full">Save</button>
+  <button data-a="share" class="btn w-full" style="background:#334155"><i class="fa-solid fa-user-group mr-1"></i>Invite a friend</button>
+  <button data-a="inst" class="btn w-full" style="background:#334155"><i class="fa-solid fa-mobile-screen mr-1"></i>Install as an app</button>
+  <button data-a="testai" class="btn w-full" style="background:#334155"><i class="fa-solid fa-heart-pulse mr-1"></i>Test my AI</button>
+  <button data-a="export" class="w-full text-xs text-blue-300 underline">Download my data (backup)</button>
+  <button data-a="preset" class="w-full text-xs text-blue-300 underline">Send password reset email</button></div><div class="max-w-md mx-auto glass rounded-2xl p-5 space-y-3 mt-4">${statsHTML()}</div>`;
+  $('#pl').value=p.lang||'km';$('#pgl').value=p.goal||60;puterReady();$('#ppub').checked=!!p.pub;
+  $('#pph').onchange=async e=>{const f=e.target.files[0];if(!f)return;PAV=await shrink(f,256);$('#pav').innerHTML=avatar(88,{avatar:PAV})}}
+A.psave=async()=>{const old=ME.profile||{},pf={name:$('#pn').value.trim(),grade:$('#pg').value,lang:$('#pl').value,goal:+$('#pgl').value,pub:$('#ppub').checked,avatar:PAV};ME.profile=pf;
+  await setDoc(doc(db,'users',U.uid),{profile:pf},{merge:true}).catch(e=>toast('Save failed: '+e.code));
+  if(pf.lang!=(old.lang||'km'))S.forEach(s=>{sd(s[0]).lang=pf.lang;save(s[0])});
+  try{localStorage.setItem('sh_gemini',$('#pgk').value.trim())}catch(e){}syncPub();pbtn();toast('Saved ✓')};
+A.preset=async()=>{try{await fp(auth,U.email);toast('Reset email sent. Check your inbox.')}catch(e){toast('Could not send the email')}};
+
+const fmt=ms=>{const t=Math.max(0,Math.round(ms/1000));return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0')};
+const weekMin=()=>{let t=0;for(let i=0;i<7;i++){const d=new Date(Date.now()-i*864e5).toLocaleDateString('en-CA');S.forEach(s=>t+=sd(s[0]).log?.[d]||0)}return t};
+function time(){const k=view,r=TM&&TM.k==k;
+  $('#pane').innerHTML=`<div class="text-center space-y-3"><p id="tc" class="text-5xl font-extrabold tabular-nums">${r?fmt(TM.end-Date.now()):'25:00'}</p>
+  <div class="flex justify-center gap-2">${r?'<button data-a="tstop" class="btn" style="background:#dc2626">Stop</button>':[15,25,45].map(m=>`<button data-a="tstart" data-v="${m}" class="btn">${m} min</button>`).join('')}</div>
+  <p class="text-xs text-slate-400">Today: ${sd(k).log?.[today()]||0} min here · ${weekMin()} min this week in all subjects</p></div>`}
+A.tstart=m=>{if(TM)return toast('A timer is already running');TM={k:view,m:+m,end:Date.now()+m*6e4};TM.iv=setInterval(()=>{const e=TM.end-Date.now(),c=$('#tc');if(c&&view==TM.k&&tab=='time')c.textContent=fmt(e);if(e<=0)fin(true)},1000);time()};
+A.tstop=()=>fin(false);
+function fin(done){clearInterval(TM.iv);const k=TM.k,m=done?TM.m:Math.floor((Date.now()-(TM.end-TM.m*6e4))/6e4);TM=null;
+  if(m>0){const d=sd(k);d.log=d.log||{};d.log[today()]=(d.log[today()]||0)+m;save(k);syncPub()}
+  navigator.vibrate?.(300);toast(done?`🎉 Session done! +${m} min`:`Stopped. +${m} min`);if(view==k&&tab=='time')time()}
+
+// ---------- EXAM COUNTDOWN ----------
+function examCard(){const ex=ME.exam,left=ex?Math.ceil((new Date(ex.date)-new Date(today()))/864e5):0;
+  return `<div class="glass rounded-2xl p-4"><h3 class="font-bold text-sm mb-1"><i class="fa-solid fa-hourglass-half text-amber-400 mr-1"></i>ថ្ងៃប្រឡង · Exam countdown</h3>${ex?`<p class="text-3xl font-extrabold">${left>0?left+' days':left==0?'Today! 💪':'Finished'}</p><p class="text-xs text-slate-400">${esc(ex.name)} · ${ex.date}</p>`:'<p class="text-xs text-slate-400">Set your next exam, for example the Grade 12 national exam.</p>'}<div class="flex gap-2 mt-2"><input id="exn" class="inp" placeholder="ប្រឡងបាក់ឌុប" value="${ex?esc(ex.name):''}"><input id="exd" type="date" class="inp w-auto" value="${ex?ex.date:''}"><button data-a="exam" class="btn">Set</button></div></div>`}
+A.exam=()=>{const date=$('#exd').value;if(!date)return toast('Pick the exam date');ME.exam={name:$('#exn').value.trim()||'Exam',date};setDoc(doc(db,'users',U.uid),{exam:ME.exam},{merge:true}).catch(()=>{});dash()};
+
+// ---------- QUIZ ----------
+function quiz(){const k=view,last=sd(k).scores.slice(-3).reverse();
+  $('#pane').innerHTML=`<div class="space-y-2 mb-3">${srcSel(k)}<div class="flex gap-2"><input id="qt" class="inp" placeholder="Topic (optional)"><button data-a="mk" class="btn whitespace-nowrap"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>Start</button></div><div class="flex gap-2"><select id="qn" class="inp"><option value="5">5 questions</option><option value="10">10 questions</option></select><select id="ql" class="inp"><option>Easy</option><option selected>Medium</option><option>Hard</option></select></div></div><div id="qz"></div>${last.length?`<p class="text-[11px] text-slate-400 mt-3">Recent scores: ${last.map(s=>`${s.s}/${s.n} (${s.d})`).join(' · ')}</p>`:''}`}
+A.mk=async(_,b)=>{const k=view,N=+$('#qn').value,LV=$('#ql').value.toLowerCase();b.disabled=true;$('#qz').innerHTML='<p class="text-sm text-slate-400">Writing questions…</p>';
+  const ctx=await getSrc(k,$('#src').value),top=$('#qt').value.trim();
+  const r=await ask([{role:'system',content:sys(k)+' Return ONLY JSON like {"questions":[{"q":"","options":["","","",""],"answer":0,"why":""}]} with exactly '+N+' '+LV+' multiple-choice questions. Do not use LaTeX or backslashes; write maths in plain text like x^2. "answer" is the index 0-3 of the correct option.'},{role:'user',content:`Make ${N} questions${top?` about: ${top}`:''}.${ctx?`\nBase them on this material:\n"""${ctx.slice(0,7000)}"""`:''}`}],true);
+  b.disabled=false;let qs;try{qs=jparse(r).questions.filter(x=>x.q&&x.options?.length==4)}catch(e){}
+  if(!qs?.length){if($('#qz'))$('#qz').innerHTML='<p class="text-sm text-amber-300">The AI could not make a quiz. Please try again.</p>';return}
+  Q={k,qs,i:0,s:0};showQ()};
+function showQ(){const z=$('#qz');if(!z)return;const q=Q.qs[Q.i];
+  if(!q){const n=Q.qs.length,d=sd(Q.k);d.scores=[...d.scores,{s:Q.s,n,d:today()}].slice(-20);save(Q.k);z.innerHTML=`<div class="text-center py-4"><p class="text-3xl font-extrabold">${Q.s}/${n}</p><p class="text-sm text-slate-400">Score saved ✓</p></div>`;return}
+  z.innerHTML=`<p class="text-xs text-slate-400 mb-1">Question ${Q.i+1}/${Q.qs.length}</p><p class="font-semibold mb-3">${esc(q.q)}</p>`+q.options.map((o,j)=>`<button data-a="pick" data-v="${j}" class="qo w-full text-left p-2.5 mb-2 rounded-xl bg-slate-900/60 border border-slate-700 text-sm">${esc(o)}</button>`).join('')+'<div id="qw"></div>';rm(z)}
+A.pick=j=>{if(Q.done)return;Q.done=true;const q=Q.qs[Q.i],a=+q.answer;j=+j;if(j==a)Q.s++;else{const d=sd(Q.k);(d.cards=d.cards||[]).push({f:q.q,b:q.options[a],box:1,due:today()})}
+  document.querySelectorAll('.qo').forEach((e,i)=>{if(i==a)e.classList.add('!bg-emerald-600/30','!border-emerald-500');else if(i==j)e.classList.add('!bg-red-600/30','!border-red-500')});
+  $('#qw').innerHTML=`<p class="text-sm text-slate-300 my-2">${esc(q.why||'')}</p><button data-a="nx" class="btn">${Q.i+1<Q.qs.length?'Next':'Finish'}</button>`};
+A.nx=()=>{Q.i++;Q.done=false;showQ()};
+</script>
+</body>
+</html>
