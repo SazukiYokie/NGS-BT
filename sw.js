@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ngs-hub-v13';
+const CACHE_NAME = 'ngs-hub-v14';
 const ASSETS = [
   './',
   './index.html',
