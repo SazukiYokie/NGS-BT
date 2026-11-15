@@ -13,7 +13,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700;900&family=Kantumruy+Pro:ital,wght@0,300..700;1,300..700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kantumruy+Pro:ital,wght@0,300..700;1,300..700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
@@ -22,7 +22,7 @@ tailwind.config={
   theme:{
     extend:{
       fontFamily:{
-        sans:['"Plus Jakarta Sans"','"Kantumruy Pro"','"Battambang"','sans-serif']
+        sans:['"Plus Jakarta Sans"','"Kantumruy Pro"','sans-serif']
       }
     }
   }
@@ -50,9 +50,8 @@ html,body{height:100%;height:100dvh;margin:0;background:#060916;color:#f1f5f9;ov
 .inp{width:100%;min-width:0;background:rgba(9,14,28,.78);border:1px solid rgba(148,163,184,.22);border-radius:.85rem;padding:.62rem .85rem;font-size:.92rem;color:#f8fafc;transition:border-color .15s}
 .inp:focus{outline:none;border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.18)}
 .inp option{background:#0f172a;color:#f8fafc}
-input[type="date"] { color-scheme: dark; }
-.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:.45rem}
-@media(min-width:768px){.tabs{grid-template-columns:repeat(6,1fr)}}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr);gap:.45rem}
+@media(min-width:768px){.tabs{grid-template-columns:repeat(7,1fr)}}
 .tab{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;padding:.55rem .2rem;border-radius:.9rem;background:rgba(30,41,59,.55);border:1px solid rgba(148,163,184,.1);font-size:.76rem;font-weight:600;line-height:1.25;color:#cbd5e1;text-align:center;transition:all .18s}
 .tab i{font-size:1.05rem}
 .tab.on{background:var(--c);color:#fff;border-color:transparent;box-shadow:0 8px 22px -6px var(--c)}
@@ -68,6 +67,8 @@ input[type="date"] { color-scheme: dark; }
 .text-slate-400{color:#b6c2d4!important}
 .text-slate-500{color:#94a3b8!important}
 #main{scroll-behavior:smooth}
+input[type=date].inp{-webkit-appearance:auto!important;appearance:auto!important;background-image:none!important;color-scheme:dark;cursor:pointer;min-height:2.6rem}
+.hpill{padding:.42rem .8rem;border-radius:999px;font-size:.8rem;font-weight:600;border:1px solid;transition:all .15s}
 </style>
 </head>
 <body class="font-sans selection:bg-blue-500/30">
@@ -121,10 +122,11 @@ input[type="date"] { color-scheme: dark; }
     <div id="main" class="flex-1 overflow-y-auto p-3.5 md:p-6 pb-20 md:pb-6"></div>
 
     <!-- Mobile Bottom Bar -->
-    <nav id="bnav" class="glass md:hidden fixed bottom-0 inset-x-0 z-20 grid grid-cols-5 py-1.5 px-2 rounded-none border-x-0 border-b-0">
+    <nav id="bnav" class="glass md:hidden fixed bottom-0 inset-x-0 z-20 grid grid-cols-6 py-1.5 px-1 rounded-none border-x-0 border-b-0">
       <button data-k="dash" class="flex flex-col items-center py-1 text-[11px] text-slate-300"><i class="fa-solid fa-house text-sm mb-0.5 text-blue-400"></i>ទំព័រដើម</button>
-      <button data-k="schedule" class="flex flex-col items-center py-1 text-[11px] text-slate-300"><i class="fa-solid fa-calendar-days text-sm mb-0.5 text-rose-400"></i>កាលវិភាគ</button>
       <button data-k="allhw" class="flex flex-col items-center py-1 text-[11px] text-slate-300"><i class="fa-solid fa-list-check text-sm mb-0.5 text-orange-400"></i>កិច្ចការ</button>
+      <button data-k="sched" class="flex flex-col items-center py-1 text-[11px] text-slate-300"><i class="fa-solid fa-calendar-days text-sm mb-0.5 text-sky-400"></i>កាលវិភាគ</button>
+      <button data-k="report" class="flex flex-col items-center py-1 text-[11px] text-slate-300"><i class="fa-solid fa-chart-simple text-sm mb-0.5 text-pink-400"></i>របាយការណ៍</button>
       <button data-k="friends" class="flex flex-col items-center py-1 text-[11px] text-slate-300"><i class="fa-solid fa-users text-sm mb-0.5 text-emerald-400"></i>ថ្នាក់យើង</button>
       <button data-k="profile" class="flex flex-col items-center py-1 text-[11px] text-slate-300"><i class="fa-solid fa-user-gear text-sm mb-0.5 text-purple-400"></i>ប្រវត្តិរូប</button>
     </nav>
@@ -165,21 +167,41 @@ const S=[
 ];
 const T=[
   ["files","ឯកសារ","Files","fa-folder-open"],
+  ["mist","កំហុស","Mistakes","fa-book-bookmark"],
   ["form","រូបមន្ត","Formulas","fa-compass-drafting"],
   ["hw","កិច្ចការ","Tasks","fa-list-check"],
   ["ai","គ្រូ AI","AI Tutor","fa-wand-magic-sparkles"],
   ["quiz","សំណួរ","Quiz","fa-circle-question"],
-  ["cards","ប័ណ្ណចងចាំ","Cards","fa-clone"],
-  ["timer","ម៉ោងរៀន","Timer","fa-stopwatch"]
+  ["cards","ប័ណ្ណចងចាំ","Cards","fa-clone"]
 ];
 
 const FORMULAS={
   math:[
     ["ចំនួនកុំផ្លិច (Complex Numbers)","$$z = a + bi \\implies |z| = \\sqrt{a^2+b^2}$$ទម្រង់ត្រីកោណមាត្រ៖ $$z = r(\\cos\\theta + i\\sin\\theta) = re^{i\\theta}$$រូបមន្តម័រ (Moivre)៖ $$(\\cos\\theta + i\\sin\\theta)^n = \\cos(n\\theta) + i\\sin(n\\theta)$$"],
-    ["លីមីតត្រីកោណមាត្រ អិចស្ប៉ូណង់ស្យែល និងលោការីត","$$\\lim_{x\\to 0}\\frac{\\sin x}{x}=1, \\quad \\lim_{x\\to 0}\\frac{1-\\cos x}{x^2}=\\frac{1}{2}, \\quad \\lim_{x\\to 0}\\frac{e^x-1}{x}=1, \\quad \\lim_{x\\to 0}\\frac{\\ln(1+x)}{x}=1$$$$(u\\cdot v)' = u'v + uv', \\quad \\left(\\frac{u}{v}\\right)' = \\frac{u'v - uv'}{v^2}, \\quad (\\ln u)' = \\frac{u'}{u}, \\quad (e^u)' = u'e^u$$"]
+    ["លីមីតត្រីកោណមាត្រ អិចស្ប៉ូណង់ស្យែល និងលោការីត","$$\\lim_{x\\to 0}\\frac{\\sin x}{x}=1, \\quad \\lim_{x\\to 0}\\frac{1-\\cos x}{x^2}=\\frac{1}{2}, \\quad \\lim_{x\\to 0}\\frac{e^x-1}{x}=1, \\quad \\lim_{x\\to 0}\\frac{\\ln(1+x)}{x}=1$$$$(u\\cdot v)' = u'v + uv', \\quad \\left(\\frac{u}{v}\\right)' = \\frac{u'v - uv'}{v^2}, \\quad (\\ln u)' = \\frac{u'}{u}, \\quad (e^u)' = u'e^u$$"],
+    ["អាំងតេក្រាល និងសមីការឌីផេរ៉ង់ស្យែល","អាំងតេក្រាលដោយផ្នែក៖ $$\\int u\\,dv = uv - \\int v\\,du$$សមីការលំដាប់២៖ $$ay'' + by' + cy = 0 \\implies ar^2 + br + c = 0$$"],
+    ["ធរណីមាត្រក្នុងលំហ","ផលគុណស្កាលែ៖ $$\\vec{u}\\cdot\\vec{v} = x_1x_2 + y_1y_2 + z_1z_2 = |\\vec{u}||\\vec{v}|\\cos\\theta$$ចម្ងាយពីចំណុច $M_0(x_0,y_0,z_0)$ ទៅប្លង់ $(P): Ax+By+Cz+D=0$៖$$d(M_0, P) = \\frac{|Ax_0+By_0+Cz_0+D|}{\\sqrt{A^2+B^2+C^2}}$$"]
   ],
   phys:[
-    ["ទែម៉ូឌីណាមិច និងទ្រឹស្តីស៊ីនេទិចឧស្ម័ន","សមីការឧស្ម័នបរិសុទ្ធ៖ $$pV = nRT = Nk_BT$$ថាមពលស៊ីនេទិចមធ្យម៖ $$\\overline{E}_k = \\frac{3}{2}k_BT, \\quad v_{rms} = \\sqrt{\\frac{3RT}{M}}$$ច្បាប់ទី១ ទែម៉ូឌីណាមិច៖ $$\\Delta U = Q - W$$ទិន្នផលម៉ាស៊ីនកាណូ៖ $$\\eta = 1 - \\frac{T_C}{T_H}$$"]
+    ["ទែម៉ូឌីណាមិច និងទ្រឹស្តីស៊ីនេទិចឧស្ម័ន","សមីការឧស្ម័នបរិសុទ្ធ៖ $$pV = nRT = Nk_BT$$ថាមពលស៊ីនេទិចមធ្យម៖ $$\\overline{E}_k = \\frac{3}{2}k_BT, \\quad v_{rms} = \\sqrt{\\frac{3RT}{M}}$$ច្បាប់ទី១ ទែម៉ូឌីណាមិច៖ $$\\Delta U = Q - W$$ទិន្នផលម៉ាស៊ីនកាណូ៖ $$\\eta = 1 - \\frac{T_C}{T_H}$$"],
+    ["អគ្គិសនីម៉ាញេទិច និងអាំងឌុចស្យុង","កម្លាំងឡូរ៉ង់៖ $$F = |q|vB\\sin\\theta$$កម្លាំងអេឡិចត្រូម៉ូទ័រអាំងឌុចស្យុង៖ $$e = -N\\frac{\\Delta\\Phi}{\\Delta t}, \\quad e_{self} = -L\\frac{\\Delta i}{\\Delta t}$$ថាមពលម៉ាញេទិចក្នុងបូប៊ីន៖ $$W_L = \\frac{1}{2}Li^2$$"],
+    ["ចរន្តឆ្លាស់ស៊ីនុយសូអ៊ីត (RLC)","អាំងប៉េដង់សរុប៖ $$Z = \\sqrt{R^2 + (Z_L - Z_C)^2}, \\quad Z_L = L\\omega, \\quad Z_C = \\frac{1}{C\\omega}$$រេសូណង់អគ្គិសនី៖ $$Z_L = Z_C \\implies \\omega_0 = \\frac{1}{\\sqrt{LC}}$$"]
+  ],
+  chem:[
+    ["ស៊ីនេទិចគីមី និងផលធៀបម៉ូល","ល្បឿនមធ្យមបំបាត់អង្គធាតុប្រតិករ $A$៖ $$v_m(A) = -\\frac{[A]_2 - [A]_1}{t_2 - t_1}$$ចំពោះសមីការ $aA + bB \\to cC + dD$ ផលធៀបចំនួនម៉ូល៖ $$\\frac{n_A}{a} = \\frac{n_B}{b} = \\frac{n_C}{c} = \\frac{n_D}{d}$$"],
+    ["អាស៊ីត-បាស និង pH","$$\\text{pH} = -\\log[\\text{H}_3\\text{O}^+], \\quad [\\text{H}_3\\text{O}^+] = 10^{-\\text{pH}}$$ផលគុណអ៊ីយ៉ុងនៃទឹកនៅ $25^\\circ\\text{C}$៖ $$K_w = [\\text{H}_3\\text{O}^+][\\text{OH}^-] = 10^{-14} \\implies \\text{pH} + \\text{pOH} = 14$$"],
+    ["គីមីសរីរាង្គ៖ អេស្ទែ និងសាប៊ូកម្ម","ប្រតិកម្មអេស្ទែកម្ម៖ $$\\text{R-COOH} + \\text{R'-OH} \\rightleftharpoons \\text{R-COO-R'} + \\text{H}_2\\text{O}$$ទិន្នផលប្រតិកម្ម៖ $$Rd = \\frac{n_{\\text{ជាក់ស្តែង}}}{n_{\\text{ទ្រឹស្តី}}} \\times 100\\%$$"]
+  ],
+  bio:[
+    ["រូបមន្តម៉ូលេគុល ADN (ប្រើ M និង LH)","ចំនួននុយក្លេអូទីតសរុប៖ $$M = A + T + G + C = 2A + 2G$$ប្រវែងម៉ូលេគុល ADN៖ $$L = \\frac{M}{2} \\times 0.34\\text{ nm}$$ចំនួនសម្ព័ន្ធអ៊ីដ្រូសែនសរុប៖ $$LH = 2A + 3G$$ម៉ាសម៉ូលេគុល ADN៖ $$\\text{ម៉ាស} = M \\times 300\\text{ ខ.អ.ក}$$"],
+    ["ការសំយោគប្រូតេអ៊ីន និង ARNm","ចំនួនរីបូនុយក្លេអូទីតនៃ ARNm៖ $$m = \\frac{M}{2}$$ចំនួនអាស៊ីតអាមីនេក្នុងប្រូតេអ៊ីន៖ $$N_{aa} = \\frac{m}{3} - 1 = \\frac{M}{6} - 1$$"]
+  ],
+  eng:[
+    ["Present Perfect Simple vs Continuous","**Present Perfect Simple:** `S + have/has + V3` — ប្រើសម្រាប់សកម្មភាពដែលទើបបញ្ចប់ ឬផ្តោតលើលទ្ធផល (ឧ. *I have solved 5 exercises*).\n**Present Perfect Continuous:** `S + have/has + been + V-ing` — ផ្តោតលើរយៈពេលនៃសកម្មភាពដែលចាប់ផ្តើមពីអតីតកាលបន្តមកបច្ចុប្បន្ន (ឧ. *I have been studying since 7 AM*)."],
+    ["Conditionals (ប្រយោគលក្ខខណ្ឌទាំង ៤)","**Zero:** `If + Present, Present`\n**First:** `If + Present, will + V1`\n**Second:** `If + Past Simple, would + V1`\n**Third:** `If + had + V3, would have + V3`"]
+  ],
+  khm:[
+    ["ស្នាដៃអក្សរសិល្ប៍ខ្មែរថ្នាក់ទី១២","• **ព្រះអាទិត្យថ្មីរះលើដែនដីចាស់** (និពន្ធដោយ សួន សុរិន្ទ ឆ្នាំ ១៩៦០)៖ តួអង្គឯក **សម** តំណាងឱ្យប្រជាជនក្រីក្រដែលតស៊ូរើបម្រះពីការជិះជាន់ និងកសាងជីវិតថ្មី។\n• **ភូមិតិរច្ឆាន** (ឌឿក អំ និង ឌឹក គាម)៖ ព្រឹត្តិការណ៍ប្រវត្តិសាស្ត្រនៅភូមិក្រាំងលាវ ខេត្តកំពង់ឆ្នាំង ឆ្នាំ ១៩២៥។\n• **រាមកេរ្តិ៍** និង **កូឡាបប៉ៃលិន** (ញ៉ុក ថែម)។"]
   ]
 };
 
@@ -188,8 +210,8 @@ const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const today=()=>new Date().toLocaleDateString('en-CA');
 const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.remove('hide');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.add('hide'),2700)};
 const subj=k=>S.find(x=>x[0]==k);
-let U,D={},view='dash',tab='files',chat={},Q,streakN=1,ME={},TM=null,IMG=null,X=null;
-const sd=k=>D[k]||(D[k]={hw:[],files:[],scores:[],lang:'km'});
+let U,D={},view='dash',tab='files',chat={},Q,streakN=1,ME={},TM=null,IMG=null,X=null,RAIN=null;
+const sd=k=>D[k]||(D[k]={notes:'',hw:[],files:[],scores:[],lang:'km'});
 const save=k=>setDoc(doc(db,'users',U.uid,'subjects',k),sd(k)).catch(e=>toast('រក្សាទុកមិនបាន៖ '+e.code));
 const txtRef=(k,id)=>doc(db,'users',U.uid,'subjects',k,'texts',id);
 
@@ -229,8 +251,8 @@ onAuthStateChanged(auth,async u=>{
 function nav(){
   $('#nav').innerHTML=[
     ['dash','ទំព័រដើម','fa-house','#60a5fa'],
-    ['schedule','កាលវិភាគ','fa-calendar-days','#f43f5e'],
     ['allhw','កិច្ចការ','fa-list-check','#fb923c'],
+    ['sched','កាលវិភាគ','fa-calendar-days','#38bdf8'],
     ['report','របាយការណ៍','fa-chart-simple','#f472b6'],
     ['friends','12NGS-B','fa-users','#34d399'],
     ...S.map(s=>[s[0],s[1],s[3],s[4]])
@@ -240,12 +262,26 @@ $('#nav').onclick=e=>{const b=e.target.closest('[data-k]');if(b)go(b.dataset.k)}
 $('#bnav').onclick=e=>{const b=e.target.closest('[data-k]');if(b)go(b.dataset.k)};
 function go(k){flushT();view=k;tab='files';side(false);nav();render()}
 
+const SCH={
+  1:[['07:30','09:05','math','F-M2'],['09:25','11:00','phys','F-P1'],['12:30','14:05','chem','F-C1']],
+  2:[['07:30','09:05','math','H-M4'],['09:25','10:10','civ','G-FL3'],['10:15','11:00','hist','F-G1'],['12:30','14:05','eng','']],
+  3:[['07:30','08:15','earth','H-ES1'],['08:20','09:05','hist','H-FL1'],['09:25','11:00','phys','F-P1'],['12:30','14:05','khm','H-K3']],
+  4:[['07:30','09:05','khm','F-K1'],['09:25','11:00','bio','F-B1'],['12:30','14:05','math','F-M2']],
+  5:[['07:30','08:15','geo','F-G1'],['08:20','09:05','eng',''],['09:25','11:00','bio','F-B2'],['12:30','14:05','chem','F-C1']]
+};let SD=null;
+function sched(){
+  $('#ttl').textContent='កាលវិភាគ';
+  const days=['ច័ន្ទ','អង្គារ','ពុធ','ព្រហស្បតិ៍','សុក្រ'],g=new Date().getDay(),now=new Date().toTimeString().slice(0,5);
+  if(SD==null)SD=g>=1&&g<=5?g:1;
+  const rows=(SCH[SD]||[]).map(([a,b,k,r])=>{const s=subj(k),on=SD==g&&now>=a&&now<b;return `<div class="flex items-center gap-3 p-3 rounded-xl glass-soft mb-2 ${on?'ring-1 ring-emerald-400':''}"><div class="w-24 flex-shrink-0 text-xs font-bold text-blue-300">${a}–${b}</div><div class="flex-1 min-w-0 text-sm font-semibold"><i class="fa-solid ${s[3]} mr-1.5" style="color:${s[4]}"></i>${s[1]}</div><div class="text-xs px-2 py-1 rounded-lg bg-slate-800/80 text-slate-200">${r||'—'}</div></div>`}).join('');
+  $('#main').innerHTML=`<div class="max-w-3xl mx-auto"><h2 class="font-extrabold text-xl mb-3">កាលវិភាគ 12NGS-B</h2><div class="flex gap-1.5 mb-3 overflow-x-auto">${days.map((d,i)=>`<button data-a="sday" data-v="${i+1}" class="hpill whitespace-nowrap" style="color:#93c5fd;border-color:${SD==i+1?'#3b82f6':'#3b82f644'};background:${SD==i+1?'#3b82f633':'transparent'}">${d}</button>`).join('')}</div><div class="glass p-4">${rows}</div></div>`;
+}
 function render(){
   if(view=='dash')return dash();
-  if(view=='schedule')return scheduleView();
   if(view=='profile')return profile();
   if(view=='report')return report();
   if(view=='allhw')return allhw();
+  if(view=='sched')return sched();
   if(view=='friends')return friends();
   const s=subj(view);$('#ttl').textContent=s[1];
   $('#main').innerHTML=`<div class="max-w-3xl mx-auto space-y-4" style="--c:${s[4]}">
@@ -254,14 +290,18 @@ function render(){
         <div class="w-11 h-11 rounded-2xl flex items-center justify-center shadow" style="background:${s[4]}28;color:${s[4]};border:1px solid ${s[4]}55"><i class="fa-solid ${s[3]} text-lg"></i></div>
         <div><h2 class="font-extrabold text-xl leading-tight">${s[1]}</h2><p class="text-xs text-slate-400">${s[2]} · 12NGS-B · ⏱ ${Math.round(sd(s[0]).log?.[today()]||0)} នាទីថ្ងៃនេះ</p></div>
       </div>
+      <button data-t="ai" class="chip flex items-center gap-1.5 text-blue-300 border-blue-500/30 bg-blue-500/10"><i class="fa-solid fa-wand-magic-sparkles"></i>សួរគ្រូ AI</button>
     </div>
-    <div class="tabs">${T.map(([k,kh,en,i])=>`<button data-t="${k}" class="tab ${tab==k?'on':''}"><i class="fa-solid ${i}"></i><span class="block leading-tight mt-0.5 text-[11px]">${kh}</span></button>`).join('')}</div>
+    <div class="tabs">${T.map(([k,kh,en,i])=>`<button data-t="${k}" class="tab ${tab==k?'on':''}"><i class="fa-solid ${i}"></i><span class="block leading-tight mt-0.5">${kh}</span></button>`).join('')}</div>
     <div id="pane" class="glass p-4 md:p-5"></div>
   </div>`;
   pane();
 }
-const pane=()=>({files,form,hw,ai,quiz,cards,timer})[tab]();
+const pane=()=>({files,mist,form,hw,ai,quiz,cards})[tab]();
 const A={};
+A.sday=v=>{SD=+v;sched()};
+
+document.addEventListener('click',e=>{const t=e.target;if(t&&t.matches&&t.matches('input[type=date]')){try{t.showPicker()}catch(_){}}});
 $('#main').onclick=e=>{
   const b=e.target.closest('[data-t],[data-a]');if(!b)return;
   if(b.dataset.t){tab=b.dataset.t;render();return}
@@ -277,6 +317,7 @@ function dash(){
   const allAvgs=S.map(s=>avg(s[0])).filter(x=>x!=null);
   const overallAvg=allAvgs.length?Math.round(allAvgs.reduce((a,b)=>a+b,0)/allAvgs.length):null;
   const gradeBadge=overallAvg==null?'មិនទាន់មានពិន្ទុ':overallAvg>=90?'និទ្ទេស A 🌟':overallAvg>=80?'និទ្ទេស B 🔥':overallAvg>=70?'និទ្ទេស C 💪':overallAvg>=60?'និទ្ទេស D':'ត្រូវប្រឹងបន្ថែម';
+  const wk=S.map(s=>[s,avg(s[0])]).filter(x=>x[1]!=null).sort((a,b)=>a[1]-b[1])[0];
 
   $('#main').innerHTML=`<div class="max-w-3xl mx-auto space-y-4">
     <div class="flex items-center justify-between">
@@ -298,7 +339,7 @@ function dash(){
 
     <div class="glass p-4">
       <div class="flex items-center justify-between mb-2">
-        <h3 class="font-bold text-sm"><i class="fa-solid fa-list-check text-orange-400 mr-1.5"></i>កិច្ចការត្រូវធ្វើ</h3>
+        <h3 class="font-bold text-sm"><i class="fa-solid fa-list-check text-orange-400 mr-1.5"></i>កិច្ចការផ្ទះត្រូវធ្វើ</h3>
         <button data-a="gos" data-v="allhw" class="text-xs text-blue-300 hover:underline">មើលទាំងអស់ →</button>
       </div>
       ${due.slice(0,6).map(h=>`<button data-a="gos" data-v="${h.s[0]}" class="w-full flex items-center gap-2.5 text-left text-sm py-2 border-b border-slate-800/70 last:border-0"><i class="fa-solid ${h.s[3]} w-5 text-center" style="color:${h.s[4]}"></i><span class="flex-1 truncate">${esc(h.t)}</span><span class="text-xs ${h.due&&h.due<today()?'text-red-400 font-semibold':'text-slate-400'}">${h.due||'មិនកំណត់'}</span></button>`).join('')||'<p class="text-sm text-slate-400">គ្មានកិច្ចការដល់កំណត់ទេ 🎉</p>'}
@@ -319,40 +360,9 @@ function dash(){
 }
 A.gos=k=>go(k);
 
-// ---------- SCHEDULE (កាលវិភាគ) ----------
-const SCHED = [
-  {d:'ច័ន្ទ (Mo)', items:[['7:30 - 9:05','គណិតវិទ្យា','F-M2'],['9:25 - 11:00','រូបវិទ្យា','F-P1'],['12:30 - 14:05','គីមីវិទ្យា','F-C1']]},
-  {d:'អង្គារ (Tu)', items:[['7:30 - 9:05','គណិតវិទ្យា','H-M4'],['9:25 - 11:00','សីលធម៌ & ប្រវត្តិវិទ្យា','G-FL3 / F-G1'],['12:30 - 14:05','ផែនដីវិទ្យា','ស០១']]},
-  {d:'ពុធ (We)', items:[['7:30 - 8:15','ផែនដីវិទ្យា','H-ES1'],['8:20 - 9:05','ប្រវត្តិវិទ្យា','H-FL1'],['9:25 - 11:00','រូបវិទ្យា','F-P1'],['12:30 - 14:05','ភាសាខ្មែរ','H-K3']]},
-  {d:'ព្រហស្បតិ៍ (Th)', items:[['7:30 - 9:05','ភាសាខ្មែរ','F-K1'],['9:25 - 11:00','ជីវវិទ្យា','F-B1'],['12:30 - 14:05','គណិតវិទ្យា','F-M2']]},
-  {d:'សុក្រ (Fr)', items:[['7:30 - 9:05','ភូមិវិទ្យា','F-G1'],['9:25 - 11:00','ជីវវិទ្យា','F-B2'],['12:30 - 14:05','គីមីវិទ្យា','F-C1']]}
-];
-function scheduleView(){
-  $('#ttl').textContent='កាលវិភាគថ្នាក់ (12NGS-B)';
-  const curDay = new Date().getDay(); // 0=Sun, 1=Mon...
-  $('#main').innerHTML=`<div class="max-w-2xl mx-auto space-y-4">
-    <div><h2 class="font-extrabold text-xl mb-1">កាលវិភាគប្រចាំសប្តាហ៍</h2><p class="text-xs text-slate-400">ផ្អែកលើកាលវិភាគថ្នាក់ 12NGS-B ថ្មី</p></div>
-    <div class="space-y-3">
-      ${SCHED.map((s,i)=>{
-        const isToday = curDay === (i+1);
-        return `<div class="glass ${isToday ? 'ring-1 ring-blue-500 bg-blue-900/10' : ''} p-4">
-          <h3 class="font-bold text-sm mb-3 flex justify-between items-center ${isToday?'text-blue-300':''}"><i class="fa-regular fa-calendar text-rose-400 mr-2"></i> ${s.d} ${isToday?'<span class="text-[10px] bg-blue-500/20 px-2 py-0.5 rounded-full text-blue-300">ថ្ងៃនេះ</span>':''}</h3>
-          <div class="space-y-2.5">
-            ${s.items.map(r=>`<div class="flex items-center justify-between text-sm glass-soft p-2.5">
-              <span class="font-semibold text-emerald-300 w-28">${r[0]}</span>
-              <span class="flex-1 font-bold text-white px-2">${r[1]}</span>
-              <span class="text-xs text-slate-400 bg-slate-800/80 px-2 py-1 rounded-md min-w-[3rem] text-center">${r[2]}</span>
-            </div>`).join('')}
-          </div>
-        </div>`;
-      }).join('')}
-    </div>
-  </div>`;
-}
-
 // ---------- FILES ----------
 let FT='មេរៀន';
-const FTS=[['មេរៀន','មេរៀន (Lesson)'],['កិច្ចការ','កិច្ចការ (Homework)'],['វិញ្ញាសា','វិញ្ញាសា (Exam)'],['រូបមន្ត','រូបមន្ត (Formulas)']];
+const FTS=[['មេរៀន','មេរៀន (Lesson)'],['កិច្ចការផ្ទះ','កិច្ចការផ្ទះ (Homework)'],['វិញ្ញាសា','វិញ្ញាសា (Exam)'],['រូបមន្ត','រូបមន្ត (Formulas)']];
 function files(){
   const d=sd(view),list=d.files.filter(f=>f.tag==FT);
   $('#pane').innerHTML=`<div class="flex gap-2 mb-3">
@@ -366,10 +376,24 @@ function files(){
 const sleep=ms=>new Promise(r=>setTimeout(r,ms)),prog=m=>{toast(m);clearTimeout(toast.t)};
 async function readPdf(p){
   const N=Math.min(p.numPages,600),T=[],need=[],B={},BP={},SK='scan:'+(p.fingerprints?.[0]||'')+':'+p.numPages;let miss=0;
+  try{const sv=JSON.parse(localStorage.getItem(SK)||'{}');Object.assign(B,sv.B||{});Object.assign(BP,sv.BP||{})}catch(e){}
   for(let i=1;i<=N;i++){const x=(await(await p.getPage(i)).getTextContent()).items.map(y=>y.str).join(' ').trim();T[i]=x;if(x.length<30)need.push(i)}
-  // skip full OCR to save space in code. using basic text extraction.
-  let out='';
-  for(let i=1;i<=N;i++){out+='--- ទំព័រ '+i+' ---\n'+T[i]+'\n'}
+  if(need.length){
+    try{navigator.wakeLock?.request('screen')}catch(e){}
+    for(let a=0;a<need.length;a+=3){
+      const pg=need.slice(a,a+3),imgs=[];if(B[pg[0]]!=null)continue;
+      for(const n of pg){const g=await p.getPage(n),vp=g.getViewport({scale:2}),c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;await g.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;imgs.push(c.toDataURL('image/jpeg',.8))}
+      prog('កំពុងស្កេនទំព័រ '+pg[0]+'–'+pg[pg.length-1]+' (ស្កេនសរុប '+need.length+' ទំព័រ) សូមកុំបិទកម្មវិធី…');
+      const msg=[{role:'user',content:[{type:'text',text:'Transcribe ALL the text on these '+imgs.length+' scanned textbook pages exactly as written (Khmer and English), keeping formulas as plain text or LaTeX. The pages in order are: '+pg.join(', ')+'. Start each page with a line "--- ទំព័រ N ---". Return only the transcription.'},...imgs.map(u=>({type:'image_url',image_url:{url:u}}))]}];
+      let r=await ask(msg,false,true);if(!r){await sleep(8000);r=await ask(msg,false,true)}
+      if(!r){r='';for(let k=0;k<pg.length;k++)r+='--- ទំព័រ '+pg[k]+' ---\n'+(await ocr(imgs[k]))+'\n'}
+      if(r.replace(/---[^\n]*---/g,'').trim().length>10){B[pg[0]]=r;BP[pg[0]]=pg;try{localStorage.setItem(SK,JSON.stringify({B,BP}))}catch(e){}}else miss++;
+      await sleep(1200);
+    }
+  }
+  if(!miss)try{localStorage.removeItem(SK)}catch(e){}
+  let out='';const sk=new Set;
+  for(let i=1;i<=N;i++){if(sk.has(i))continue;if(B[i]!=null){out+=B[i]+'\n';BP[i].forEach(n=>sk.add(n))}else out+='--- ទំព័រ '+i+' ---\n'+T[i]+'\n'}
   return out;
 }
 let TJ=null;
@@ -383,9 +407,12 @@ async function extract(f){
   const n=f.name.toLowerCase();
   if(n.endsWith('.pdf'))return await readPdf(await pdfjsLib.getDocument({data:await f.arrayBuffer()}).promise);
   if(n.endsWith('.docx'))return (await mammoth.extractRawText({arrayBuffer:await f.arrayBuffer()})).value;
-  if(/\.(txt|md)$/.test(n))return await f.text();
-  if(f.type.startsWith('image/'))return await ocr(await shrink(f,1800))||'';
+  if(/\.(txt|md)$/.test(n))return f.text();
+  if(f.type.startsWith('image/'))return await ask([{role:'user',content:[{type:'text',text:'Extract all the text in this image exactly as written (Khmer and English). Write maths in plain text. Return only the text.'},{type:'image_url',image_url:{url:await shrink(f,1500)}}]}],false,true)||await ocr(await shrink(f,1800))||'';
   return '';
+}
+async function saveDoc(k,f,t,tag='មេរៀន'){
+  try{const id=Date.now().toString(36)+Math.random().toString(36).slice(2,5),d=sd(k);await idbPut(id,f);await setDoc(txtRef(k,id),{t:t.slice(0,200000)});d.files.push({id,name:f.name,tag,d:today(),n:t.length});await save(k);if(view==k&&tab=='files')pane()}catch(e){}
 }
 async function saveShot(k,img){
   try{
@@ -393,8 +420,8 @@ async function saveShot(k,img){
     if(t.length<20)return;
     const id=Date.now().toString(36)+Math.random().toString(36).slice(2,5),d=sd(k);
     await idbPut(id,f);await setDoc(txtRef(k,id),{t:t.slice(0,200000)});
-    d.files.push({id,name:f.name,tag:'រូបមន្ត',d:today(),n:t.length});await save(k);
-    toast('AI បានចងចាំរូបថតចូលទៅក្នុងឯកសារ ✓');
+    d.files.push({id,name:f.name,tag:'មេរៀន',d:today(),n:t.length});await save(k);
+    if(view==k&&tab=='files')pane();toast('AI បានរៀន និងចងចាំរូបថតនេះក្នុងមុខវិជ្ជា ✓');
   }catch(e){}
 }
 async function upload(e){
@@ -406,9 +433,38 @@ async function upload(e){
   }catch(x){toast('មិនអាចអាន '+f.name)}}
   await save(k);if(view==k&&tab=='files')pane();toast('បានរក្សាទុក ✓');
 }
-A.open=async id=>{const b=await idbGet(id);if(!b)return toast('ឯកសារនេះមិនមានក្នុងឧបករណ៍នេះទេ។');const a=document.createElement('a');a.href=URL.createObjectURL(b);a.target='_blank';a.click()};
-A.reread=async id=>{delete TXT[id];const k=view,f=sd(k).files.find(x=>x.id==id),b=await idbGet(id);if(!b)return toast('សូមផ្ទុកឯកសារនេះឡើងម្តងទៀត');toast('កំពុងអានម្តងទៀត…');const t=(await extract(b)).trim().slice(0,200000);if(!t)return toast('AI នៅតែអានមិនបាន');await setDoc(txtRef(k,id),{t});f.n=t.length;await save(k);files();toast('AI អានបានហើយ ✓')};
+A.open=async id=>{const b=await idbGet(id);if(!b)return toast('ឯកសារដើមនៅលើឧបករណ៍ផ្សេង ប៉ុន្តែអត្ថបទរបស់វានៅតែរក្សាទុកសម្រាប់ AI។');const a=document.createElement('a');a.href=URL.createObjectURL(b);a.target='_blank';a.click()};
+A.reread=async id=>{delete TXT[id];const k=view,f=sd(k).files.find(x=>x.id==id),b=await idbGet(id);if(!b)return toast('សូមផ្ទុកឯកសារនេះឡើងម្តងទៀត');toast('កំពុងអានម្តងទៀត…');const t=(await extract(b)).trim().slice(0,200000);if(!t)return toast('AI នៅតែអានមិនបាន សូមពិនិត្យរូបភាពឱ្យច្បាស់ ឬប្រាប់ Admin ពិនិត្យ AI');await setDoc(txtRef(k,id),{t});f.n=t.length;await save(k);files();toast('AI អានបានហើយ ✓')};
 A.delf=async id=>{delete TXT[id];if(!confirm('លុបឯកសារនេះឬ?'))return;const k=view;sd(k).files=sd(k).files.filter(f=>f.id!=id);idbDel(id);deleteDoc(txtRef(k,id)).catch(()=>{});await save(k);pane()};
+
+// ---------- NOTES ----------
+let NV=true,STRICT=false,STY=0,ATT=null;
+const STYS=[['ធម្មតា',''],['ខ្លី',' Keep the answer very short: the final answer plus at most 3 steps.'],['លម្អិត',' Give a detailed explanation with every step and one worked example.']];
+function mist(){
+  const k=view,m=(sd(k).mist||[]).slice().reverse();
+  $('#pane').innerHTML=`<div class="flex items-center justify-between mb-2.5"><div><h3 class="font-bold text-sm">📒 កំហុសរបស់ខ្ញុំ (${subj(k)[1]})</h3><p class="text-xs text-slate-400">សំណួរដែលឆ្លើយខុស មកទីនេះដោយស្វ័យប្រវត្តិ — រៀនម្តងទៀតមុនប្រឡង</p></div>${m.length?'<button data-a="mclr" class="text-xs text-red-400 hover:underline">សម្អាត</button>':''}</div>`+(m.length?m.map(x=>`<div class="glass-soft p-3.5 mb-2.5"><p class="text-sm font-medium mb-2">${esc(x.q)}</p><div class="text-xs space-y-1 mb-2"><p class="text-red-300">✗ ចម្លើយរបស់ខ្ញុំ៖ ${esc((x.o||[])[x.m]??'—')}</p><p class="text-emerald-300">✓ ចម្លើយត្រឹមត្រូវ៖ ${esc((x.o||[])[x.a]??'')}</p></div><div class="flex gap-3 text-xs"><button data-a="mask" data-v="${x.i}" class="text-blue-300 hover:underline"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>ពន្យល់ពីហេតុផល</button><button data-a="mdel" data-v="${x.i}" class="text-slate-400 hover:text-red-400">លុប</button></div></div>`).join(''):'<p class="text-sm text-slate-400 text-center py-8">មិនទាន់មានកំហុសទេ 🎉 ធ្វើសំណួរ ហើយចម្លើយខុសនឹងមកទីនេះដោយស្វ័យប្រវត្តិ។</p>');
+  rm($('#pane'));
+}
+A.mdel=id=>{sd(view).mist=(sd(view).mist||[]).filter(y=>y.i!=id);save(view);mist()};
+A.mclr=()=>{if(confirm('សម្អាតកំហុសទាំងអស់ឬ?')){sd(view).mist=[];save(view);mist()}};
+A.mask=id=>{const x=(sd(view).mist||[]).find(y=>y.i==id);if(!x)return;tab='ai';render();const ci=$('#ci');if(ci){ci.value='ខ្ញុំឆ្លើយខុសសំណួរនេះ សូមពន្យល់ហេតុអ្វីចម្លើយត្រឹមត្រូវ និងរបៀបគិត៖ '+x.q+' | ចម្លើយត្រឹមត្រូវ៖ '+((x.o||[])[x.a]||'');A.send()}};
+function notes(){
+  const k=view,has=!!sd(k).notes.trim(),v=NV&&has;
+  $('#pane').innerHTML=`<div class="flex gap-2 mb-2.5">
+    <input id="cht" class="inp" placeholder="ប្រធានបទ (ឧ. ចំនួនកុំផ្លិច, ទែម៉ូឌីណាមិច…)">
+    <button data-a="cheat" class="btn whitespace-nowrap"><i class="fa-solid fa-wand-magic-sparkles"></i>បង្កើតសង្ខេប</button>
+  </div>
+  ${v?`<div id="nv" class="md text-sm glass-soft p-3.5 min-h-[14rem] max-h-[56vh] overflow-y-auto">${md(sd(k).notes)}</div>`:`<textarea id="nt" rows="14" class="inp leading-relaxed" placeholder="សរសេរកំណត់ត្រារបស់អ្នកនៅទីនេះ…">${esc(sd(k).notes)}</textarea>`}
+  <div class="flex justify-between items-center mt-2 gap-2">
+    <p id="ns" class="text-xs text-slate-500">រក្សាទុកដោយស្វ័យប្រវត្តិ</p>
+    <div class="flex gap-3 text-xs">${has?`<button data-a="nview" class="text-blue-300 hover:underline">${v?'✏️ កែសម្រួល':'👁 មើលស្អាត'}</button>`:''}<button data-a="prn" class="text-blue-300 hover:underline"><i class="fa-solid fa-print mr-1"></i>PDF</button><button data-a="cpnotes" class="text-blue-300 hover:underline"><i class="fa-solid fa-copy mr-1"></i>ចម្លង</button>${has?`<button data-a="clrnotes" class="text-red-400 hover:underline"><i class="fa-solid fa-trash mr-1"></i>សម្អាត</button>`:''}</div>
+  </div>`;
+  if(v)rm($('#nv'));
+  else $('#nt').oninput=e=>{sd(k).notes=e.target.value;clearTimeout(notes.t);$('#ns').textContent='កំពុងរក្សាទុក…';notes.t=setTimeout(async()=>{await save(k);const n=$('#ns');if(n)n.textContent='បានរក្សាទុក ✓'},700)};
+}
+A.nview=()=>{NV=!NV;notes()};
+A.clrnotes=()=>{if(confirm('សម្អាតកំណត់ត្រាទាំងអស់ឬ?')){sd(view).notes='';save(view);notes()}};
+A.cpnotes=()=>{navigator.clipboard?.writeText(sd(view).notes||'').then(()=>toast('បានចម្លងកំណត់ត្រា ✓'))};
 
 // ---------- FORMULAS ----------
 const fL=k=>{const d=sd(k);if(!d.forms)d.forms=(FORMULAS[k]||[]).map(([t,b])=>({t,b}));return d.forms};
@@ -416,105 +472,70 @@ function form(){
   const k=view,list=fL(k);
   $('#pane').innerHTML=`<div class="space-y-3">
     <div class="flex items-center justify-between gap-2">
-      <div><h3 class="font-bold text-sm">📐 រូបមន្ត និងសង្ខេប</h3><p class="text-xs text-slate-400">ផ្អែកលើឯកសារ (${subj(k)[1]})</p></div>
-      <div class="flex gap-1.5"><button data-a="aiForm" class="btn text-[11.5px] bg-indigo-600"><i class="fa-solid fa-wand-magic-sparkles"></i>ទាញយករូបមន្តពីឯកសារ</button><button data-a="prf" class="btn btn-sec text-xs" title="បោះពុម្ព PDF"><i class="fa-solid fa-print"></i></button></div>
+      <div><h3 class="font-bold text-sm">📐 រូបមន្ត (${subj(k)[1]})</h3><p class="text-xs text-slate-400">${list.length} ផ្នែក</p></div>
+      <div class="flex gap-1.5"><button data-a="aiForm" class="btn text-xs"><i class="fa-solid fa-wand-magic-sparkles"></i>ទាញពីឯកសារ</button><button data-a="prf" class="btn btn-sec text-xs" title="បោះពុម្ព / រក្សាទុកជា PDF"><i class="fa-solid fa-print"></i></button><button data-a="clrForm" class="btn btn-sec text-xs" style="color:#f87171"><i class="fa-solid fa-trash"></i>សម្អាត</button></div>
     </div>
-    <div class="space-y-2.5">${list.map(({t,b},i)=>`<div class="glass-soft p-3.5"><div class="flex justify-between items-start gap-2 mb-1"><h4 class="font-bold text-sm text-blue-300">${esc(t)}</h4><div class="flex gap-3 text-xs text-slate-400"><button data-a="askForm" data-v="${esc(t)}" class="hover:text-white"><i class="fa-solid fa-paper-plane mr-1"></i>សួរលំហាត់</button><button data-a="delForm" data-v="${i}" class="hover:text-red-400" title="លុប"><i class="fa-solid fa-xmark"></i></button></div></div><div class="md text-sm">${md(b)}</div></div>`).join('')||'<p class="text-sm text-slate-400 py-3">គ្មានរូបមន្តទេ។ ចុច «ទាញយករូបមន្តពីឯកសារ» ដើម្បីអោយ AI ស្រង់ចេញមកដោយស្វ័យប្រវត្តិ។</p>'}</div>
+    <div class="space-y-2.5">${list.map(({t,b},i)=>`<div class="glass-soft p-3.5"><div class="flex justify-between items-start gap-2 mb-1"><h4 class="font-bold text-sm text-blue-300">${esc(t)}</h4><div class="flex gap-3 text-xs text-slate-400"><button data-a="askForm" data-v="${esc(t)}" class="hover:text-white"><i class="fa-solid fa-paper-plane mr-1"></i>សួរលំហាត់</button><button data-a="delForm" data-v="${i}" class="hover:text-red-400" title="លុប"><i class="fa-solid fa-xmark"></i></button></div></div><div class="md text-sm">${md(b)}</div></div>`).join('')||'<p class="text-sm text-slate-400 py-3">គ្មានរូបមន្តទេ។ ចុច «ទាញពីឯកសារ» ដើម្បីបង្កើតរូបមន្តសម្រាប់មុខវិជ្ជានេះ។</p>'}</div>
+    ${FORMULAS[k]?'<button data-a="rstForm" class="text-xs text-blue-300 hover:underline">ស្តារ​រូបមន្តដើមវិញ</button>':''}
   </div>`;
-  rm($('#pane'));
+  rm($('#pane'));autoForm(k);
 }
 A.delForm=i=>{fL(view).splice(+i,1);save(view);form()};
-A.askForm=topic=>{tab='ai';render();const i=$('#ci');if(i){i.value=`សូមពន្យល់ និងដាក់លំហាត់គំរូ ១ អំពី៖ ${topic}`;A.send()}};
-A.aiForm=async(_,b)=>{
-  const k=view;b.disabled=true;toast('AI កំពុងទាញយករូបមន្តពីឯកសារ…');const ctx=await getSrc(k,'all');
-  const r=await ask([{role:'system',content:sys(k)+' Output Markdown only. Extract the most important formulas, rules, and summaries directly from the provided student documents. Format as 3-5 topics. Each topic starts with a line "## <topic title in Khmer>" followed by explanations and LaTeX formulas ($...$). Do NOT hallucinate.'},{role:'user',content:'Extract key formulas and summarize perfectly from my files:\n"""'+(ctx.slice(0,15000)||'មិនមានឯកសារទេ សូមសរសេររូបមន្តសំខាន់ៗក្នុងកម្មវិធីថ្នាក់ទី១២')+ '"""'}]);
-  b.disabled=false;if(!r)return toast('មិនអាចបង្កើតបានទេ សូមព្យាយាមម្តងទៀត');
-  const add=r.split(/^##\s+/m).slice(r.trim().startsWith('##')?0:1).map(x=>x.trim()).filter(Boolean).map(x=>{const i=x.indexOf('\n');return{t:(i<0?x:x.slice(0,i)).replace(/[#*]/g,'').trim(),b:i<0?'':x.slice(i+1).trim()}}).filter(x=>x.b);
-  if(!add.length)return toast('ទម្រង់មិនត្រឹមត្រូវ សូមព្យាយាមម្តងទៀត');
-  fL(k).push(...add);await save(k);if(view==k&&tab=='form')form();toast('បានទាញយករូបមន្ត ✓');
+A.clrForm=()=>{if(confirm('សម្អាតរូបមន្តទាំងអស់ក្នុងមុខវិជ្ជានេះឬ?')){sd(view).forms=[];save(view);form()}};
+A.rstForm=()=>{sd(view).forms=(FORMULAS[view]||[]).map(([t,b])=>({t,b}));save(view);form()};
+A.askForm=topic=>{tab='ai';render();const i=$('#ci');if(i){i.value=`សូមពន្យល់ និងដាក់លំហាត់គំរូ ១ ព្រមទាំងដំណោះស្រាយលម្អិតអំពី៖ ${topic}`;A.send()}};
+const AFR={},AFT={};
+function autoForm(k){const d=sd(k),sig=d.files.filter(f=>f.n).map(f=>f.id).join(',');if(!sig||d.fsig===sig||AFR[k]||AFT[k]>Date.now()-6e5)return;AFR[k]=1;AFT[k]=Date.now();A.aiForm(null,null,true)}
+A.aiForm=async(_,b,auto)=>{
+  const k=view;if(b)b.disabled=true;toast('AI កំពុងទាញរូបមន្តពីឯកសារទាំងអស់…');
+  const ctx=await getRel(k,'រូបមន្ត ទ្រឹស្តីបទ និយមន័យ សមីការ formula theorem',9000),hasF=!!ctx.trim();
+  const r=await ask([{role:'system',content:sys(k)+' Output Markdown only. '+(hasF?"Extract the key formulas, definitions and theorems ONLY from the student's excerpts below; do not add anything that is not in them. ":'')+'Write 5-10 topics. Each topic starts with a line "## <topic title in Khmer>" followed by the key formulas (LaTeX in $$...$$) each with a one-line Khmer explanation.'},{role:'user',content:'សរសេររូបមន្ត និងចំណុចសំខាន់ៗសម្រាប់ '+subj(k)[1]+(hasF?`\nផ្អែកលើឯកសារ៖\n"""${ctx}"""`:'')}]);
+  if(b)b.disabled=false;AFR[k]=0;
+  if(!r)return auto?0:toast('មិនអាចបង្កើតបានទេ សូមព្យាយាមម្តងទៀត');
+  const add=r.split(/^##\s+/m).slice(r.trim().startsWith('##')?0:1).map(x=>x.trim()).filter(Boolean).map(x=>{const i=x.indexOf('\n');return{t:(i<0?x:x.slice(0,i)).replace(/[#*]/g,'').trim(),b:i<0?'':x.slice(i+1).trim(),auto:true}}).filter(x=>x.b);
+  if(!add.length)return auto?0:toast('ទម្រង់មិនត្រឹមត្រូវ សូមព្យាយាមម្តងទៀត');
+  const d=sd(k);d.forms=[...fL(k).filter(x=>!x.auto),...add];d.fsig=d.files.filter(f=>f.n).map(f=>f.id).join(',');await save(k);if(view==k&&tab=='form')form();toast('បានបង្កើតរូបមន្តពីឯកសារ ✓');
 };
 
-// ---------- TASKS (កិច្ចការ) ----------
+// ---------- HOMEWORK ----------
 const rh=()=>view=='allhw'?allhw():pane();
 const dl=h=>{if(!h.due)return null;const n=Math.round((new Date(h.due+'T00:00')-new Date(today()+'T00:00'))/864e5);return n<0?['ហួសកំណត់','#ef4444']:n==0?['ផុតកំណត់ថ្ងៃនេះ','#f59e0b']:['នៅសល់ '+n+' ថ្ងៃ',n<=2?'#f59e0b':'#3b82f6']};
-
-const CATS = [['សន្លឹកកិច្ចការ','#3b82f6'],['កិច្ចការផ្ទះ','#10b981'],['ប្រឡង','#ef4444'],['Quiz','#a855f7'],['ឆែកសៀវភៅ','#f59e0b']];
-const cColor = c => (CATS.find(x=>x[0]==c)||CATS[1])[1];
-
-const hwRow=(h,k)=>{const s=subj(k),v=k+'|'+h.id,b=!h.done&&dl(h),cc=cColor(h.cat);return `<div class="flex items-center gap-2.5 p-3 rounded-xl glass-soft mb-2 border-l-4" style="border-left-color:${cc}"><input type="checkbox" data-a="tg" data-v="${v}" ${h.done?'checked':''} class="w-5 h-5 accent-emerald-500 flex-shrink-0 cursor-pointer"><div class="min-w-0 flex-1"><p class="text-sm ${h.done?'line-through text-slate-500':'font-semibold'}">${esc(h.t)}</p><p class="text-[11px] text-slate-400 mt-1"><span class="px-2 py-0.5 rounded bg-slate-800" style="color:${cc}">${h.cat||'កិច្ចការ'}</span> · <i class="fa-solid ${s[3]}" style="color:${s[4]}"></i> ${s[1]}${h.due?' · ថ្ងៃប្រគល់ '+h.due:''}</p></div>${b?`<span class="text-[11px] px-2.5 py-0.5 rounded-full font-medium whitespace-nowrap" style="background:${b[1]}28;color:${b[1]}">${b[0]}</span>`:''}<button data-a="dh" data-v="${v}" class="text-red-400 px-1.5" title="លុប"><i class="fa-solid fa-xmark"></i></button></div>`};
-
+const hwRow=(h,k)=>{const s=subj(k),v=k+'|'+h.id,b=!h.done&&dl(h);return `<div class="flex items-center gap-2.5 p-3 rounded-xl glass-soft mb-2"><input type="checkbox" data-a="tg" data-v="${v}" ${h.done?'checked':''} class="w-5 h-5 accent-emerald-500 flex-shrink-0 cursor-pointer"><div class="min-w-0 flex-1"><p class="text-sm ${h.done?'line-through text-slate-500':'font-medium'}">${tb(h)}${esc(h.t)}</p><p class="text-xs text-slate-400"><i class="fa-solid ${s[3]}" style="color:${s[4]}"></i> ${s[1]}${h.due?' · ប្រគល់ '+h.due:''}</p></div>${b?`<span class="text-[11px] px-2.5 py-0.5 rounded-full font-medium whitespace-nowrap" style="background:${b[1]}28;color:${b[1]}">${b[0]}</span>`:''}<button data-a="hask" data-v="${v}" class="text-blue-300 px-1.5" title="សួរ AI"><i class="fa-solid fa-wand-magic-sparkles"></i></button><button data-a="dh" data-v="${v}" class="text-red-400 px-1.5" title="លុប"><i class="fa-solid fa-xmark"></i></button></div>`};
 function hwGroups(items){
   const so=(a,b)=>(a[0].due||'9').localeCompare(b[0].due||'9'),u=items.filter(x=>!x[0].done).sort(so),d=items.filter(x=>x[0].done).sort(so);
   return u.map(([h,k])=>hwRow(h,k)).join('')+(d.length?`<h4 class="text-xs font-bold mt-3.5 mb-1.5 text-emerald-400">បានបញ្ចប់ (${d.length})</h4>`+d.map(([h,k])=>hwRow(h,k)).join(''):'')||'<p class="text-sm text-slate-400 py-3 text-center">មិនទាន់មានកិច្ចការទេ 🎉</p>';
 }
-
-let H_CAT = 'កិច្ចការផ្ទះ';
-const hwForm=sel=>`<div class="space-y-3 mb-4 bg-slate-900/40 p-3 rounded-xl border border-slate-800">
-  <div class="flex gap-2 overflow-x-auto noscroll pb-1">
-    ${CATS.map(c=>`<button data-a="hcat" data-v="${c[0]}" class="px-3 py-1 text-xs rounded-full border transition whitespace-nowrap ${H_CAT==c[0]?'bg-slate-700 font-bold border-transparent':'border-slate-700 text-slate-400'}" style="color:${H_CAT==c[0]?c[1]:''}">${c[0]}</button>`).join('')}
-  </div>
-  ${sel?`<select id="hs" class="inp text-sm">${S.map(s=>`<option value="${s[0]}">${s[1]}</option>`).join('')}</select>`:''}
-  <input id="ht" class="inp" placeholder="ចំណងជើងកិច្ចការ (ឧ. លំហាត់ទំព័រ ២៣)...">
-  <label class="block text-xs text-slate-400">ថ្ងៃកំណត់ប្រគល់ (Deadline)<input id="hd" type="date" class="inp mt-1" style="color-scheme:dark;"></label>
-  <button data-a="addhw" class="btn w-full bg-indigo-600"><i class="fa-solid fa-plus"></i>បន្ថែមកិច្ចការ</button>
-</div>`;
-
+const HC=[['សន្លឹកកិច្ចការ','#a78bfa'],['កិច្ចការផ្ទះ','#38bdf8'],['ប្រឡង','#f87171'],['Quiz','#fbbf24'],['ឆែកសៀវភៅ','#34d399']];let HTY=1;
+const hty=h=>{const i=h.ty!=null?h.ty:HC.findIndex(c=>(h.t||'').includes(c[0]));return i<0?null:HC[i]};
+const tb=h=>{const c=hty(h);return c?`<span class="text-[10px] px-1.5 py-0.5 rounded-full mr-1.5 align-middle" style="color:${c[1]};background:${c[1]}22">${c[0]}</span>`:''};
+const pills=()=>HC.map((c,i)=>`<button data-a="hty" data-v="${i}" class="hpill" style="color:${c[1]};border-color:${HTY==i?c[1]:c[1]+'44'};background:${HTY==i?c[1]+'33':'transparent'}">${c[0]}</button>`).join('');
+const hwForm=sel=>`<div class="space-y-2 mb-3">${sel?`<select id="hs" class="inp">${S.map(s=>`<option value="${s[0]}">${s[1]}</option>`).join('')}</select>`:''}<div id="hp" class="flex flex-wrap gap-1.5">${pills()}</div><input id="ht" class="inp" placeholder="ចំណងជើង (មិនបាច់វាយក៏បាន)…"><label class="block text-xs text-slate-400">ថ្ងៃកំណត់ប្រគល់ (Deadline)<input id="hd" type="date" class="inp mt-1"></label><button data-a="addhw" class="btn w-full"><i class="fa-solid fa-plus"></i>បន្ថែមកិច្ចការ</button></div>`;
+A.hty=v=>{HTY=+v;$('#hp').innerHTML=pills()};
 function hw(){
   const k=view,l=sd(k).hw,dn=l.filter(h=>h.done).length;
-  $('#pane').innerHTML=hwForm(false)+(l.length?`<div class="h-1.5 rounded bg-slate-800 mb-2"><div class="h-1.5 rounded bg-emerald-500 transition-all" style="width:${dn/l.length*100}%"></div></div><p class="text-xs text-slate-400 mb-3">បានបញ្ចប់ ${dn}/${l.length} · តម្រៀបតាមថ្ងៃកំណត់ជិតបំផុត</p>`:'')+hwGroups(l.map(h=>[h,k]));
+  $('#pane').innerHTML=hwForm(false)+(l.length?`<div class="h-1.5 rounded bg-slate-800 mb-1"><div class="h-1.5 rounded bg-emerald-500 transition-all" style="width:${dn/l.length*100}%"></div></div><p class="text-xs text-slate-400 mb-2">បានបញ្ចប់ ${dn}/${l.length} · តម្រៀបតាមថ្ងៃកំណត់ជិតបំផុត</p>`:'')+hwGroups(l.map(h=>[h,k]));
   $('#ht').onkeydown=e=>{if(e.key=='Enter')A.addhw()};
 }
 function allhw(){
   $('#ttl').textContent='កិច្ចការទាំងអស់';const it=[];S.forEach(s=>sd(s[0]).hw.forEach(h=>it.push([h,s[0]])));
-  $('#main').innerHTML=`<div class="max-w-3xl mx-auto"><h2 class="font-extrabold text-xl mb-1">កិច្ចការទាំងអស់</h2><p class="text-xs text-slate-400 mb-3">តម្រៀបតាមថ្ងៃកំណត់ជិតបំផុត</p><div class="glass p-4 md:p-5">${hwForm(true)}${hwGroups(it)}</div></div>`;
+  $('#main').innerHTML=`<div class="max-w-3xl mx-auto"><h2 class="font-extrabold text-xl mb-1">កិច្ចការទាំងអស់</h2><p class="text-xs text-slate-400 mb-3">តម្រៀបតាមថ្ងៃកំណត់ជិតបំផុតមុន</p><div class="glass p-4 md:p-5">${hwForm(true)}${hwGroups(it)}</div></div>`;
 }
-A.hcat=v=>{H_CAT=v;rh()};
-A.addhw=()=>{const t=$('#ht').value.trim();if(!t)return;const k=$('#hs')?.value||view;sd(k).hw.push({id:Date.now().toString(36),t,cat:H_CAT,due:$('#hd').value,done:false});save(k);rh()};
+A.addhw=()=>{const t=$('#ht').value.trim()||HC[HTY][0],k=$('#hs')?.value||view;sd(k).hw.push({id:Date.now().toString(36),t,ty:HTY,due:$('#hd').value,done:false});save(k);rh()};
 A.tg=v=>{const [k,id]=v.includes('|')?v.split('|'):[view,v],h=sd(k).hw.find(x=>x.id==id);h.done=!h.done;save(k);rh()};
 A.dh=v=>{const [k,id]=v.includes('|')?v.split('|'):[view,v];sd(k).hw=sd(k).hw.filter(x=>x.id!=id);save(k);rh()};
+A.hask=v=>{const [k,id]=v.split('|'),h=sd(k).hw.find(x=>x.id==id);go(k);tab='ai';render();const i=$('#ci');if(i){i.value='ជួយខ្ញុំដោះស្រាយកិច្ចការនេះមួយជំហានម្តងៗ៖ '+h.t;i.focus()}};
 
-
-// ---------- TIMER (ម៉ោងរៀន) ----------
-let tIV=null, tL=25*60, tSt=false, tK=null; // simple pomodoro state
-const tfm = s => String(Math.floor(s/60)).padStart(2,'0') + ':' + String(s%60).padStart(2,'0');
-function timer(){
-  const k=view; tK=k;
-  $('#pane').innerHTML=`<div class="text-center py-6">
-    <p class="text-xs text-slate-400 mb-4">ម៉ោងប្រមូលអារម្មណ៍ (Pomodoro) · មុខវិជ្ជា ${subj(k)[1]}</p>
-    <div id="tmrd" class="text-7xl font-extrabold tabular-nums tracking-tight mb-8 ${tSt?'text-emerald-400':'text-white'}">${tfm(tL)}</div>
-    <div class="flex justify-center gap-3">
-      <button data-a="ttg" class="btn ${tSt?'bg-amber-600 hover:bg-amber-500':'bg-emerald-600 hover:bg-emerald-500'} w-32">${tSt?'ផ្អាក (Pause)':'ចាប់ផ្តើម'}</button>
-      <button data-a="trs" class="btn btn-sec w-24">សារដើម</button>
-    </div>
-  </div>`;
-}
-A.ttg=()=>{
-  tSt=!tSt;
-  if(tSt){
-    tIV = setInterval(()=>{
-      if(tL>0) tL--;
-      else { clearInterval(tIV); tSt=false; toast('🎉 ម៉ោងសិក្សាបានបញ្ចប់! សូមសម្រាកបន្តិច។'); }
-      const el=$('#tmrd'); if(el) el.textContent=tfm(tL);
-    }, 1000);
-  } else clearInterval(tIV);
-  if(tab=='timer')timer();
-};
-A.trs=()=>{clearInterval(tIV); tSt=false; tL=25*60; if(tab=='timer')timer()};
-
-
-// ---------- AI ENGINE (Reliable Only) ----------
-const PREF=['llama-3.3-70b-versatile','qwen/qwen3-32b','llama-3.1-8b-instant'];
-const GQ='https://api.groq.com/openai/v1/chat/completions', OR='https://openrouter.ai/api/v1/chat/completions', PL='https://text.pollinations.ai/openai';
+// ---------- AI ENGINE (100% Free: Groq + OpenRouter + Free Fallback) ----------
+const VIS=['meta-llama/llama-4-scout-17b-16e-instruct','meta-llama/llama-4-maverick-17b-128e-instruct'];
+const PREF=['openai/gpt-oss-120b','qwen/qwen3.8-27b','openai/gpt-oss-20b','llama-3.3-70b-versatile','qwen/qwen3-32b','llama-3.1-8b-instant'];
+const GQ='https://api.groq.com/openai/v1/chat/completions',OR='https://openrouter.ai/api/v1/chat/completions',PL='https://text.pollinations.ai/openai';
 
 const kl=n=>(KEYS[n]||'').split(/[\s,;]+/).map(x=>x.trim()).filter(x=>x.length>10);
 const shuf=a=>[...a].sort(()=>Math.random()-.5);
-const jparse = t => {
-  try {
-    const m = String(t||'').match(/\{[\s\S]*\}/);
-    return JSON.parse(m ? m[0] : t);
-  } catch(e) { return {}; }
-};
+const jparse=t=>JSON.parse(String(t||'').replace(/^[\s\S]*?(\{[\s\S]*\})[\s\S]*$/,'$1'));
+const okJ=k=>t=>{try{return jparse(t)[k].some(x=>x.q||x.f)}catch(e){return false}};
 let AV=null,ERR='',WHO='',ORM=null;
+
 const tf=async(u,o,ms=26000)=>{const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);try{return await fetch(u,{...o,signal:c.signal})}finally{clearTimeout(t)}};
 
 async function avail(){
@@ -525,7 +546,7 @@ async function avail(){
       const r=await tf('https://api.groq.com/openai/v1/models',{headers:{Authorization:'Bearer '+k}},8000);
       if(r.ok){
         const j=await r.json();
-        AV=(j.data||[]).map(x=>x.id).filter(id=>!/whisper|tts|orpheus|guard/i.test(id));
+        AV=(j.data||[]).map(x=>x.id).filter(id=>!/whisper|tts|orpheus|guard|embed|allam/i.test(id));
         if(AV.length)return AV;
       }
     }catch(e){}
@@ -537,53 +558,51 @@ const orList=async()=>{
   if(ORM?.length)return ORM;
   try{
     const j=await (await tf('https://openrouter.ai/api/v1/models',{},8000)).json();
-    ORM=(j.data||[]).map(x=>x.id).filter(i=>i.endsWith(':free')&&/llama|qwen/i.test(i)).slice(0,5);
+    ORM=(j.data||[]).map(x=>x.id).filter(i=>i.endsWith(':free')&&/llama|gemma|qwen|deepseek|mistral/i.test(i)).slice(0,5);
   }catch(e){ORM=[]}
   return ['openrouter/free',...(ORM||[])];
 };
 
+let ORV=null;
+const orVis=async()=>{if(ORV?.length)return ORV;try{const j=await (await tf('https://openrouter.ai/api/v1/models',{},8000)).json();ORV=(j.data||[]).filter(x=>String(x.id).endsWith(':free')&&(x.architecture?.input_modalities||[]).includes('image')).map(x=>x.id).slice(0,4)}catch(e){ORV=[]}return ORV};
 async function oaCall(u,k,m,messages,json,vision){
-  const body={model:m,messages,temperature:.35,max_tokens:vision?8000:3000};
-  // Disable strict json mode if provider is openrouter to avoid unsupported feature error, rely on prompt instead
-  if(json && u==GQ)body.response_format={type:'json_object'};
-  const r=await tf(u,{method:'POST',headers:{'Content-Type':'application/json',...(k?{Authorization:'Bearer '+k}:{})},body:JSON.stringify(body)},vision?60000:25000);
+  const body={model:m,messages,temperature:.35,max_tokens:vision?8000:4096};
+  if(/gpt-oss/.test(m))body.reasoning_effort='low';
+  if(json&&u==GQ)body.response_format={type:'json_object'};
+  const r=await tf(u,{method:'POST',headers:{'Content-Type':'application/json',...(k?{Authorization:'Bearer '+k}:{})},body:JSON.stringify(body)},u==PL?35000:vision?60000:25000);
   if(!r.ok){let j={};try{j=await r.json()}catch(e){}throw new Error(r.status+' '+(j.error?.message||j.message||'').slice(0,95))}
   const data=await r.json();
   return data.choices?.[0]?.message?.content||'';
 }
 
-const NETDEAD={};
 async function ask(messages,json,vision,check){
   messages=messages.map(m=>({role:m.role,content:m.content}));
-  ERR='';const t0=Date.now(),LOG=[],dead=new Set(),L=[];
-  
-  const gKeys=kl('groq');
+  ERR='';const t0=Date.now(),EM={},dead=new Set(),L=[],gKeys=kl('groq');
   if(gKeys.length){
     const av=await avail();let models;
-    if(vision)models=av.filter(m=>/vision|scout|maverick|llava|pixtral/i.test(m));
-    else{models=PREF.filter(m=>av.includes(m));if(av.length)models=[...new Set([...models,...av])];if(!models.length)models=['llama-3.1-8b-instant']}
+    if(vision)models=av.filter(m=>/qwen3\.8|qwen.*vl|vision|scout|maverick|llava|pixtral/i.test(m)).sort((a,b)=>/qwen/i.test(b)-/qwen/i.test(a));
+    else{models=PREF.filter(m=>av.includes(m));if(av.length)models=[...new Set([...models,...av])];if(!models.length)models=['openai/gpt-oss-20b','llama-3.3-70b-versatile']}
     models.slice(0,4).forEach(m=>shuf(gKeys).slice(0,2).forEach(k=>L.push({m,u:GQ,k})));
   }
   const orKeys=kl('openrouter');
-  if(orKeys.length)(await orList()).slice(0,4).forEach(m=>L.push({m,u:OR,k:orKeys[0]}));
-  L.push({m:'openai',u:PL,k:''}); if(!vision)L.push({m:'openai-fast',u:PL,k:''});
-  
+  if(orKeys.length)(vision?await orVis():(await orList()).slice(0,4)).forEach(m=>L.push({m,u:OR,k:orKeys[0]}));
+  L.push({m:'openai',u:PL,k:''});if(!vision)L.push({m:'openai-fast',u:PL,k:''});
   for(const x of L){
-    const dk=x.u+'|'+x.k;if(dead.has(dk)||NETDEAD[x.u]>Date.now())continue;if(Date.now()-t0>55000)break;
+    const dk=x.u+'|'+x.k;if(dead.has(dk))continue;if(Date.now()-t0>55000)break;
     try{
       let t=await oaCall(x.u,x.k,x.m,messages,json,vision);
       t=(t||'').replace(/<think>[\s\S]*?<\/think>/g,'').trim();
       if(!t)throw new Error('គ្មានចម្លើយ');
       if(check&&!check(t))throw new Error('ទម្រង់មិនត្រឹមត្រូវ');
-      WHO=(x.u==GQ?'Groq':x.u==OR?'OpenRouter':'AI (Pollinations)')+' · '+x.m.split('/').pop();
+      WHO=(x.u==GQ?'Groq':x.u==OR?'OpenRouter':'AI បម្រុង')+' · '+x.m.split('/').pop();
       return t;
     }catch(e){
-      const m=e.name=='AbortError'?'អស់ពេលរង់ចាំ':e.message||'កំហុសបណ្តាញ';
-      LOG.push(x.m.split('/').pop()+' → '+m);
+      const m=e.name=='AbortError'?'អស់ពេលរង់ចាំ':e.message||'កំហុសបណ្តាញ',lb=x.u==GQ?'Groq':x.u==OR?'OpenRouter':'AI បម្រុង';
+      EM[lb]=EM[lb]||x.m.split('/').pop()+' → '+m;
       if(/\b(401|403)\b|invalid_api_key|unauthor/i.test(m))dead.add(dk);
     }
   }
-  ERR=LOG.slice(-2).join(' | ')||'សូមពិនិត្យអ៊ីនធឺណិត';
+  ERR=(gKeys.length?'':'មិនទាន់មានកូនសោ Groq · ')+(Object.entries(EM).map(([a,b])=>a+': '+b).join(' | ')||'សូមពិនិត្យអ៊ីនធឺណិត');
   return null;
 }
 
@@ -597,27 +616,46 @@ async function diag(){
   return (await Promise.all(T.map(async([n,f])=>{
     if(!f)return '➖ '+n+'៖ មិនទាន់ដាក់កូនសោ';
     try{return (await f())?'✅ '+n+'៖ ដំណើរការ':'❌ '+n+'៖ គ្មានចម្លើយ'}
-    catch(e){return '❌ '+n+'៖ '+e.message}
+    catch(e){const m=e.name=='AbortError'?'អស់ពេលរង់ចាំ':e.message;return '❌ '+n+'៖ '+(/failed to fetch|load failed|networkerror/i.test(m)?'browser រារាំង ឬគ្មានអ៊ីនធឺណិត — AI នេះប្រើពីគេហទំព័រមិនបាន សូមប្រើ Groq/OpenRouter ជំនួស (មិនប៉ះពាល់ដល់ AI ផ្សេង)':m)}
   }))).join('\n\n');
 }
 
-const sys=k=>{const s=subj(k),mem=sd(k).mem;return `You are the dedicated ${s[2]} (${s[1]}) AI tutor for Grade 12 students (Cambodia, MoEYS BacII). You teach ONLY ${s[1]}. ALWAYS reply in natural, clear Khmer. Provide steps and LaTeX formulas. ${mem?`\n\nWhat you remember about this student: ${mem}`:''}`};
-const srcSel=(k,all)=>`<select id="src" class="inp">${all?'<option value="all">ឯកសារទាំងអស់ (AI អានស្វ័យប្រវត្តិ)</option>':''}<option value="">គ្មានឯកសារ (ចំណេះដឹងទូទៅ)</option>${FTS.map(([t])=>{const fs=sd(k).files.filter(f=>f.n&&f.tag==t);return fs.length?`<optgroup label="${t}">${fs.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join('')}</optgroup>`:''}).join('')}</select>`;
+const SR={
+  bio:'For DNA/genetics problems always use M for total nucleotides and LH for total hydrogen bonds (LH = 2A + 3G).',
+  math:'Show full BacII-style working with clear steps and a boxed final answer.',
+  phys:'State given data, the law/formula, substitute with units, then the final answer.',
+  chem:'Balance equations, show mole calculations with units, and state the final answer.'
+};
+const sys=k=>{const s=subj(k),mem=sd(k).mem||(sd(k).recent||[]).join('; ');return `You are the dedicated ${s[2]} (${s[1]}) AI tutor for Grade 12 students (class 12NGS-B, Cambodia, MoEYS BacII curriculum). You teach ONLY ${s[2]}. If the student asks about a different subject, politely tell them in Khmer that this tutor covers only ${s[1]} and to open that subject's own tutor, and do not answer it. Never mix in other subjects, even if the provided files or notes contain them: ignore off-subject material. Student: ${ME.profile?.name||'a Grade 12 student'}. ALWAYS reply in natural, clear Khmer (keep key technical terms in English in brackets${k=='eng'?'; for English, explain grammar in Khmer and give examples in English':''}).  ${SR[k]||''} The student's own uploaded files (lessons មេរៀន, homework កិច្ចការផ្ទះ, past exams វិញ្ញាសា) and notes are given below as excerpts labelled with the file name. When the answer can come from them, answer from them and name the file (e.g. តាមឯកសារ «name» ទំព័រ N when the label shows a page). If the excerpts do not contain it, say so in one short sentence, then answer from your own knowledge of ${s[2]}. The student's files and pictures are the authority: base your answer on them and never contradict them. Re-check every calculation step by step. If text read from a picture looks garbled or unclear, say exactly what is unclear and ask for a clearer photo instead of guessing. Follow the method, notation and Khmer terms of the Cambodian MoEYS Grade 12 textbooks used for the BacII exam; if you are not sure what the official textbook says, say so instead of guessing. Never invent file content. Lead with the core formula or final answer, then numbered steps. Write all math/science in LaTeX using $...$ or $$...$$.${mem?`\n\nWhat you remember about this student in ${s[1]} (use it to personalise your help): ${mem}`:''}`};
 
+const LQ=k=>k=='eng'?'Write the questions and options in English and the explanations in Khmer.':'Write ALL questions, options and explanations in clear Khmer.';
+const srcSel=(k,all)=>`<select id="src" class="inp">${all?'<option value="all">ឯកសារ និងកំណត់ត្រាទាំងអស់ (AI អានស្វ័យប្រវត្តិ)</option>':''}<option value="">គ្មានឯកសារ (ចំណេះដឹងទូទៅ)</option><option value="notes">កំណត់ត្រារបស់ខ្ញុំ</option>${FTS.map(([t])=>{const fs=sd(k).files.filter(f=>f.n&&f.tag==t);return fs.length?`<optgroup label="${t}">${fs.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join('')}</optgroup>`:''}).join('')}</select>`;
+function printDoc(title,html){
+  const w=window.open('','_blank');if(!w)return toast('សូមអនុញ្ញាតឱ្យបើកទំព័រថ្មី (pop-up)');
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+'</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css"><style>body{font-family:"Noto Sans Khmer",system-ui,sans-serif;max-width:760px;margin:18px auto;padding:0 14px;color:#111;line-height:1.75}h1{font-size:20px}h3{margin:16px 0 4px;color:#1d4ed8}</style></head><body><h1>'+esc(title)+' · NGS-HUB</h1>'+html+'<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"><\/script><script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"><\/script><script>addEventListener("load",function(){try{renderMathInElement(document.body,{delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false}],throwOnError:false})}catch(e){}setTimeout(function(){print()},800)})<\/script></body></html>');
+  w.document.close();
+}
+A.prf=()=>printDoc(subj(view)[1]+' · រូបមន្ត',fL(view).map(({t,b})=>'<h3>'+esc(t)+'</h3>'+md(b)).join(''));
+A.prn=()=>{const n=sd(view).notes||'';if(!n.trim())return toast('មិនទាន់មានកំណត់ត្រា');printDoc(subj(view)[1]+' · កំណត់ត្រា',md(n))};
 const TXT={};let LASTSRC=[];
 async function getRel(k,q,max=8000,tag=''){
   const d=sd(k),docs=[];
+  if(d.notes.trim())docs.push(['កំណត់ត្រា',d.notes.slice(0,6000)]);
   for(const f of d.files.filter(f=>f.n&&(!tag||f.tag==tag)).slice(-25)){try{let t=TXT[f.id];if(t==null){const r=await getDoc(txtRef(k,f.id));t=TXT[f.id]=r.exists()?r.data().t:''}if(t)docs.push([f.tag+': '+f.name,t])}catch(e){}}
-  const ALL=[];docs.forEach(([n,t])=>{for(let i=0;i<t.length;i+=900)ALL.push({n,t:t.slice(i,i+900),i})});
-  ALL.sort(()=>Math.random()-.5); // simple fallback matching
-  let o='';const used=new Set;
-  for(const c of ALL){if(o.length+c.t.length>max)break;o+='['+c.n+']\n'+c.t+'\n\n';used.add(c.n)}
+  const ALL=[];docs.forEach(([n,t])=>{t.split(/(?=--- ទំព័រ \d+ ---)/).forEach(sg=>{const pg=+((sg.match(/^--- ទំព័រ (\d+) ---/)||[])[1]||0);for(let i=0;i<sg.length;i+=900)ALL.push({n,pg,t:sg.slice(i,i+900),i})})});
+  const qn=(q||'').replace(/[០-៩]/g,d=>'០១២៣៤៥៦៧៨៩'.indexOf(d)),pm=qn.match(/(?:ទំព័រ|pages?)\s*(\d+)\s*(?:[-–—~]|ដល់|to)\s*(\d+)/i)||qn.match(/(?:ទំព័រ|page)\s*(\d+)()/i);
+  let ch=ALL;if(pm){const a=+pm[1],b=+(pm[2]||pm[1]),inr=ALL.filter(c=>c.pg>=a&&c.pg<=b);if(inr.length)ch=inr}
+  const g=x=>{const a=x.replace(/\s+/g,'').toLowerCase(),m=new Set;for(let i=0;i<a.length-2;i++)m.add(a.slice(i,i+3));return m},qs=g(q||'');
+  ch.forEach(c=>{if(!qs.size){c.s=Math.random()-c.i/1e5;return}let n=0;g(c.t).forEach(x=>{if(qs.has(x))n++});c.s=n});
+  ch.sort((a,b)=>b.s-a.s);let o='';const used=new Set;
+  for(const c of ch){if(o.length+c.t.length>max)break;o+='['+c.n+(c.pg?' · ទំព័រ '+c.pg:'')+']\n'+c.t+'\n\n';used.add(c.n)}
   LASTSRC=[...used];return o;
 }
 async function getSrc(k,v,q){
-  LASTSRC=[];if(v&&v!='all'){const f=sd(k).files.find(x=>x.id==v);if(f)LASTSRC=[f.name]}
-  if(!v)return'';
+  LASTSRC=[];if(v&&v!='all'&&v!='notes'){const f=sd(k).files.find(x=>x.id==v);if(f)LASTSRC=[f.name]}
+  if(!v)return'';if(v=='notes')return sd(k).notes;
   if(v=='all')return getRel(k,q);
+  if(v=='all-old'){const d=sd(k);let o=d.notes.trim()?'[កំណត់ត្រា]\n'+d.notes.slice(0,3000)+'\n\n':'';for(const f of d.files.filter(f=>f.n).slice(-6)){try{const r=await getDoc(txtRef(k,f.id));if(r.exists())o+=`[${f.tag}: ${f.name}]\n`+r.data().t.slice(0,3500)+'\n\n'}catch(e){}}return o}
   const r=await getDoc(txtRef(k,v));return r.exists()?r.data().t:'';
 }
 
@@ -627,92 +665,103 @@ function md(t){
   return marked.parse(t.replace(/</g,'&lt;')).replace(/@@M(\d+)@@/g,(_,i)=>esc(M[i]));
 }
 const rm=el=>{try{renderMathInElement(el,{delimiters:[{left:'$$',right:'$$',display:true},{left:'\\[',right:'\\]',display:true},{left:'\\(',right:'\\)',display:false},{left:'$',right:'$',display:false}],throwOnError:false})}catch(e){}};
-const bub=(m,i)=>m.role=='user'?`<div class="ml-10 rounded-2xl rounded-br-sm p-3.5 text-sm leading-relaxed bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow">${esc(m.content)}</div>`:`<div class="mr-3 rounded-2xl rounded-bl-sm p-3.5 text-sm leading-relaxed glass-soft"><div class="md">${md(m.content)}</div><div class="flex flex-wrap items-center gap-3 mt-2 pt-2 border-t border-slate-700/40 text-xs text-slate-400"><button data-a="cpmsg" data-v="${i}" class="hover:text-white"><i class="fa-solid fa-copy"></i> ចម្លង</button><span class="ml-auto text-[11px] text-slate-500">${m.by?esc(m.by):''}</span></div></div>`;
-const draw=(el,c,wait)=>{if(!el)return;el.innerHTML=c.map(bub).join('')+(wait?'<div class="text-xs text-blue-300 animate-pulse py-2"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>គ្រូ AI កំពុងសរសេរចម្លើយ…</div>':'');rm(el);el.scrollTop=1e9};
+
+const bub=(m,i)=>m.role=='user'
+  ?`<div class="ml-10 rounded-2xl rounded-br-sm p-3.5 text-sm leading-relaxed bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow">${esc(m.content)}</div>`
+  :`<div class="mr-3 rounded-2xl rounded-bl-sm p-3.5 text-sm leading-relaxed glass-soft">
+      <div class="md">${md(m.content)}</div>
+      <div class="flex flex-wrap items-center gap-3 mt-2 pt-2 border-t border-slate-700/40 text-xs text-slate-400">
+        <button data-a="say" data-v="${i}" class="hover:text-white flex items-center gap-1"><i class="fa-solid fa-volume-high"></i>អាន</button>
+        <button data-a="cpmsg" data-v="${i}" class="hover:text-white flex items-center gap-1"><i class="fa-solid fa-copy"></i>ចម្លង</button>
+        <button data-a="svmsg" data-v="${i}" class="hover:text-emerald-300 flex items-center gap-1"><i class="fa-solid fa-bookmark"></i>ទុកក្នុងរូបមន្ត</button>
+        <span class="ml-auto text-[11px] text-slate-500">${m.by?esc(m.by):''}</span>
+      </div>
+    </div>`;
+
+const draw=(el,c,wait)=>{if(!el)return;el.innerHTML=c.map(bub).join('')+(wait?'<div class="text-xs text-blue-300 animate-pulse py-2"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>គ្រូ AI កំពុងគិត និងសរសេរចម្លើយ…</div>':'');rm(el);el.scrollTop=1e9};
 const shrink=(f,mx=1280)=>new Promise(r=>{const i=new Image();i.onload=()=>{const k=Math.min(1,mx/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=i.width*k;c.height=i.height*k;c.getContext('2d').drawImage(i,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',.82))};i.src=URL.createObjectURL(f)});
 
-const CH=[['សង្ខេបមេរៀន','សូមសង្ខេបមេរៀននេះជា ៨ ចំណុច'],['ពន្យល់ងាយៗ','សូមពន្យល់មេរៀននេះឱ្យងាយយល់បំផុត'],['បង្កើតសន្លឹករូបមន្ត','សូមបង្កើតសន្លឹករូបមន្តខ្លីៗ']];
+const CH=[
+  ['សង្ខេបមេរៀន','សូមសង្ខេបមេរៀននេះជា ៨ ចំណុចច្បាស់ៗ ព្រមទាំងរូបមន្តសំខាន់ៗ។'],
+  ['ពន្យល់ងាយៗ','សូមពន្យល់មេរៀននេះមួយជំហានម្តងៗ ឱ្យងាយយល់បំផុត ព្រមទាំងឧទាហរណ៍ជាក់ស្តែង។'],
+  ['បង្កើតសន្លឹករូបមន្ត','សូមបង្កើតសន្លឹករូបមន្ត និងចំណុចគន្លឹះសង្ខេប សម្រាប់ត្រៀមប្រឡងបាក់ឌុប។'],
+  ['លំហាត់គំរូ + ចម្លើយ','សូមផ្តល់លំហាត់គំរូបាក់ឌុប ២ ព្រមទាំងចម្លើយលម្អិតមួយជំហានម្តងៗ។'],
+  ['ពិនិត្យចម្លើយខ្ញុំ','ខ្ញុំបានដោះស្រាយលំហាត់នេះរួចហើយ សូមពិនិត្យថាត្រូវឬខុស ចង្អុលកន្លែងខុសមួយជំហានម្តងៗ ហើយផ្តល់ពិន្ទុប្រហាក់ប្រហែលតាមស្តង់ដារបាក់ឌុប។',true],
+  ['ជំនួយបន្តិចម្តងៗ','សូមកុំប្រាប់ចម្លើយភ្លាម។ ផ្តល់តម្រុយទី ១ តែមួយប៉ុណ្ណោះ ហើយរង់ចាំខ្ញុំសាកល្បងមុន។ បើខ្ញុំនៅជាប់ ខ្ញុំនឹងសុំតម្រុយបន្ទាប់។'],
+  ['សួរខ្ញុំ ៥ សំណួរ','សូមសួរខ្ញុំ ៥ សំណួរខ្លីៗ ម្តងមួយ លើមេរៀននេះតាមស្តង់ដារបាក់ឌុប ហើយកែចម្លើយរបស់ខ្ញុំរាល់ពេល។']
+];
 const CHP={};
 const loadChat=k=>chat[k]?Promise.resolve():(CHP[k]=CHP[k]||getDoc(txtRef(k,'_chat')).then(r=>{if(!chat[k])chat[k]=r.exists()?JSON.parse(r.data().t||'[]'):[]}).catch(()=>{if(!chat[k])chat[k]=[]}).finally(()=>{delete CHP[k]}));
 const saveChat=k=>setDoc(txtRef(k,'_chat'),{t:JSON.stringify((chat[k]||[]).slice(-40))}).catch(()=>{});
-
 async function updMem(k){
-  const d=sd(k),c=chat[k].slice(-6).map(m=>m.role+': '+String(m.content).slice(0,400)).join('\n');
-  const r=await ask([{role:'system',content:'Summarize the student\'s progress or struggles from this conversation in 1-2 short Khmer sentences. Keep under 40 words. Reply ONLY with the text.'},{role:'user',content:'Old memory: '+(d.mem||'គ្មាន')+'\n\nChat:\n'+c}]);
-  if(r && r.length > 5){d.mem = r.replace(/```.*/g,'').trim().slice(0,500); save(k);}
+  const d=sd(k),cc=chat[k]||[],us=cc.filter(m=>m.role=='user');
+  d.recent=us.slice(-8).map(m=>String(m.content).replace(/\s+/g,' ').slice(0,80));save(k);
+  if(us.length%2)return;
+  const c=cc.slice(-8).map(m=>m.role+': '+String(m.content).slice(0,600)).join('\n');
+  const r=await ask([{role:'system',content:'You keep a short memory (max 120 words, in Khmer) about ONE student for the '+subj(k)[2]+' tutor: topics studied, weak points, common mistakes, preferences. Merge the old memory with the new conversation. Return only the memory text.'},{role:'user',content:'Old memory: '+(d.mem||'(none)')+'\n\nNew conversation:\n'+c}]);
+  if(r){d.mem=r.slice(0,900);save(k)}
 }
-
-let UPLOADED_TXT = '';
 function ai(){
-  const k=view,c=chat[k]||[];IMG=null; UPLOADED_TXT='';
+  const k=view,c=chat[k]||[];IMG=null;
   $('#pane').innerHTML=`<div class="flex gap-2 mb-2">${srcSel(k,true)}${c.length?`<button data-a="clrai" class="btn btn-sec px-3" title="សម្អាតការសន្ទនា"><i class="fa-solid fa-broom"></i></button>`:''}</div>
-  <p class="text-[11px] text-slate-500 mb-2"><i class="fa-solid fa-brain text-purple-300 mr-1"></i>គ្រូ AI ${subj(k)[1]} ឆ្លើយតែមុខវិជ្ជានេះ · អានឯកសារ · ចងចាំការសិក្សា</p>
-  <div class="flex flex-wrap items-center gap-3 mb-2 text-[11px] text-slate-400"><button data-a="memv" class="text-purple-300 underline">🧠 ការចងចាំ (Memory)</button></div>
-  <div id="cl" class="space-y-3 mb-3 min-h-[32vh] max-h-[54vh] overflow-y-auto pr-1"><p class="text-sm text-slate-400 text-center py-6">សួរមេរៀន ឬលំហាត់អ្វីក៏បាន! អាចប្រើប៊ូតុងភ្ជាប់រូបថត និងឯកសារផ្ទាល់បាន។</p></div>
-  <div class="flex flex-wrap gap-1.5 mb-2.5">${CH.map(([kh,v])=>`<button data-a="chip" data-v="${v}" class="chip">${kh}</button>`).join("")}</div>
-  <p id="pc" class="hide text-xs text-emerald-300 mb-2"></p>
+  <p class="text-[11px] text-slate-500 mb-2"><i class="fa-solid fa-brain text-purple-300 mr-1"></i>គ្រូ AI ${subj(k)[1]} ឆ្លើយតែមុខវិជ្ជានេះ · អានឯកសារ និងរូបភាព · ចងចាំការសិក្សារបស់អ្នក</p>
+  <div class="flex flex-wrap items-center justify-between gap-2 mb-2 text-[11px] text-slate-400"><span>📚 AI នេះស្គាល់៖ ${FTS.map(([t])=>t+' '+sd(k).files.filter(f=>f.tag==t).length).join(' · ')} · កំណត់ត្រា</span><button data-a="sty" class="text-amber-300 underline whitespace-nowrap">✍️ ចម្លើយ៖ ${STYS[STY][0]}</button><button data-a="strict" class="text-emerald-300 underline whitespace-nowrap">${STRICT?'🔒 តាមឯកសារតែប៉ុណ្ណោះ៖ បើក':'🔓 តាមឯកសារតែប៉ុណ្ណោះ៖ បិទ'}</button><button data-a="memv" class="text-purple-300 underline whitespace-nowrap">🧠 ការចងចាំ</button></div>
+  <div id="cl" class="space-y-3 mb-3 min-h-[32vh] max-h-[54vh] overflow-y-auto pr-1"><p class="text-sm text-slate-400 text-center py-6">សួរមេរៀន ឬលំហាត់អ្វីក៏បាន! គ្រូ AI បានអានឯកសារ និងកំណត់ត្រារបស់អ្នករួចហើយ។ ចុចរូបកាមេរ៉ាដើម្បីថតលំហាត់ឱ្យ AI ដោះស្រាយ។</p></div>
+  <div class="flex flex-wrap gap-1.5 mb-2.5">${CH.map(([kh],i)=>`<button data-a="chip" data-v="${i}" class="chip">${kh}</button>`).join("")}</div>
+  <p id="pa" class="hide text-xs text-emerald-300 mb-2">📎 <span id="pan"></span> · <button data-a="rmat" class="underline">ដកចេញ</button></p>
+  <p id="pc" class="hide text-xs text-emerald-300 mb-2">📷 បានភ្ជាប់រូបថត · <button data-a="rmph" class="underline">ដកចេញ</button></p>
   <div class="flex gap-2">
-    <label class="btn btn-sec cursor-pointer" title="ភ្ជាប់ឯកសារ ឬ រូបភាព"><i class="fa-solid fa-paperclip"></i><input id="ph" type="file" accept=".pdf,.docx,.txt,.md,image/*" class="hide"></label>
+    <label class="btn btn-sec cursor-pointer" title="ថតរូបលំហាត់"><i class="fa-solid fa-camera"></i><input id="ph" type="file" accept="image/*" class="hide"></label>
+    <label class="btn btn-sec cursor-pointer" title="ភ្ជាប់ឯកសារ (PDF, Word, រូបភាព)"><i class="fa-solid fa-paperclip"></i><input id="at" type="file" accept="image/*,.pdf,.docx,.txt,.md" class="hide"></label>
+    <button data-a="mic" class="btn btn-sec" title="និយាយសួរ"><i class="fa-solid fa-microphone"></i></button>
     <input id="ci" class="inp" placeholder="វាយសំណួរ ឬលំហាត់ (ឧ. ទំព័រ ៤០-៦០)…">
-    <button data-a="send" class="btn"><i class="fa-solid fa-paper-plane"></i></button>
+    <button data-a="send" class="btn" title="ផ្ញើ"><i class="fa-solid fa-paper-plane"></i></button>
   </div>`;
-  if(c.length)draw($('#cl'),c); else if(!chat[k])loadChat(k).then(()=>{if(view==k&&tab=='ai')ai()});
+  if(c.length)draw($('#cl'),c);
+  else if(!chat[k])loadChat(k).then(()=>{if(view==k&&tab=='ai')ai()});
   $('#ci').onkeydown=e=>{if(e.key=='Enter')A.send()};
-  $('#ph').onchange=async e=>{
-    const f=e.target.files[0];if(!f)return;
-    if(f.type.startsWith('image/')){
-      IMG=await shrink(f); $('#pc').innerHTML='📷 បានភ្ជាប់រូបភាព · <button data-a="rmph" class="underline">ដកចេញ</button>';
-    } else {
-      toast('កំពុងអានឯកសារ…'); UPLOADED_TXT=await extract(f); $('#pc').innerHTML='📄 បានភ្ជាប់ឯកសារ · <button data-a="rmph" class="underline">ដកចេញ</button>';
-    }
-    $('#pc').classList.remove('hide');
-  };
+  $('#ph').onchange=async e=>{const f=e.target.files[0];if(!f)return;IMG=await shrink(f);$('#pc').classList.remove('hide')};
+  $('#at').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;if(f.type.startsWith('image/')){IMG=await shrink(f);$('#pc').classList.remove('hide');return}toast('កំពុងអាន '+f.name+'…');const t=(await extract(f)).trim();if(t.length<10)return toast('មិនអាចអានឯកសារនេះបានទេ');ATT={name:f.name,t:t.slice(0,12000)};$('#pan').textContent=f.name;$('#pa').classList.remove('hide');saveDoc(view,f,t);toast('AI បានអាន និងចងចាំឯកសារនេះក្នុងមុខវិជ្ជា ✓')};
 }
-A.memv=()=>{const m=sd(view).mem;if(!m)return toast('AI មិនទាន់ចងចាំអ្វីទេ');if(confirm('AI '+subj(view)[1]+' ចងចាំ៖\n\n'+m+'\n\nលុបការចងចាំនេះ?')){sd(view).mem='';save(view);toast('បានលុបការចងចាំ ✓')}};
+A.rmat=()=>{ATT=null;$('#pa').classList.add('hide')};
+A.sty=()=>{STY=(STY+1)%STYS.length;ai()};
+A.strict=()=>{STRICT=!STRICT;toast(STRICT?'AI នឹងឆ្លើយតាមតែឯកសារ និងរូបថតរបស់អ្នក':'AI ប្រើឯកសារជាមុន ហើយបំពេញដោយចំណេះដឹងរបស់វា');ai()};
+A.memv=()=>{const d=sd(view),m=(d.mem||'')+((d.recent||[]).length?'\n\nសំណួរថ្មីៗ៖\n• '+d.recent.slice(-5).join('\n• '):'');if(!m.trim())return toast('AI មិនទាន់ចងចាំអ្វីទេ — សួរសំណួរមួយសិន');if(confirm('AI '+subj(view)[1]+' ចងចាំ៖\n\n'+m+'\n\nលុបការចងចាំនេះ?')){d.mem='';d.recent=[];save(view);toast('បានលុបការចងចាំ ✓')}};
 A.clrai=()=>{chat[view]=[];saveChat(view);ai()};
-A.rmph=()=>{IMG=null; UPLOADED_TXT=''; $('#pc').classList.add('hide')};
-A.cpmsg=i=>{navigator.clipboard?.writeText(chat[view]?.[i]?.content||'').then(()=>toast('បានចម្លង ✓'))};
+A.rmph=()=>{IMG=null;$('#pc').classList.add('hide')};
+A.cpmsg=i=>{const t=chat[view]?.[i]?.content||'';navigator.clipboard?.writeText(t).then(()=>toast('បានចម្លងចម្លើយ ✓'))};
+A.svmsg=async i=>{const t=chat[view]?.[i]?.content||'';if(!t)return;fL(view).push({t:'💬 '+t.replace(/[#*$\\]/g,'').trim().split('\n')[0].slice(0,40),b:t});await save(view);toast('បានរក្សាទុកក្នុងរូបមន្ត ✓')};
 A.send=async()=>{
-  const k=view,i=$('#ci'),q=i.value.trim();if(!q&&!IMG&&!UPLOADED_TXT)return;
-  await loadChat(k);const c=chat[k],ctx=await getSrc(k,$('#src')?.value||'',q),srcs=[...LASTSRC],img=IMG;
-  IMG=null; $('#pc')?.classList.add('hide');
-  
-  c.push({role:'user',content:(img?'📷 ':'')+(UPLOADED_TXT?'📄 ':'')+(q||'សូមពន្យល់ / ដោះស្រាយលំហាត់នេះ។')});
-  i.value='';draw($('#cl'),c,true);
-  
+  const k=view,i=$('#ci'),q=i.value.trim();if(!q&&!IMG&&!ATT)return;
+  await loadChat(k);const c=chat[k],ctx=await getSrc(k,$('#src')?.value||'',q),srcs=[...LASTSRC],img=IMG,att=ATT;IMG=null;ATT=null;$('#pa')?.classList.add('hide');$('#pc')?.classList.add('hide');
+  c.push({role:'user',content:(img?'📷 ':'')+(att?'📎 '+att.name+' · ':'')+(q||(att?'សូមអានឯកសារនេះ':'ដោះស្រាយលំហាត់ក្នុងរូបនេះ'))});i.value='';draw($('#cl'),c,true);
   const h=c.slice(-10);
-  if(img) h[h.length-1]={role:'user',content:[{type:'text',text:q||'សូមអាន និងដោះស្រាយលំហាត់នេះ។'},{type:'image_url',image_url:{url:img}}]};
-  if(UPLOADED_TXT) {
-    h[h.length-1].content = `[ឯកសារភ្ជាប់៖]\n${UPLOADED_TXT.slice(0,5000)}\n\nសំណួរ៖ ${q}`;
-    UPLOADED_TXT='';
-  }
-  
-  const SM=[{role:'system',content:sys(k)+(ctx?`\n\nឯកសារសិស្ស៖\n"""${ctx.slice(0,9000)}"""`:'')}];
-  let r=await ask([...SM,...h],false,!!img);
-  c.push({role:'assistant',by:r?WHO:'',content:(r?r+(srcs.length?'\n\n📚 ប្រភព៖ '+srcs.slice(0,4).join(' · '):''):null)||'⚠ AI មិនអាចឆ្លើយបានទេឥឡូវនេះ។ សូមសាកល្បងម្ដងទៀត។'+(ERR?` (${ERR})`:'')});
-  saveChat(k);if(r&&c.filter(m=>m.role=='user').length%4==0)updMem(k);
+  if(att)h[h.length-1]={role:'user',content:(q||'សូមអាន សង្ខេប និងឆ្លើយសំណួរពីឯកសារនេះ។')+'\n\n[ឯកសារភ្ជាប់៖ '+att.name+']\n"""'+att.t+'"""'};
+  if(img)h[h.length-1]={role:'user',content:[{type:'text',text:q||'សូមអានលំហាត់ក្នុងរូបនេះឱ្យច្បាស់ ហើយដោះស្រាយមួយជំហានម្តងៗជាភាសាខ្មែរ។'},{type:'image_url',image_url:{url:img}}]};
+  const SM=[{role:'system',content:sys(k)+STYS[STY][1]+(STRICT?' STRICT MODE: answer ONLY from the excerpts below. If they do not contain the answer, reply exactly "មិនមានក្នុងឯកសារ" and ask the student to upload or photograph the page. Do not use outside knowledge.':'')+(ctx?`\n\nឯកសារ និងកំណត់ត្រារបស់សិស្ស (ប្រើជាប្រភពសំខាន់)៖\n"""${ctx.slice(0,9000)}"""`:'')}];let r=await ask([...SM,...h],false,!!img);
+  if(!r&&img){toast('កំពុងអានរូបភាពដោយឧបករណ៍…');const ot=await ocr(img);if(ot.length>8){r=await ask([...SM,...h.slice(0,-1),{role:'user',content:(q||'សូមដោះស្រាយលំហាត់នេះមួយជំហានម្តងៗជាភាសាខ្មែរ។')+'\n\n[អត្ថបទអានពីរូបភាព៖ អាចមានកំហុសបន្តិចបន្តួច]\n'+ot.slice(0,4000)}],false,false)}}
+  c.push({role:'assistant',by:r?WHO:'',content:(r?r+(srcs.length?'\n\n📚 ឯកសារដែល AI បានអាន៖ '+srcs.slice(0,4).join(' · '):''):null)||'⚠ '+(img?'AI មិនអាចអានរូបភាពបានទេឥឡូវនេះ។ សូមព្យាយាមម្តងទៀត ឬវាយលំហាត់ជាអក្សរ។':'AI កំពុងរវល់ សូមព្យាយាមម្តងទៀតបន្តិចក្រោយ។')+(ERR?` (${ERR})`:'')});
+  saveChat(k);if(r)updMem(k);
   if(r&&img)saveShot(k,img);
   if(view==k&&tab=='ai')draw($('#cl'),c);
 };
-A.chip=v=>{$('#ci').value=v; A.send()};
+A.chip=i=>{const c=CH[i];$('#ci').value=c[1]+' (មុខវិជ្ជា '+subj(view)[1]+')';if(c[2]){toast('ថតរូបលំហាត់ និងចម្លើយរបស់អ្នក រួចចុចផ្ញើ');$('#ph').click();return}A.send()};
 
-// ---------- FLASHCARDS & QUIZ ----------
-const okJ=k=>t=>{try{const m=t.match(/\{[\s\S]*\}/);return JSON.parse(m?m[0]:t)[k].some(x=>x.q||x.f)}catch(e){return false}};
-
+// ---------- FLASHCARDS ----------
 let CQ=[],CI=0,CF=false;
 const dueC=k=>(sd(k).cards||[]).filter(c=>c.due<=today());
 function cards(){
   const k=view,n=(sd(k).cards||[]).length,d=dueC(k).length;
   $('#pane').innerHTML=`<div class="space-y-2 mb-3">${srcSel(k,true)}<div class="flex gap-2"><input id="qt" class="inp" placeholder="ប្រធានបទ (មិនបង្ខំ)"><button data-a="mkc" class="btn whitespace-nowrap"><i class="fa-solid fa-plus"></i>បង្កើត ១០ ប័ណ្ណ</button></div></div>
-  <p class="text-xs text-slate-400 mb-2">សរុប ${n} ប័ណ្ណ · ត្រូវរំលឹកថ្ងៃនេះ ${d} ប័ណ្ណ</p>
+  <p class="text-xs text-slate-400 mb-2">សរុប ${n} ប័ណ្ណ · ត្រូវរំលឹកថ្ងៃនេះ ${d} ប័ណ្ណ · សំណួរដែលឆ្លើយខុសនឹងត្រូវបន្ថែមមកទីនេះដោយស្វ័យប្រវត្តិ</p>
   ${d?'<button data-a="cstudy" class="btn w-full">ចាប់ផ្តើមរំលឹកឥឡូវនេះ</button>':''}
   <div id="cs" class="mt-3"></div>
   ${n?'<button data-a="cclear" class="text-xs text-red-400 mt-3 hover:underline">លុបប័ណ្ណទាំងអស់</button>':''}`;
 }
 A.mkc=async(_,b)=>{
-  const k=view;b.disabled=true;$('#cs').innerHTML='<p class="text-sm text-slate-400">កំពុងបង្កើតប័ណ្ណចងចាំ (សូមរង់ចាំបន្តិច)…</p>';
+  const k=view;b.disabled=true;$('#cs').innerHTML='<p class="text-sm text-slate-400">កំពុងបង្កើតប័ណ្ណចងចាំ…</p>';
   const top=$('#qt').value.trim(),ctx=await getSrc(k,$('#src').value,top);
-  const r=await ask([{role:'system',content:sys(k)+' Return ONLY a raw JSON object. Do not use markdown blocks. Format exactly: {"cards":[{"f":"question","b":"short answer"}]} with 10 cards. Write in clear Khmer.'},{role:'user',content:`Make 10 flashcards${top?` about: ${top}`:''}.${ctx?`\nBase on:\n"""${ctx.slice(0,6500)}"""`:''}`}],true,false,okJ('cards'));
+  const r=await ask([{role:'system',content:sys(k)+' Return ONLY valid JSON like {"cards":[{"f":"question or term","b":"short clear answer"}]} with exactly 10 flashcards. Keep each side under 30 words. No backslashes. '+LQ(k)},{role:'user',content:`Make 10 flashcards${top?` about: ${top}`:''}.${ctx?`\nBase them on:\n"""${ctx.slice(0,6500)}"""`:''}`}],true,false,okJ('cards'));
   b.disabled=false;let cs;try{cs=jparse(r).cards.filter(x=>x.f&&x.b)}catch(e){}
   if(!cs?.length){if($('#cs'))$('#cs').innerHTML=`<p class="text-sm text-amber-300">មិនអាចបង្កើតប័ណ្ណបានទេ សូមព្យាយាមម្តងទៀត។</p>`;return}
   const d=sd(k);d.cards=[...(d.cards||[]),...cs.map(x=>({f:String(x.f),b:String(x.b),box:1,due:today()}))].slice(-200);await save(k);if(view==k&&tab=='cards')cards();
@@ -720,10 +769,10 @@ A.mkc=async(_,b)=>{
 A.cstudy=()=>{CQ=dueC(view).sort(()=>Math.random()-.5);CI=0;CF=false;showC()};
 function showC(){
   const z=$('#cs'),c=CQ[CI];if(!z)return;
-  if(!c){z.innerHTML='<p class="text-center py-5 font-bold text-emerald-400">🎉 អ្នកបានរំលឹកប័ណ្ណថ្ងៃនេះចប់អស់ហើយ!</p>';return}
+  if(!c){z.innerHTML='<p class="text-center py-5 font-bold text-emerald-400">🎉 អស្ចារ្យណាស់! អ្នកបានរំលឹកប័ណ្ណថ្ងៃនេះចប់អស់ហើយ!</p>';return}
   z.innerHTML=`<p class="text-xs text-slate-400 mb-1.5">ប័ណ្ណទី ${CI+1}/${CQ.length}</p>
   <button data-a="flip" class="w-full min-h-[9.5rem] rounded-2xl glass-soft p-5 text-center transition ${CF?'border-blue-500/40':'font-semibold text-base'}">${esc(CF?c.b:c.f)}</button>
-  ${CF?'<div class="flex gap-2.5 mt-3"><button data-a="cno" class="btn flex-1" style="background:#dc2626">មិនទាន់ចាំ</button><button data-a="cyes" class="btn flex-1" style="background:#059669">ចាំច្បាស់ហើយ ✓</button></div>':'<p class="text-xs text-slate-500 text-center mt-2">ចុចលើប័ណ្ណដើម្បីមើលចម្លើយ</p>'}`;
+  ${CF?'<div class="flex gap-2.5 mt-3"><button data-a="cno" class="btn flex-1" style="background:#dc2626">មិនទាន់ចាំ (ម្តងទៀត)</button><button data-a="cyes" class="btn flex-1" style="background:#059669">ចាំច្បាស់ហើយ ✓</button></div>':'<p class="text-xs text-slate-500 text-center mt-2">ចុចលើប័ណ្ណដើម្បីមើលចម្លើយ</p>'}`;
   rm(z);
 }
 A.flip=()=>{CF=true;showC()};
@@ -731,19 +780,263 @@ const gradeC=ok=>{const c=CQ[CI];c.box=ok?Math.min((c.box||1)+1,5):1;c.due=ok?ne
 A.cyes=()=>gradeC(true);A.cno=()=>gradeC(false);
 A.cclear=()=>{if(confirm('លុបប័ណ្ណទាំងអស់ឬ?')){sd(view).cards=[];save(view);cards()}};
 
+// ---------- PWA ----------
+if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+let IP=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();IP=e});
+A.inst=()=>IP?IP.prompt():toast('ចុចម៉ឺនុយ Chrome (⋮) → Add to Home screen');
+
+// ---------- MOCK EXAM ----------
+const mockCard=()=>{
+  const l=(ME.mocks||[]).slice(-3).reverse();
+  return `<div class="glass p-4">
+    <h3 class="font-bold text-sm mb-1"><i class="fa-solid fa-file-pen text-rose-400 mr-1.5"></i>ប្រឡងសាកល្បង (Mock Exam)</h3>
+    <p class="text-xs text-slate-400 mb-2.5">សំណួរកំណត់ពេល លាយគ្រប់មុខវិជ្ជា ឬតាមមុខវិជ្ជាដែលអ្នកជ្រើសរើស។</p>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+      <select id="ms" class="inp"><option value="">លាយគ្រប់មុខវិជ្ជា</option>${S.map(s=>`<option value="${s[0]}">${s[1]}</option>`).join('')}</select>
+      <select id="mn" class="inp"><option value="10">១០ សំណួរ</option><option value="20">២០ សំណួរ</option><option value="30">៣០ សំណួរ</option></select>
+      <button data-a="mock" class="btn"><i class="fa-solid fa-play"></i>ចាប់ផ្តើមប្រឡង</button>
+    </div>
+    <div id="mx" class="mt-2"></div>
+    ${l.length?`<p class="text-xs text-slate-400 mt-2">ពិន្ទុថ្មីៗ៖ ${l.map(m=>`${m.s}/${m.n} (${m.d})`).join(' · ')}</p>`:''}
+  </div>`;
+};
+function ov(h){let o=$('#xo');if(!o){o=document.createElement('div');o.id='xo';o.className='fixed inset-0 z-50 overflow-y-auto p-4';o.style.background='#060916';document.body.appendChild(o)}o.innerHTML=`<div class="max-w-2xl mx-auto py-4">${h}</div>`;rm(o)}
+A.mock=async(_,b)=>{
+  const N=+$('#mn').value,z=$('#mx');b.disabled=true;z.innerHTML='<p class="text-sm text-slate-400">កំពុងរៀបចំវិញ្ញាសាប្រឡង…</p>';
+  const pool=S.filter(s=>sd(s[0]).files.some(f=>f.n)||sd(s[0]).notes.length>80);
+  const one=$('#ms').value,pick=one?[...Array(Math.ceil(N/10))].map(()=>subj(one)):[...(pool.length?pool:S)].sort(()=>Math.random()-.5).slice(0,4),per=one?10:Math.ceil(N/pick.length);
+  const parts=await Promise.all(pick.map(async s=>{
+    const k=s[0],d=sd(k),fs=d.files.filter(f=>f.n);let ctx=d.notes.slice(0,2500);
+    if(fs.length)ctx=await getRel(k,'',4000,fs.some(f=>f.tag=='វិញ្ញាសា')?'វិញ្ញាសា':'');
+    const r=await ask([{role:'system',content:sys(k)+' Return ONLY valid JSON like {"questions":[{"q":"","options":["","","",""],"answer":0,"why":""}]} with '+per+' multiple-choice questions. "answer" is index 0-3. Write math in plain unicode (x², √, Δ). '+LQ(k)},{role:'user',content:`Make ${per} Grade 12 exam questions${ctx?`\nBase them on:\n"""${ctx}"""`:''}`}],true,false,okJ('questions'));
+    try{return jparse(r).questions.filter(x=>x.q&&x.options?.length==4).map(x=>({...x,k}))}catch(e){return []}
+  }));
+  b.disabled=false;const qs=parts.flat().filter((x,i,a)=>a.findIndex(y=>y.q==x.q)==i).sort(()=>Math.random()-.5).slice(0,N);
+  if(!qs.length){if($('#mx'))$('#mx').innerHTML=`<p class="text-sm text-amber-300">មិនអាចរៀបចំវិញ្ញាសាបានទេ សូមព្យាយាមម្តងទៀត។</p>`;return}
+  X={qs,a:[],i:0,end:Date.now()+qs.length*9e4};
+  X.iv=setInterval(()=>{const e=X.end-Date.now(),c=$('#xt');if(c)c.textContent=fmt(e);if(e<=0)xend()},1000);showX();
+};
+function showX(){
+  const q=X.qs[X.i];
+  ov(`<div class="glass p-5"><div class="flex justify-between items-center mb-3"><span class="text-xs text-slate-400">សំណួរទី ${X.i+1}/${X.qs.length} · ${subj(q.k)[1]}</span><span id="xt" class="font-bold tabular-nums text-amber-300">${fmt(X.end-Date.now())}</span></div><p class="font-semibold text-base mb-4">${esc(q.q)}</p>`+q.options.map((o,j)=>`<button data-x="${j}" class="w-full text-left p-3.5 mb-2.5 rounded-xl glass-soft hover:border-blue-500/50 text-sm transition">${esc(o)}</button>`).join('')+'<button data-x="q" class="text-xs text-red-400 mt-3">ចាកចេញពីការប្រឡង</button></div>');
+}
+function xend(quit){
+  const x=X;clearInterval(x.iv);X=null;if(quit){$('#xo')?.remove();return}
+  const by={};let sc=0;
+  x.qs.forEach((q,i)=>{const ok=x.a[i]===+q.answer,b=by[q.k]||(by[q.k]={s:0,n:0});b.n++;if(ok){sc++;b.s++}else{const d=sd(q.k);(d.cards=d.cards||[]).push({f:q.q,b:q.options[+q.answer],box:1,due:today()});(d.mist=d.mist||[]).push({i:Date.now().toString(36)+i,q:q.q,o:q.options,a:+q.answer,m:x.a[i],d:today()});d.mist=d.mist.slice(-100)}});
+  Object.entries(by).forEach(([k,v])=>{const d=sd(k);d.scores=[...d.scores,{s:v.s,n:v.n,d:today()}].slice(-20);save(k)});
+  ME.mocks=[...(ME.mocks||[]),{s:sc,n:x.qs.length,d:today()}].slice(-10);setDoc(doc(db,'users',U.uid),{mocks:ME.mocks},{merge:true}).catch(()=>{});
+  ov(`<div class="glass p-5"><p class="text-center text-4xl font-extrabold mt-2">${sc}/${x.qs.length}</p><p class="text-center text-sm text-slate-400 mb-4">${Math.round(sc/x.qs.length*100)}% · បានរក្សាទុកពិន្ទុ និងបន្ថែមចម្លើយខុសទៅប័ណ្ណចងចាំ</p>`+Object.entries(by).map(([k,v])=>`<p class="text-sm mb-1"><i class="fa-solid ${subj(k)[3]} w-5" style="color:${subj(k)[4]}"></i>${subj(k)[1]}៖ ${v.s}/${v.n}</p>`).join('')+'<h3 class="font-bold text-sm mt-4 mb-2">ពិនិត្យចម្លើយឡើងវិញ</h3>'+x.qs.map((q,i)=>{const ok=x.a[i]===+q.answer;return `<div class="rounded-xl p-3 mb-2 text-sm ${ok?'bg-emerald-600/15 border border-emerald-500/30':'bg-red-600/15 border border-red-500/30'}"><p class="font-semibold">${i+1}. ${esc(q.q)}</p><p class="mt-1">${ok?'✅':'❌'} ${x.a[i]==null?'គ្មានចម្លើយ':esc(q.options[x.a[i]])}${ok?'':` → ចម្លើយត្រឹមត្រូវ៖ <b>${esc(q.options[+q.answer])}</b>`}</p><p class="text-slate-400 text-xs mt-1">${esc(q.why||'')}</p></div>`}).join('')+'<button data-x="c" class="btn w-full mt-3">បិទ</button></div>');
+}
+document.addEventListener('click',e=>{
+  const b=e.target.closest('#xo [data-x]');if(!b)return;const v=b.dataset.x;
+  if(v=='c'){$('#xo').remove();if(view=='dash')dash();return}
+  if(!X)return;if(v=='q'){if(confirm('ចាកចេញពីការប្រឡងឬ?'))xend(true);return}
+  X.a[X.i]=+v;X.i++;X.i<X.qs.length?showX():xend();
+});
+
+// ---------- STATS & REPORT ----------
+const dayStr=i=>new Date(Date.now()-i*864e5).toLocaleDateString('en-CA');
+const minsOn=d=>Math.round(S.reduce((t,s)=>t+(sd(s[0]).log?.[d]||0),0));
+const subMins=(k,n=7)=>{let t=0;for(let i=0;i<n;i++)t+=sd(k).log?.[dayStr(i)]||0;return Math.round(t)};
+const subAvg=(k,n=7)=>{const c=dayStr(n-1),x=sd(k).scores.filter(y=>y.d>=c);return x.length?Math.round(x.reduce((a,b)=>a+b.s/b.n,0)/x.length*100):null};
+const avgQ=k=>subAvg(k,3650);
+const allMin=k=>Math.round(Object.values(sd(k).log||{}).reduce((a,b)=>a+b,0));
+
+function statsHTML(){
+  const tot=S.reduce((t,s)=>t+allMin(s[0]),0),q=S.reduce((t,s)=>t+sd(s[0]).scores.length,0),mast=S.reduce((t,s)=>t+(sd(s[0]).cards||[]).filter(c=>c.box>=4).length,0);
+  const ra=S.map(s=>[s,avgQ(s[0])]).filter(x=>x[1]!=null).sort((a,b)=>b[1]-a[1]),mo=[...S].sort((a,b)=>allMin(b[0])-allMin(a[0]))[0];
+  const c=(i,l,v)=>`<div class="glass-soft p-3"><p class="text-xs text-slate-400">${i} ${l}</p><p class="font-bold text-sm mt-0.5">${v}</p></div>`;
+  return `<h3 class="font-bold text-sm">📊 ស្ថិតិសិក្សារបស់ខ្ញុំ</h3>
+  <div class="grid grid-cols-2 gap-2.5">${c('⏱️','ពេលសិក្សាសរុប',Math.floor(tot/60)+'ម៉ោង '+tot%60+'នាទី')}${c('🔥','រៀនជាប់ៗខ្ពស់បំផុត',(ME.best||streakN)+' ថ្ងៃ')}${c('📝','សំណួរបានធ្វើ',q+' ដង')}${c('🃏','ប័ណ្ណចាំស្ទាត់',mast+' ប័ណ្ណ')}${c('💪','មុខវិជ្ជាខ្លាំង',ra.length?`${ra[0][0][1]} (${ra[0][1]}%)`:'—')}${c('🎯','គួរពង្រឹងបន្ថែម',ra.length>1?`${ra.at(-1)[0][1]} (${ra.at(-1)[1]}%)`:'—')}</div>
+  <p class="text-xs text-slate-400">មុខវិជ្ជារៀនច្រើនជាងគេ៖ ${tot?mo[1]:'—'}</p>
+  <div class="flex flex-wrap gap-1.5">${BADGES(tot,q,mast,ra).map(([i,l,on])=>`<span class="text-xs px-2.5 py-1 rounded-full ${on?'bg-amber-500/20 text-amber-200 border border-amber-500/30':'bg-slate-800/60 text-slate-500'}">${i} ${l}</span>`).join('')}</div>`;
+}
+A.gorep=()=>go('report');
+A.share=()=>{const u=location.origin+location.pathname;navigator.share?navigator.share({title:'NGS-HUB',text:'ចូលរួមរៀនក្នុងថ្នាក់ 12NGS-B លើ NGS-HUB',url:u}).catch(()=>{}):navigator.clipboard?.writeText(u).then(()=>toast('បានចម្លងតំណ ✓'))};
+
+function report(){
+  $('#ttl').textContent='របាយការណ៍';
+  const days=[...Array(7)].map((_,i)=>dayStr(6-i)),vals=days.map(minsOn),mx=Math.max(30,...vals);
+  const rows=S.map(s=>({s,m:subMins(s[0]),a:subAvg(s[0])})).sort((x,y)=>y.m-x.m),dn=d=>['អា','ច','អ','ព','ព្រ','សុ','ស'][new Date(d+'T00:00').getDay()];
+  $('#main').innerHTML=`<div class="max-w-3xl mx-auto space-y-4">
+    <div><h2 class="font-extrabold text-xl">របាយការណ៍ប្រចាំសប្តាហ៍</h2><p class="text-xs text-slate-400">រាប់ពេលដោយស្វ័យប្រវត្តិពេលអ្នកនៅក្នុងមុខវិជ្ជា · ៧ ថ្ងៃចុងក្រោយ</p></div>
+    <div class="glass p-4"><p class="text-sm mb-3">សរុប <b>${vals.reduce((a,b)=>a+b,0)}</b> នាទី</p><div class="flex items-end gap-2 h-32">${vals.map((v,i)=>`<div class="flex-1 flex flex-col items-center justify-end h-full"><span class="text-[10px] text-slate-400">${v||''}</span><div class="w-full rounded-t-md bg-blue-500" style="height:${Math.max(4,v/mx*80)}%"></div><span class="text-xs text-slate-400 mt-1">${dn(days[i])}</span></div>`).join('')}</div></div>
+    <div class="glass p-4 space-y-2.5"><h3 class="font-bold text-sm">តាមមុខវិជ្ជា</h3>${rows.map(r=>`<div><div class="flex justify-between text-xs"><span><i class="fa-solid ${r.s[3]} w-5" style="color:${r.s[4]}"></i>${r.s[1]}</span><span class="text-slate-400">${r.m} នាទី${r.a!=null?` · ពិន្ទុ ${r.a}%`:''}</span></div><div class="h-1.5 rounded bg-slate-800 mt-1"><div class="h-1.5 rounded" style="width:${Math.min(100,r.m/Math.max(1,rows[0].m)*100)}%;background:${r.s[4]}"></div></div></div>`).join('')}</div>
+    <div class="glass p-4"><div class="grid grid-cols-1 sm:grid-cols-2 gap-2"><button data-a="coach" class="btn"><i class="fa-solid fa-user-graduate"></i>សួរយោបល់គ្រូបង្វឹក AI</button><button data-a="plan" class="btn" style="background:linear-gradient(135deg,#7c3aed,#9333ea)"><i class="fa-solid fa-calendar-check"></i>បង្កើតកាលវិភាគរៀន ៧ ថ្ងៃ</button></div><div id="co" class="md text-sm mt-3"></div></div>
+  </div>`;
+}
+A.coach=async(_,b)=>{
+  b.disabled=true;$('#co').innerHTML='<p class="text-slate-400">កំពុងវិភាគការសិក្សារបស់អ្នក…</p>';
+  const rows=S.map(s=>{const a=subAvg(s[0]);return `${s[1]}: ${subMins(s[0])} min, ${a==null?'no quiz':'quiz '+a+'%'}, hw pending ${sd(s[0]).hw.filter(h=>!h.done).length}`}).join('\n'),pf=ME.profile||{};
+  const r=await ask([{role:'system',content:`You are an encouraging study coach for a Cambodian Grade 12 student. Reply in simple, motivating Khmer using bullet points.`},{role:'user',content:`Streak ${streakN} days.\n${rows}\nGive me: 1) ចំណុចធ្វើបានល្អ, 2) មុខវិជ្ជាដែលត្រូវប្រុងប្រយ័ត្ន, 3) ដំបូន្មានខ្លីៗសម្រាប់សប្តាហ៍ក្រោយ។`}]);
+  b.disabled=false;const o=$('#co');if(o)o.innerHTML=r?md(r):`<p class="text-amber-300">មិនអាចទាញយោបល់បានទេ។</p>`;
+};
+
+// ---------- CLASS ----------
+const CLASS='12NGS-B';
+async function syncPub(){
+  const r=doc(db,'publicProfiles',U.uid);let prev=0;try{prev=(await getDoc(r)).data()?.points||0}catch(e){}
+  const tot=S.reduce((t,x)=>t+allMin(x[0]),0),qa=S.map(x=>avgQ(x[0])).filter(x=>x!=null),pts=prev?Math.max(prev,Math.min(tot,prev+100)):tot;
+  await setDoc(r,{displayName:(ME.profile?.name||(U.email||'សិស្ស').split('@')[0]).slice(0,30),photoURL:ME.profile?.avatar||'',status:CLASS,studyStreak:streakN,avgBand:qa.length?Math.round(qa.reduce((a,b)=>a+b,0)/qa.length):0,points:pts,updatedAt:Date.now()}).catch(()=>{});
+}
+async function friends(){
+  $('#ttl').textContent='12NGS-B';
+  const isAdmin=U?.uid===ADMIN_UID;
+  $('#main').innerHTML=`<div class="max-w-md mx-auto space-y-3"><div><h2 class="font-extrabold text-xl">${CLASS}</h2><p class="text-xs text-slate-400 mt-1">តារាងមិត្តរួមថ្នាក់តម្រៀបតាមម៉ោងសិក្សា។ កំណត់ត្រា និងឯកសាររបស់អ្នកនៅតែជាឯកជនជានិច្ច។</p></div><div id="fl2" class="space-y-2"><p class="text-sm text-slate-400">កំពុងផ្ទុក…</p></div></div>`;
+  let rows=[],err='';try{rows=(await getDocs(query(collection(db,'publicProfiles'),orderBy('points','desc'),limit(100)))).docs.map(d=>({id:d.id,...d.data()}))}catch(e){err=e.code||'error'}
+  const el=$('#fl2');if(!el||view!='friends')return;
+  el.innerHTML=err?`<p class="text-sm text-amber-300">មិនអាចផ្ទុកតារាងថ្នាក់បាន (${esc(err)})។</p>`:rows.length?rows.map((r,i)=>`<div class="glass p-3.5 flex items-center gap-3 ${r.id==U.uid?'ring-1 ring-blue-400':''}"><span class="w-6 text-center font-bold text-slate-400">${['🥇','🥈','🥉'][i]||i+1}</span>${avatar(38,{avatar:r.photoURL,name:r.displayName})}<div class="min-w-0 flex-1"><p class="text-sm font-semibold truncate">${esc(r.displayName)}${r.id==U.uid?' (អ្នក)':''}</p><p class="text-xs text-slate-400">ពិន្ទុមធ្យម ${r.avgBand||0}%</p></div><div class="text-right text-xs"><p class="font-bold">🔥 ${r.studyStreak||0}</p><p class="text-slate-400">${r.points||0} នាទី</p></div>${isAdmin&&r.id!=U.uid?`<button data-a="delpub" data-v="${r.id}" class="text-red-400/70 hover:text-red-400 px-1" title="លុបចេញពីតារាង"><i class="fa-solid fa-trash-can text-xs"></i></button>`:''}</div>`).join(''):'<p class="text-sm text-slate-400">មិនទាន់មានមិត្តរួមថ្នាក់ទេ។</p>';
+}
+A.delpub=async id=>{if(!confirm('លុបឈ្មោះនេះចេញពីតារាងថ្នាក់ឬ?'))return;try{await deleteDoc(doc(db,'publicProfiles',id));friends();toast('បានលុប ✓')}catch(e){toast('មិនអាចលុបបានទេ៖ '+e.code)}};
+
+// ---------- VOICE ----------
+A.say=i=>{const t=(chat[view]?.[i]?.content||'').replace(/[*#$`\\_]/g,'');if(!t||!window.speechSynthesis)return toast('ឧបករណ៍នេះមិនគាំទ្រការអានឱ្យស្តាប់ទេ');speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang=sd(view).lang=='en'?'en-US':'km-KH';speechSynthesis.speak(u)};
+A.mic=()=>{const R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R)return toast('កម្មវិធីរុករកនេះមិនគាំទ្រការបញ្ចូលសំឡេងទេ');const r=new R();r.lang=sd(view).lang=='en'?'en-US':'km-KH';r.onresult=e=>{const i=$('#ci');if(i)i.value=e.results[0][0].transcript};r.onerror=()=>toast('ស្តាប់មិនឮទេ');r.start();toast('🎤 កំពុងស្តាប់…')};
+
+// ---------- PLAN, BADGES, BACKUP ----------
+const BADGES=(tot,q,mast,ra)=>[
+  ['🔥','រៀនជាប់គ្នា ៧ ថ្ងៃ',(ME.best||streakN)>=7],
+  ['⏱️','រៀនគ្រប់ ១០ ម៉ោង',tot>=600],
+  ['📝','ធ្វើសំណួរ ១០ ដង',q>=10],
+  ['🃏','ចាំប័ណ្ណ ៥០ សន្លឹក',mast>=50],
+  ['🎯','ពិន្ទុសំណួរ 80%+',ra.length>0&&ra[0][1]>=80],
+  ['📚','រក្សាទុកឯកសារ ១០',S.reduce((t,s)=>t+sd(s[0]).files.length,0)>=10],
+  ['🏆','ប្រឡងសាកល្បង 80%+',(ME.mocks||[]).some(m=>m.s/m.n>=.8)],
+  ['🌟','រៀនគ្រប់មុខវិជ្ជាទាំង ១០',S.every(s=>allMin(s[0])>0)]
+];
+A.plan=async(_,b)=>{
+  b.disabled=true;$('#co').innerHTML='<p class="text-slate-400">កំពុងរៀបចំផែនការសិក្សា…</p>';
+  const pf=ME.profile||{},ex=BAC,left=Math.ceil((new Date(ex.date+'T00:00')-new Date(today()+'T00:00'))/864e5);
+  const rows=S.map(s=>{const a=avgQ(s[0]);return `${s[1]}: ${a==null?'មិនទាន់ធ្វើសំណួរ':'ពិន្ទុ '+a+'%'}, កិច្ចការសល់ ${sd(s[0]).hw.filter(h=>!h.done).length}`}).join('\n');
+  const r=await ask([{role:'system',content:`You are a study planner for a Cambodian Grade 12 student. Reply in simple Khmer. Create a clear 7-day study schedule, assigning 2 subjects per day with concrete tasks.`},{role:'user',content:`${ex?`Exam: ${ex.name} in ${left} days.`:''}\n${rows}`}]);
+  b.disabled=false;const o=$('#co');if(o)o.innerHTML=r?md(r):`<p class="text-amber-300">មិនអាចបង្កើតផែនការបានទេ។</p>`;
+};
+A.export=()=>{const o={exported:new Date().toISOString(),profile:{...ME.profile,avatar:undefined},subjects:D},a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(o,null,1)],{type:'application/json'}));a.download='ngs-hub-backup.json';a.click()};
+
+// ---------- AI TOOLS (Admin only) ----------
+const KN=['groq','openrouter'];
+const readKeys=()=>{const o={};KN.forEach(n=>{const v=$('#pk-'+n)?.value.trim();if(v)o[n]=v});return o};
+const aiAdmin=()=>`<div class="glass-soft p-3.5 space-y-2.5">
+  <p class="font-bold text-xs text-amber-300"><i class="fa-solid fa-key mr-1"></i>AI សម្រាប់ទាំងថ្នាក់ (Admin ប៉ុណ្ណោះ)</p>
+  <p class="text-[11.5px] text-slate-300 leading-relaxed">ដាក់កូនសោម្តងគត់ រួចចុច «រក្សាទុកសម្រាប់ថ្នាក់» — សិស្សគ្រប់គ្នាប្រើបានដោយមិនបាច់ដាក់អ្វីទេ។ អាចដាក់ច្រើនកូនសោខណ្ឌដោយសញ្ញាក្បៀស (,)។ ណែនាំ៖ <a class="underline text-blue-300" href="https://console.groq.com/keys" target="_blank" rel="noopener">Groq</a> (ម៉ូដែល gpt-oss-120b និង qwen3.8 អានរូបភាពបាន) · <a class="underline text-blue-300" href="https://openrouter.ai/keys" target="_blank" rel="noopener">OpenRouter</a> (បម្រុង ឥតគិតថ្លៃ)។</p>
+  ${[['groq','Groq (gsk_...)'],['openrouter','OpenRouter (sk-or-...)']].map(([n,l])=>`<label class="block text-xs text-slate-400">${l}<input id="pk-${n}" type="password" autocomplete="off" class="inp mt-1 font-mono text-xs" value="${esc(KEYS[n]||'')}"></label>`).join('')}
+  <div class="grid grid-cols-2 gap-2"><button data-a="testai" class="btn btn-sec text-xs"><i class="fa-solid fa-heart-pulse text-emerald-400"></i>សាកល្បង AI</button><button data-a="sharekeys" class="btn text-xs"><i class="fa-solid fa-share-nodes"></i>រក្សាទុកសម្រាប់ថ្នាក់</button></div>
+</div>`;
+A.testai=async(_,b)=>{const o=readKeys();if(Object.keys(o).length)KEYS=o;AV=null;ORM=null;b.disabled=true;toast('កំពុងសាកល្បង AI…');const t=await diag();b.disabled=false;alert(t)};
+A.cpid=()=>navigator.clipboard?.writeText(U.uid).then(()=>toast('បានចម្លង ID ✓'));
+A.sharekeys=async()=>{
+  const o=readKeys();if(!Object.keys(o).length)return toast('សូមដាក់កូនសោយ៉ាងតិចមួយ');
+  try{await setDoc(doc(db,'config','ai'),o,{merge:true});KEYS={...KEYS,...o};AV=null;ORM=null;toast('បានរក្សាទុកសម្រាប់ថ្នាក់ទាំងមូល ✓')}catch(e){alert('មានតែ Admin ប៉ុណ្ណោះដែលរក្សាទុកបាន។ '+(e.code||''))}
+};
+
+// ---------- DAILY MISSIONS & CHEAT SHEET ----------
+function missionsCard(){
+  const t=today();let hwDue=0;
+  S.forEach(s=>sd(s[0]).hw.forEach(h=>{if(!h.done&&h.due&&h.due<=t)hwDue++}));
+  const cdT=S.reduce((n,s)=>n+dueC(s[0]).length,0),cd=[...S].sort((a,b)=>dueC(b[0]).length-dueC(a[0]).length)[0][0];
+  const wk=S.map(s=>[s,avgQ(s[0])]).filter(x=>x[1]!=null).sort((a,b)=>a[1]-b[1])[0];
+  const m=[
+    [hwDue==0,hwDue?`ធ្វើកិច្ចការផ្ទះដែលដល់កំណត់ (${hwDue})`:'គ្មានកិច្ចការផ្ទះដល់កំណត់ថ្ងៃនេះ','allhw'],
+    [cdT==0,cdT?`ពិនិត្យប័ណ្ណចងចាំ ${cdT} សន្លឹក`:'ប័ណ្ណចងចាំបានពិនិត្យអស់ហើយ',cd+'|cards'],
+    [S.some(s=>sd(s[0]).scores.some(x=>x.d==t)),`ធ្វើសំណួរហាត់សម (${wk?wk[0][1]:'មុខវិជ្ជាណាមួយ'})`,(wk?wk[0][0]:S[0][0])+'|quiz']
+  ];
+  const ok=m.filter(x=>x[0]).length;
+  return `<div class="glass p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-bold text-sm"><i class="fa-solid fa-bullseye text-emerald-400 mr-1.5"></i>ភារកិច្ចប្រចាំថ្ងៃ</h3><span class="text-xs font-semibold text-emerald-400">${ok}/${m.length}</span></div><div class="h-1.5 rounded bg-slate-800 mb-2.5"><div class="h-1.5 rounded bg-emerald-500 transition-all" style="width:${ok/m.length*100}%"></div></div>${m.map(([d,l,v])=>`<button data-a="gt" data-v="${v}" class="w-full flex items-center gap-2.5 text-left text-sm py-1.5 hover:text-blue-300 transition"><span>${d?'✅':'⬜'}</span><span class="flex-1 ${d?'line-through text-slate-500':''}">${l}</span><i class="fa-solid fa-chevron-right text-slate-500 text-xs"></i></button>`).join('')}</div>`;
+}
+A.gt=v=>{if(!v.includes('|'))return go(v);const [k,t]=v.split('|');go(k);tab=t;render()};
+A.cheat=async(_,b)=>{
+  const k=view,top=$('#cht').value.trim();if(!top)return toast('សូមវាយប្រធានបទជាមុនសិន');b.disabled=true;toast('កំពុងបង្កើតសន្លឹកសង្ខេប…');
+  const ctx=await getSrc(k,'all');
+  const r=await ask([{role:'system',content:sys(k)+' Write a clean one-page summary sheet in Markdown with these headings: ## ១. និយមន័យ ## ២. រូបមន្តសំខាន់ៗ ## ៣. ឧទាហរណ៍គំរូ ## ៤. ចំណុចត្រូវប្រុងប្រយ័ត្នពេលប្រឡង. Put every formula in LaTeX ($...$ or $$...$$). Write everything in Khmer.'},{role:'user',content:'ប្រធានបទ៖ '+top+(ctx?`\n\nឯកសាររបស់សិស្ស៖\n"""${ctx.slice(0,6000)}"""`:'')}]);
+  b.disabled=false;if(!r)return toast('មិនអាចបង្កើតបានទេ សូមព្យាយាមម្តងទៀត');
+  const d=sd(k);d.notes=(d.notes?d.notes+'\n\n---\n\n':'')+'### 📌 '+top+'\n\n'+r;NV=true;await save(k);if(view==k&&tab=='notes')notes();toast('បានបន្ថែមទៅកំណត់ត្រា ✓');
+};
+
+// ---------- PROFILE ----------
+let PAV='';
+const avatar=(z,pf=ME.profile||{})=>pf.avatar?`<img src="${pf.avatar}" alt="" class="rounded-full object-cover flex-shrink-0" style="width:${z}px;height:${z}px">`:`<div class="rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold text-white flex-shrink-0" style="width:${z}px;height:${z}px">${esc((pf.name||U?.email||'?')[0].toUpperCase())}</div>`;
+function pbtn(){$('#prof').innerHTML=`${avatar(36)}<span class="min-w-0 flex-1"><b class="block text-sm truncate">${esc(ME.profile?.name||'ប្រវត្តិរូបរបស់ខ្ញុំ')}</b><span class="text-[11px] text-slate-400">កំណត់គណនី</span></span>`}
+$('#prof').onclick=()=>go('profile');
+
+function profile(){
+  const p=ME.profile||{};PAV=p.avatar||'';$('#ttl').textContent='ប្រវត្តិរូប';
+  const isAdmin=U?.uid===ADMIN_UID;
+  $('#main').innerHTML=`<div class="max-w-md mx-auto space-y-4">
+    <div class="glass p-5 space-y-3.5">
+      <div class="flex flex-col items-center gap-2">
+        <div id="pav">${avatar(84,p)}</div>
+        ${isAdmin?'<span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30"><i class="fa-solid fa-crown mr-1"></i>អ្នកគ្រប់គ្រងថ្នាក់ (Class Admin)</span>':''}
+        <label class="text-xs text-blue-300 cursor-pointer hover:underline">ប្តូររូបថតប្រវត្តិរូប<input id="pph" type="file" accept="image/*" class="hide"></label>
+      </div>
+      <label class="block text-xs text-slate-400">ឈ្មោះរបស់អ្នក<input id="pn" class="inp mt-1" maxlength="30" placeholder="ឧ. សារ៉ែន សិរីបុញ្ញវឌ្ឍក៍" value="${esc(p.name||'')}"></label>
+      ${isAdmin?aiAdmin():`<p class="text-xs text-slate-400"><i class="fa-solid fa-wand-magic-sparkles text-emerald-400 mr-1"></i>គ្រូ AI ត្រូវបានរៀបចំដោយអ្នកគ្រប់គ្រងថ្នាក់ — អ្នកមិនបាច់ដាក់កូនសោទេ។</p>`}
+      <button data-a="psave" class="btn w-full"><i class="fa-solid fa-floppy-disk"></i>រក្សាទុកការកំណត់</button>
+      <div class="pt-2 border-t border-slate-800 space-y-2">
+        <div class="flex items-center justify-between text-xs text-slate-400"><span class="truncate">${esc(U.email)}</span><button data-a="cpid" class="text-blue-300 hover:underline whitespace-nowrap"><i class="fa-solid fa-copy mr-1"></i>ចម្លង ID (${U.uid.slice(0,6)}…)</button></div>
+        <div class="grid grid-cols-2 gap-2">
+          <button data-a="share" class="btn btn-sec text-xs"><i class="fa-solid fa-user-plus"></i>អញ្ជើញមិត្តភក្តិ</button>
+          <button data-a="inst" class="btn btn-sec text-xs"><i class="fa-solid fa-mobile-screen"></i>ដំឡើងកម្មវិធី</button>
+        </div>
+        <div class="flex justify-between text-xs text-blue-300 pt-1">
+          <button data-a="export" class="hover:underline">ទាញយកទិន្នន័យទុក (Backup)</button>
+          <button data-a="preset" class="hover:underline">ប្តូរពាក្យសម្ងាត់</button>
+        </div>
+      </div>
+    </div>
+    <div class="glass p-5 space-y-3">${statsHTML()}</div>
+  </div>`;
+  $('#pph').onchange=async e=>{const f=e.target.files[0];if(!f)return;PAV=await shrink(f,256);$('#pav').innerHTML=avatar(84,{avatar:PAV})};
+}
+
+A.psave=async()=>{
+  const pf={name:$('#pn').value.trim(),grade:CLASS,avatar:PAV};
+  ME.profile=pf;
+  await setDoc(doc(db,'users',U.uid),{profile:pf},{merge:true}).catch(e=>toast('រក្សាទុកមិនបាន៖ '+e.code));
+  syncPub();pbtn();toast('បានរក្សាទុកការកំណត់ ✓');
+};
+A.preset=async()=>{try{await fp(auth,U.email);toast('បានផ្ញើអ៊ីមែលកំណត់ពាក្យសម្ងាត់ថ្មី។')}catch(e){toast('មិនអាចផ្ញើអ៊ីមែលបានទេ')}};
+
+// ---------- AUTO STUDY TIME ----------
+const fmt=ms=>{const t=Math.max(0,Math.round(ms/1000));return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0')};
+const weekMin=()=>{let t=0;for(let i=0;i<7;i++)t+=minsOn(dayStr(i));return t};
+let LA=Date.now(),AC={k:null,s:0},FL=0;
+['pointerdown','keydown','scroll','touchstart'].forEach(e=>addEventListener(e,()=>{LA=Date.now()},{passive:true,capture:true}));
+function flushT(){
+  if(!U||!AC.k||AC.s<=0)return;const k=AC.k,d=sd(k);d.log=d.log||{};d.log[today()]=(d.log[today()]||0)+AC.s/60;AC.s=0;save(k);syncPub();
+}
+setInterval(()=>{
+  if(!U||document.hidden||Date.now()-LA>12e4||!subj(view))return;
+  if(AC.k&&AC.k!=view)flushT();
+  AC.k=view;AC.s+=5;if(++FL%12==0)flushT();
+},5000);
+document.addEventListener('visibilitychange',()=>{if(document.hidden)flushT()});addEventListener('pagehide',flushT);
+
+// ---------- BACII COUNTDOWN ----------
+const BAC={name:'BacII',date:'2027-08-01'};
+function examCard(){
+  const left=Math.ceil((new Date(BAC.date+'T00:00')-new Date(today()+'T00:00'))/864e5);
+  return `<div class="glass p-4">
+    <h3 class="font-bold text-sm mb-1"><i class="fa-solid fa-hourglass-half text-amber-400 mr-1.5"></i>BacII Countdown</h3>
+    <p class="text-3xl font-extrabold text-amber-300">${left>0?`នៅសល់ ${left} ថ្ងៃទៀត`:left==0?'ថ្ងៃនេះហើយ! ស៊ូៗ 💪':'បានបញ្ចប់'}</p>
+    <p class="text-xs text-slate-400">${BAC.name} · ${BAC.date}</p>
+  </div>`;
+}
+
+// ---------- QUIZ ----------
 function quiz(){
   const k=view,last=sd(k).scores.slice(-3).reverse();
   $('#pane').innerHTML=`<div class="space-y-2.5 mb-3">${srcSel(k,true)}
-    <div class="flex gap-2"><input id="qt" class="inp" placeholder="ប្រធានបទ..."><button data-a="mk" class="btn whitespace-nowrap"><i class="fa-solid fa-wand-magic-sparkles"></i>បង្កើតសំណួរ</button></div>
-    <div class="flex gap-2"><select id="qn" class="inp"><option value="5">៥ សំណួរ</option><option value="10">១០ សំណួរ</option></select><select id="ql" class="inp"><option value="medium">កម្រិតមធ្យម</option><option value="hard">កម្រិតពិបាក</option></select></div>
+    <div class="flex gap-2"><input id="qt" class="inp" placeholder="ប្រធានបទ (ឧ. លីមីត, អាស៊ីត-បាស…)"><button data-a="mk" class="btn whitespace-nowrap"><i class="fa-solid fa-wand-magic-sparkles"></i>បង្កើតសំណួរ</button></div>
+    <div class="flex gap-2"><select id="qn" class="inp"><option value="5">៥ សំណួរ</option><option value="10">១០ សំណួរ</option></select><select id="ql" class="inp"><option value="easy">កម្រិតងាយ</option><option value="medium" selected>កម្រិតមធ្យម</option><option value="hard">កម្រិតពិបាក (បាក់ឌុប)</option></select></div>
   </div>
   <div id="qz"></div>
   ${last.length?`<p class="text-xs text-slate-400 mt-3">ពិន្ទុថ្មីៗ៖ ${last.map(s=>`${s.s}/${s.n} (${s.d})`).join(' · ')}</p>`:''}`;
 }
 A.mk=async(_,b)=>{
-  const k=view,N=+$('#qn').value,LV=$('#ql').value;b.disabled=true;$('#qz').innerHTML='<p class="text-sm text-slate-400">កំពុងបង្កើតសំណួរតេស្ត (រង់ចាំបន្តិច)…</p>';
+  const k=view,N=+$('#qn').value,LV=$('#ql').value;b.disabled=true;$('#qz').innerHTML='<p class="text-sm text-slate-400">កំពុងបង្កើតសំណួរតេស្ត…</p>';
   const top=$('#qt').value.trim(),ctx=await getSrc(k,$('#src').value,top);
-  const r=await ask([{role:'system',content:sys(k)+' Return ONLY a raw JSON object. NO Markdown formatting. Format exactly: {"questions":[{"q":"","options":["","","",""],"answer":0,"why":""}]} with '+N+' questions. answer is 0-3 index. Write in Khmer.'},{role:'user',content:`Make ${N} questions${top?` about: ${top}`:''}.${ctx?`\nBase on:\n"""${ctx.slice(0,6500)}"""`:''}`}],true,false,okJ('questions'));
+  const r=await ask([{role:'system',content:sys(k)+' Return ONLY valid JSON like {"questions":[{"q":"","options":["","","",""],"answer":0,"why":""}]} with '+N+' '+LV+' multiple-choice questions. Write math in plain unicode (x², √, Δ). '+LQ(k)+' "answer" is the index 0-3 of the correct option.'},{role:'user',content:`Make ${N} questions${top?` about: ${top}`:''}.${ctx?`\nBase them on:\n"""${ctx.slice(0,6500)}"""`:''}`}],true,false,okJ('questions'));
   b.disabled=false;let qs;try{qs=jparse(r).questions.filter(x=>x.q&&x.options?.length==4)}catch(e){}
   if(!qs?.length){if($('#qz'))$('#qz').innerHTML='<p class="text-sm text-amber-300">មិនអាចបង្កើតសំណួរបានទេ សូមព្យាយាមម្តងទៀត។</p>';return}
   Q={k,qs,i:0,s:0};showQ();
@@ -754,112 +1047,11 @@ function showQ(){
   z.innerHTML=`<p class="text-xs text-slate-400 mb-1">សំណួរទី ${Q.i+1}/${Q.qs.length}</p><p class="font-semibold mb-3">${esc(q.q)}</p>`+q.options.map((o,j)=>`<button data-a="pick" data-v="${j}" class="qo w-full text-left p-3 mb-2 rounded-xl glass-soft text-sm transition">${esc(o)}</button>`).join('')+'<div id="qw"></div>';rm(z);
 }
 A.pick=j=>{
-  if(Q.done)return;Q.done=true;const q=Q.qs[Q.i],a=+q.answer;j=+j;if(j==a)Q.s++;else{const d=sd(Q.k);(d.cards=d.cards||[]).push({f:q.q,b:q.options[a],box:1,due:today()})}
+  if(Q.done)return;Q.done=true;const q=Q.qs[Q.i],a=+q.answer;j=+j;if(j==a)Q.s++;else{const d=sd(Q.k);(d.cards=d.cards||[]).push({f:q.q,b:q.options[a],box:1,due:today()});(d.mist=d.mist||[]).push({i:Date.now().toString(36),q:q.q,o:q.options,a,m:j,d:today()});d.mist=d.mist.slice(-100)}
   document.querySelectorAll('.qo').forEach((e,i)=>{if(i==a)e.classList.add('!bg-emerald-600/30','!border-emerald-500');else if(i==j)e.classList.add('!bg-red-600/30','!border-red-500')});
   $('#qw').innerHTML=`<p class="text-sm text-slate-300 my-2.5 p-3 rounded-xl bg-slate-900/60">${esc(q.why||'')}</p><button data-a="nx" class="btn w-full">${Q.i+1<Q.qs.length?'សំណួរបន្ទាប់ →':'មើលលទ្ធផល'}</button>`;rm($('#qw'));
 };
 A.nx=()=>{Q.i++;Q.done=false;showQ()};
-
-// ---------- MISSIONS & MOCKS ----------
-function missionsCard(){
-  const t=today();let hwDue=0;
-  S.forEach(s=>sd(s[0]).hw.forEach(h=>{if(!h.done&&h.due&&h.due<=t)hwDue++}));
-  const cdT=S.reduce((n,s)=>n+dueC(s[0]).length,0),cd=[...S].sort((a,b)=>dueC(b[0]).length-dueC(a[0]).length)[0][0];
-  const m=[[hwDue==0,hwDue?`ធ្វើកិច្ចការដែលដល់កំណត់ (${hwDue})`:'គ្មានកិច្ចការដល់កំណត់ថ្ងៃនេះ','allhw'],[cdT==0,cdT?`ពិនិត្យប័ណ្ណចងចាំ ${cdT} សន្លឹក`:'ប័ណ្ណចងចាំបានពិនិត្យអស់ហើយ',cd+'|cards']];
-  const ok=m.filter(x=>x[0]).length;
-  return `<div class="glass p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-bold text-sm"><i class="fa-solid fa-bullseye text-emerald-400 mr-1.5"></i>ភារកិច្ចប្រចាំថ្ងៃ</h3><span class="text-xs font-semibold text-emerald-400">${ok}/${m.length}</span></div><div class="h-1.5 rounded bg-slate-800 mb-2.5"><div class="h-1.5 rounded bg-emerald-500 transition-all" style="width:${ok/m.length*100}%"></div></div>${m.map(([d,l,v])=>`<button data-a="gt" data-v="${v}" class="w-full flex items-center gap-2.5 text-left text-sm py-1.5 hover:text-blue-300 transition"><span>${d?'✅':'⬜'}</span><span class="flex-1 ${d?'line-through text-slate-500':''}">${l}</span><i class="fa-solid fa-chevron-right text-slate-500 text-xs"></i></button>`).join('')}</div>`;
-}
-A.gt=v=>{if(!v.includes('|'))return go(v);const [k,t]=v.split('|');go(k);tab=t;render()};
-
-const mockCard=()=>`<div class="glass p-4"><h3 class="font-bold text-sm mb-1"><i class="fa-solid fa-file-pen text-rose-400 mr-1.5"></i>ប្រឡងសាកល្បង (Mock)</h3><div class="grid grid-cols-2 gap-2 mt-2"><select id="ms" class="inp"><option value="">លាយគ្រប់មុខវិជ្ជា</option>${S.map(s=>`<option value="${s[0]}">${s[1]}</option>`).join('')}</select><button data-a="mock" class="btn"><i class="fa-solid fa-play"></i>ចាប់ផ្តើមប្រឡង</button></div><div id="mx"></div></div>`;
-A.mock=async(_,b)=>{
-  const N=10,z=$('#mx');b.disabled=true;z.innerHTML='<p class="text-sm text-slate-400 mt-2">កំពុងរៀបចំវិញ្ញាសាប្រឡង…</p>';
-  const one=$('#ms').value,pick=one?[subj(one)]:[...S].sort(()=>Math.random()-.5).slice(0,3);
-  const parts=await Promise.all(pick.map(async s=>{
-    const k=s[0],r=await ask([{role:'system',content:sys(k)+' Return valid JSON: {"questions":[{"q":"","options":["","","",""],"answer":0,"why":""}]}'},{role:'user',content:`Make 5 exam questions`}]);
-    try{return jparse(r).questions.filter(x=>x.q&&x.options?.length==4).map(x=>({...x,k}))}catch(e){return []}
-  }));
-  b.disabled=false;const qs=parts.flat().sort(()=>Math.random()-.5).slice(0,N);
-  if(!qs.length){if($('#mx'))$('#mx').innerHTML=`<p class="text-sm text-amber-300 mt-2">មិនអាចរៀបចំបានទេ សូមព្យាយាមម្តងទៀត។</p>`;return}
-  z.innerHTML=''; X={qs,a:[],i:0,end:Date.now()+qs.length*9e4};
-  X.iv=setInterval(()=>{const e=X.end-Date.now(),c=$('#xt');if(c)c.textContent=fmt(e);if(e<=0)xend()},1000);showX();
-};
-function ov(h){let o=$('#xo');if(!o){o=document.createElement('div');o.id='xo';o.className='fixed inset-0 z-50 overflow-y-auto p-4';o.style.background='#060916';document.body.appendChild(o)}o.innerHTML=`<div class="max-w-2xl mx-auto py-4">${h}</div>`;rm(o)}
-function showX(){const q=X.qs[X.i];ov(`<div class="glass p-5"><div class="flex justify-between mb-3"><span class="text-xs text-slate-400">សំណួរ ${X.i+1}/${X.qs.length}</span><span id="xt" class="font-bold text-amber-300">${fmt(X.end-Date.now())}</span></div><p class="font-semibold mb-4">${esc(q.q)}</p>`+q.options.map((o,j)=>`<button data-x="${j}" class="w-full text-left p-3 mb-2 rounded-xl glass-soft hover:border-blue-500/50 text-sm">${esc(o)}</button>`).join('')+'<button data-x="q" class="text-xs text-red-400 mt-3">ចាកចេញ</button></div>');}
-function xend(quit){
-  clearInterval(X.iv);if(quit){X=null;$('#xo')?.remove();return}
-  let sc=0;X.qs.forEach((q,i)=>{if(X.a[i]===+q.answer)sc++;});
-  ov(`<div class="glass p-5"><p class="text-center text-4xl font-extrabold mt-2">${sc}/${X.qs.length}</p><p class="text-center text-sm text-slate-400 mb-4">ពិន្ទុ ${Math.round(sc/X.qs.length*100)}%</p><button data-x="c" class="btn w-full">បិទ</button></div>`);
-}
-document.addEventListener('click',e=>{const b=e.target.closest('#xo [data-x]');if(!b||!X)return;const v=b.dataset.x;if(v=='c'){X=null;$('#xo').remove();return}if(v=='q'){if(confirm('ចាកចេញ?'))xend(true);return}X.a[X.i]=+v;X.i++;X.i<X.qs.length?showX():xend();});
-
-// ---------- REPORT & PROFILE ----------
-const dayStr=i=>new Date(Date.now()-i*864e5).toLocaleDateString('en-CA');
-const minsOn=d=>Math.round(S.reduce((t,s)=>t+(sd(s[0]).log?.[d]||0),0));
-const allMin=k=>Math.round(Object.values(sd(k).log||{}).reduce((a,b)=>a+b,0));
-const avgQ=k=>{const x=sd(k).scores;return x.length?Math.round(x.reduce((a,b)=>a+b.s/b.n,0)/x.length*100):null};
-
-function report(){
-  $('#ttl').textContent='របាយការណ៍';
-  const days=[...Array(7)].map((_,i)=>dayStr(6-i)),vals=days.map(minsOn),mx=Math.max(30,...vals),dn=d=>['អា','ច','អ','ព','ព្រ','សុ','ស'][new Date(d+'T00:00').getDay()];
-  $('#main').innerHTML=`<div class="max-w-3xl mx-auto space-y-4">
-    <div><h2 class="font-extrabold text-xl">របាយការណ៍ប្រចាំសប្តាហ៍</h2></div>
-    <div class="glass p-4"><p class="text-sm mb-3">សរុប <b>${vals.reduce((a,b)=>a+b,0)}</b> នាទី</p><div class="flex items-end gap-2 h-32">${vals.map((v,i)=>`<div class="flex-1 flex flex-col items-center justify-end h-full"><span class="text-[10px] text-slate-400">${v||''}</span><div class="w-full rounded-t-md bg-blue-500" style="height:${Math.max(4,v/mx*80)}%"></div><span class="text-xs text-slate-400 mt-1">${dn(days[i])}</span></div>`).join('')}</div></div>
-  </div>`;
-}
-
-let PAV='';
-const avatar=(z,pf=ME.profile||{})=>pf.avatar?`<img src="${pf.avatar}" alt="" class="rounded-full object-cover flex-shrink-0" style="width:${z}px;height:${z}px">`:`<div class="rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold text-white flex-shrink-0" style="width:${z}px;height:${z}px">${esc((pf.name||U?.email||'?')[0].toUpperCase())}</div>`;
-function pbtn(){$('#prof').innerHTML=`${avatar(36)}<span class="min-w-0 flex-1"><b class="block text-sm truncate">${esc(ME.profile?.name||'ប្រវត្តិរូបរបស់ខ្ញុំ')}</b><span class="text-[11px] text-slate-400">កំណត់គណនី</span></span>`}
-
-function profile(){
-  const p=ME.profile||{};PAV=p.avatar||'';$('#ttl').textContent='ប្រវត្តិរូប';
-  $('#main').innerHTML=`<div class="max-w-md mx-auto space-y-4">
-    <div class="glass p-5 space-y-3.5">
-      <div class="flex flex-col items-center gap-2"><div id="pav">${avatar(84,p)}</div><label class="text-xs text-blue-300 cursor-pointer hover:underline">ប្តូររូបថត<input id="pph" type="file" accept="image/*" class="hide"></label></div>
-      <label class="block text-xs text-slate-400">ឈ្មោះរបស់អ្នក<input id="pn" class="inp mt-1" value="${esc(p.name||'')}"></label>
-      ${U.uid===ADMIN_UID?`<div class="glass-soft p-3 space-y-2"><p class="text-xs text-amber-300">Admin AI Keys</p>${['groq','openrouter'].map(n=>`<input id="pk-${n}" type="password" class="inp text-xs" placeholder="${n}" value="${esc(KEYS[n]||'')}">`).join('')}<button data-a="sharekeys" class="btn text-xs w-full">រក្សាទុកសម្រាប់ថ្នាក់</button></div>`:''}
-      <button data-a="psave" class="btn w-full">រក្សាទុកការកំណត់</button>
-      <div class="pt-2 border-t border-slate-800 text-xs text-blue-300 flex justify-between"><button data-a="export">Backup Data</button><button data-a="preset">ប្តូរពាក្យសម្ងាត់</button></div>
-    </div>
-  </div>`;
-  $('#pph').onchange=async e=>{const f=e.target.files[0];if(!f)return;PAV=await shrink(f,256);$('#pav').innerHTML=avatar(84,{avatar:PAV})};
-}
-
-A.psave=async()=>{
-  ME.profile={name:$('#pn').value.trim(),grade:'12NGS-B',avatar:PAV};
-  await setDoc(doc(db,'users',U.uid),{profile:ME.profile},{merge:true});
-  syncPub();pbtn();toast('បានរក្សាទុកការកំណត់ ✓');
-};
-A.sharekeys=async()=>{const o={};['groq','openrouter'].forEach(n=>o[n]=$(`#pk-${n}`).value.trim());await setDoc(doc(db,'config','ai'),o,{merge:true});KEYS={...KEYS,...o};toast('បានអាប់ដេតកូនសោ ✓')};
-A.preset=async()=>fp(auth,U.email).then(()=>toast('បានផ្ញើអ៊ីមែល'));
-A.export=()=>{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify({profile:ME.profile,subjects:D},null,1)]));a.download='backup.json';a.click()};
-
-// ---------- CLASS & UTILS ----------
-async function syncPub(){
-  const pts=S.reduce((t,x)=>t+allMin(x[0]),0);
-  await setDoc(doc(db,'publicProfiles',U.uid),{displayName:(ME.profile?.name||'សិស្ស').slice(0,30),photoURL:ME.profile?.avatar||'',status:'12NGS-B',studyStreak:streakN,points:pts,updatedAt:Date.now()},{merge:true}).catch(()=>{});
-}
-async function friends(){
-  $('#ttl').textContent='12NGS-B';
-  $('#main').innerHTML=`<div class="max-w-md mx-auto space-y-3"><h2 class="font-extrabold text-xl">12NGS-B</h2><div id="fl2" class="space-y-2"><p class="text-sm text-slate-400">កំពុងផ្ទុក…</p></div></div>`;
-  try{
-    const rows=(await getDocs(query(collection(db,'publicProfiles'),orderBy('points','desc'),limit(100)))).docs.map(d=>({id:d.id,...d.data()}));
-    $('#fl2').innerHTML=rows.map((r,i)=>`<div class="glass p-3.5 flex items-center gap-3"><span class="w-6 font-bold text-slate-400">${i+1}</span>${avatar(38,{avatar:r.photoURL,name:r.displayName})}<div class="flex-1"><p class="text-sm font-semibold">${esc(r.displayName)}</p></div><div class="text-right text-xs"><p class="font-bold">🔥 ${r.studyStreak||0}</p><p class="text-slate-400">${r.points||0} នាទី</p></div></div>`).join('');
-  }catch(e){$('#fl2').innerHTML='<p class="text-amber-300">បញ្ហាការតភ្ជាប់។</p>'}
-}
-
-const BAC={name:'BacII',date:'2027-08-01'};
-const examCard=()=>{const l=Math.ceil((new Date(BAC.date)-new Date())/864e5);return `<div class="glass p-4"><h3 class="font-bold text-sm mb-1"><i class="fa-solid fa-hourglass-half text-amber-400 mr-1.5"></i>BacII Countdown</h3><p class="text-3xl font-extrabold text-amber-300">${l>0?`នៅសល់ ${l} ថ្ងៃទៀត`:l==0?'ថ្ងៃនេះហើយ!':'បានបញ្ចប់'}</p><p class="text-xs text-slate-400">${BAC.name} · ${BAC.date}</p></div>`;};
-
-const fmt=ms=>{const t=Math.max(0,Math.round(ms/1000));return String(Math.floor(t/60)).padStart(2,'0')+':'+String(t%60).padStart(2,'0')};
-let LA=Date.now(),AC={k:null,s:0},FL=0;
-['pointerdown','keydown','scroll','touchstart'].forEach(e=>addEventListener(e,()=>{LA=Date.now()},{passive:true,capture:true}));
-function flushT(){if(!U||!AC.k||AC.s<=0)return;const d=sd(AC.k);d.log=d.log||{};d.log[today()]=(d.log[today()]||0)+AC.s/60;AC.s=0;save(AC.k);syncPub();}
-setInterval(()=>{if(!U||document.hidden||Date.now()-LA>12e4||!subj(view))return;if(AC.k&&AC.k!=view)flushT();AC.k=view;AC.s+=5;if(++FL%12==0)flushT();},5000);
-document.addEventListener('visibilitychange',()=>{if(document.hidden)flushT()});addEventListener('pagehide',flushT);
-
-if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 </script>
 </body>
 </html>
