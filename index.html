@@ -5,6 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>NGS-HUB — ថ្នាក់រៀន</title>
 <meta name="theme-color" content="#060916">
+<script>
+/* apply the saved theme before first paint (no flash): 'dark' (default) | 'light' | 'auto' = follow the device */
+(function(){var m='dark';try{m=localStorage.getItem('ngs-theme')||'dark'}catch(e){}
+var l=m=='light'||(m=='auto'&&window.matchMedia&&matchMedia('(prefers-color-scheme: light)').matches);
+var h=document.documentElement;h.classList.toggle('dark',!l);h.classList.toggle('light',l);h.style.colorScheme=l?'light':'dark';
+var t=document.querySelector('meta[name=theme-color]');if(t)t.setAttribute('content',l?'#eef2f7':'#060916')})();
+</script>
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="NGS-HUB">
@@ -71,6 +78,69 @@ input[type=date].inp{-webkit-appearance:auto!important;appearance:auto!important
 .hpill{padding:.42rem .8rem;border-radius:999px;font-size:.8rem;font-weight:600;border:1px solid;transition:all .15s}
 .sgrid{display:grid;grid-template-columns:42px repeat(5,minmax(0,1fr));grid-template-rows:auto repeat(6,minmax(58px,auto));gap:4px}.sh{text-align:center;font-size:11px;font-weight:700;padding:6px 0;border-radius:8px;background:#1e293b99;color:#cbd5e1}.sh.on{background:#2563eb;color:#fff}.st{font-size:9px;color:#93c5fd;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.3;font-weight:600}.sc{border:1px solid;border-radius:10px;padding:4px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:3px;min-width:0;overflow:hidden}.sc b{font-size:10.5px;line-height:1.3}.sc span{font-size:9.5px;color:#e2e8f0;background:#0f172a99;padding:1px 5px;border-radius:6px}
 .md .katex-display,#qz .katex-display,#cs .katex-display,#xo .katex-display{overflow-x:auto;overflow-y:hidden;max-width:100%;padding:2px 0}.katex{font-size:1.05em}
+.navon{color:#fff}
+.seg{padding:.42rem .5rem;border-radius:.75rem;font-size:.78rem;font-weight:600;border:1px solid rgba(148,163,184,.25);background:rgba(51,65,85,.5);color:#cbd5e1;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:.35rem}
+.seg.on{background:linear-gradient(135deg,#2563eb,#4f46e5);color:#fff;border-color:transparent}
+.thm{width:2.25rem;height:2.25rem;border-radius:.75rem;display:inline-flex;align-items:center;justify-content:center;background:rgba(30,41,59,.8);color:#fbbf24;flex-shrink:0}
+body,.glass,.glass-soft,.inp,.tab,.chip,.btn-sec{transition:background-color .25s ease,border-color .25s ease,color .2s ease}
+
+/* ===== LIGHT MODE (html.light) — the UI is written dark-first, so light mode re-maps those colours ===== */
+html.light,html.light body{background:#eef2f7;color:#0f172a}
+html.light .orb{opacity:.12}
+html.light .glass{background:rgba(255,255,255,.88);border-color:rgba(100,116,139,.22);box-shadow:0 10px 28px -14px rgba(15,23,42,.22)}
+html.light .glass-soft{background:rgba(255,255,255,.72);border-color:rgba(100,116,139,.2)}
+html.light .btn-sec{background:rgba(226,232,240,.95);border-color:rgba(100,116,139,.3);color:#1e293b;box-shadow:none}
+html.light .inp{background:#fff;border-color:rgba(100,116,139,.45);color:#0f172a}
+html.light .inp::placeholder{color:#94a3b8}
+html.light .inp option{background:#fff;color:#0f172a}
+html.light input[type=date].inp{color-scheme:light}
+html.light .tab{background:rgba(255,255,255,.78);border-color:rgba(100,116,139,.22);color:#334155}
+html.light .tab.on{background:var(--c);color:#fff;border-color:transparent}
+html.light .chip{background:rgba(226,232,240,.85);border-color:rgba(100,116,139,.28);color:#1e293b}
+html.light .chip:hover{background:rgba(203,213,225,.95)}
+html.light .md code{background:rgba(15,23,42,.08)}
+html.light .md pre{background:rgba(15,23,42,.07)}
+html.light .navon{color:#0f172a}
+html.light .seg{background:rgba(226,232,240,.9);border-color:rgba(100,116,139,.3);color:#334155}
+html.light .seg.on{background:linear-gradient(135deg,#2563eb,#4f46e5);color:#fff}
+html.light .thm{background:rgba(226,232,240,.95);color:#4338ca}
+html.light .text-slate-200{color:#1e293b}
+html.light .text-slate-300{color:#334155}
+html.light .text-slate-400{color:#475569!important}
+html.light .text-slate-500{color:#64748b!important}
+html.light .text-blue-300{color:#1d4ed8}
+html.light .text-blue-400{color:#2563eb}
+html.light .text-sky-300{color:#0369a1}
+html.light .text-sky-400{color:#0284c7}
+html.light .text-purple-300{color:#7e22ce}
+html.light .text-purple-400{color:#9333ea}
+html.light .text-pink-400{color:#db2777}
+html.light .text-amber-200{color:#92400e}
+html.light .text-amber-300,html.light .text-amber-400{color:#b45309}
+html.light .text-orange-400{color:#c2410c}
+html.light .text-emerald-300{color:#047857}
+html.light .text-emerald-400{color:#059669}
+html.light .text-red-300{color:#b91c1c}
+html.light .text-red-400{color:#dc2626}
+html.light .text-red-400\/70{color:rgba(220,38,38,.8)}
+html.light .text-rose-300{color:#be123c}
+html.light .text-rose-400{color:#e11d48}
+html.light .hover\:text-white:hover{color:#0f172a}
+html.light .hover\:text-blue-300:hover{color:#1e40af}
+html.light .hover\:text-emerald-300:hover{color:#047857}
+html.light .hover\:text-red-400:hover{color:#b91c1c}
+html.light .bg-slate-800,html.light .bg-slate-800\/60,html.light .bg-slate-800\/70,html.light .bg-slate-800\/80{background-color:#dde4ee}
+html.light .bg-slate-800\/90{background-color:#cfd9e8}
+html.light .bg-slate-900\/60{background-color:rgba(15,23,42,.06)}
+html.light .bg-black\/10{background-color:rgba(15,23,42,.06)}
+html.light .hover\:bg-slate-800:hover,html.light .hover\:bg-slate-800\/60:hover,html.light .hover\:bg-slate-800\/70:hover{background-color:#e2e8f0}
+html.light .border-slate-700\/40,html.light .border-slate-700\/50,html.light .border-slate-800,html.light .border-slate-800\/70{border-color:rgba(100,116,139,.28)}
+html.light .ring-slate-700{--tw-ring-color:#94a3b8}
+html.light .sh{background:#dde4ee;color:#334155}
+html.light .sh.on{background:#2563eb;color:#fff}
+html.light .st{color:#1d4ed8}
+html.light .sc span{color:#1e293b;background:rgba(255,255,255,.8)}
+html.light ::selection{background:rgba(59,130,246,.25)}
 </style>
 </head>
 <body class="font-sans selection:bg-blue-500/30">
@@ -105,6 +175,7 @@ input[type=date].inp{-webkit-appearance:auto!important;appearance:auto!important
         <div class="text-base leading-none">NGS-HUB</div>
         <span class="block text-[11px] font-normal text-slate-400 mt-1">ថ្នាក់រៀន</span>
       </div>
+      <button id="thm" class="thm ml-auto" aria-label="ប្តូរពន្លឺ / ងងឹត" title="ពន្លឺ / ងងឹត"><i data-themeicon class="fa-solid fa-sun"></i></button>
     </div>
     <nav id="nav" class="p-2.5 space-y-1 overflow-y-auto flex-1 noscroll"></nav>
     <button id="prof" class="mx-2.5 mt-2 p-2.5 rounded-xl flex items-center gap-2.5 text-left hover:bg-slate-800/70 transition"></button>
@@ -117,9 +188,12 @@ input[type=date].inp{-webkit-appearance:auto!important;appearance:auto!important
         <button id="burger" class="w-9 h-9 rounded-xl bg-slate-800/80 flex items-center justify-center" aria-label="ម៉ឺនុយ"><i class="fa-solid fa-bars"></i></button>
         <span id="ttl" class="font-bold text-sm truncate">ទំព័រដើម</span>
       </div>
-      <button id="mprof" class="flex items-center gap-1.5 text-xs text-slate-300 bg-slate-800/70 px-2.5 py-1.5 rounded-full">
-        <i class="fa-solid fa-user-gear text-purple-300"></i><span>ប្រវត្តិរូប</span>
-      </button>
+      <div class="flex items-center gap-2">
+        <button id="thm2" class="thm" style="width:2rem;height:2rem" aria-label="ប្តូរពន្លឺ / ងងឹត"><i data-themeicon class="fa-solid fa-sun text-sm"></i></button>
+        <button id="mprof" class="flex items-center gap-1.5 text-xs text-slate-300 bg-slate-800/70 px-2.5 py-1.5 rounded-full">
+          <i class="fa-solid fa-user-gear text-purple-300"></i><span>ប្រវត្តិរូប</span>
+        </button>
+      </div>
     </header>
 
     <div id="main" class="flex-1 overflow-y-auto p-3.5 md:p-6 pb-20 md:pb-6"></div>
@@ -266,7 +340,7 @@ function nav(){
     ['report','របាយការណ៍','fa-chart-simple','#f472b6'],
     ['friends','ថ្នាក់រៀន','fa-users','#34d399'],
     ...S.map(s=>[s[0],s[1],s[3],s[4]])
-  ].map(([k,n,i,c])=>`<button data-k="${k}" class="w-full flex items-center gap-3 p-2.5 rounded-xl text-sm text-slate-300 hover:bg-slate-800/60 text-left transition ${view==k?'bg-slate-800/90 font-semibold text-white ring-1 ring-slate-700':''}"><i class="fa-solid ${i} w-5 text-center" style="color:${c}"></i><span class="truncate">${n}</span></button>`).join('');
+  ].map(([k,n,i,c])=>`<button data-k="${k}" class="w-full flex items-center gap-3 p-2.5 rounded-xl text-sm text-slate-300 hover:bg-slate-800/60 text-left transition ${view==k?'bg-slate-800/90 font-semibold navon ring-1 ring-slate-700':''}"><i class="fa-solid ${i} w-5 text-center" style="color:${c}"></i><span class="truncate">${n}</span></button>`).join('');
 }
 $('#nav').onclick=e=>{const b=e.target.closest('[data-k]');if(b)go(b.dataset.k)};
 $('#bnav').onclick=e=>{const b=e.target.closest('[data-k]');if(b)go(b.dataset.k)};
@@ -310,11 +384,6 @@ function readiness(k){
 function readyCard(){
   const rows=S.map(s=>[s,readiness(s[0])]).sort((a,b)=>(a[1]==null?101:a[1])-(b[1]==null?101:b[1])),have=rows.filter(r=>r[1]!=null),avg=have.length?Math.round(have.reduce((a,b)=>a+b[1],0)/have.length):null,col=v=>v<50?'#f87171':v<75?'#fbbf24':'#34d399';
   return `<div class="glass p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-bold text-sm">🎯 ភាពត្រៀមខ្លួនប្រឡង</h3>${avg!=null?`<span class="text-sm font-extrabold" style="color:${col(avg)}">${avg}%</span>`:''}</div>${avg==null?'<p class="text-xs text-slate-400">ធ្វើសំណួរ ឬប័ណ្ណចងចាំ ដើម្បីឃើញភាពត្រៀមខ្លួនតាមមុខវិជ្ជា</p>':''}${rows.map(([s,v])=>`<button data-a="gos" data-v="${s[0]}" class="w-full flex items-center gap-2 py-1.5 text-left"><i class="fa-solid ${s[3]} w-5 text-center text-xs" style="color:${s[4]}"></i><span class="text-xs w-28 truncate">${s[1]}</span><div class="flex-1 h-2 rounded-full bg-slate-800 overflow-hidden"><div class="h-full rounded-full" style="width:${v==null?0:v}%;background:${v==null?'#334155':col(v)}"></div></div><span class="text-[11px] w-9 text-right text-slate-400">${v==null?'—':v+'%'}</span></button>`).join('')}${have.length?`<p class="text-[11px] text-slate-400 mt-2">ចាប់ផ្តើមពី៖ <b class="text-amber-300">${have[0][0][1]}</b> (ខ្សោយជាងគេ)</p>`:''}</div>`;
-}
-const planKey=()=>'plan:'+(U?.uid||'x');
-function planCard(){
-  let pl=null;try{pl=JSON.parse(localStorage.getItem(planKey())||'null')}catch(e){}
-  return `<div class="glass p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-bold text-sm">🗓 ផែនការសិក្សា ៧ ថ្ងៃ (AI)</h3><button data-a="plan" class="text-xs text-blue-300 hover:underline">${pl?'បង្កើតថ្មី':'បង្កើតផែនការ'}</button></div>${pl?`<div class="md text-sm">${md(pl.t)}</div><p class="text-[10px] text-slate-500 mt-2">បង្កើតនៅ ${esc(pl.d)}</p>`:'<p class="text-xs text-slate-400">AI រៀបចំផែនការតាមកិច្ចការ កាលវិភាគ និងមុខវិជ្ជាខ្សោយរបស់អ្នក</p>'}</div>`;
 }
 let NOTES=null,NOTESTS=0;
 // Students only see notices for their own class; the admin sees all of them (each tagged with its class).
@@ -373,23 +442,29 @@ function render(){
   pane();
 }
 const pane=()=>({files,mist,form,notes:nlist,hw,ai,quiz,cards})[tab]();
+// ---------- THEME (light / dark / auto) ----------
+// The early <script> in <head> already applied the saved mode; this keeps it in sync after the user changes it.
+const THEMES=['light','dark','auto'];
+const themeMode=()=>{try{const m=localStorage.getItem('ngs-theme');return THEMES.includes(m)?m:'dark'}catch(e){return 'dark'}};
+const themeLight=m=>m=='light'||(m=='auto'&&matchMedia('(prefers-color-scheme: light)').matches);
+function applyTheme(){
+  const m=themeMode(),l=themeLight(m),h=document.documentElement;
+  h.classList.toggle('dark',!l);h.classList.toggle('light',l);h.style.colorScheme=l?'light':'dark';
+  document.querySelector('meta[name=theme-color]')?.setAttribute('content',l?'#eef2f7':'#060916');
+  document.querySelectorAll('[data-themeicon]').forEach(e=>{e.classList.toggle('fa-moon',l);e.classList.toggle('fa-sun',!l)});
+  document.querySelectorAll('[data-a="theme"]').forEach(b=>b.classList.toggle('on',b.dataset.v==m));
+}
+function setTheme(m){try{localStorage.setItem('ngs-theme',m)}catch(e){}applyTheme()}
+const flipTheme=()=>{setTheme(themeLight(themeMode())?'dark':'light');toast(themeLight(themeMode())?'☀️ ពន្លឺ':'🌙 ងងឹត')};
+$('#thm').onclick=$('#thm2').onclick=flipTheme;
+try{matchMedia('(prefers-color-scheme: light)').addEventListener('change',()=>{if(themeMode()=='auto')applyTheme()})}catch(e){}
+applyTheme();
+
 let FS=+(localStorage.getItem('fs')||16);document.documentElement.style.fontSize=FS+'px';
 const setFS=v=>{FS=Math.min(22,Math.max(13,v));localStorage.setItem('fs',FS);document.documentElement.style.fontSize=FS+'px'};
 addEventListener('offline',()=>toast('គ្មានអ៊ីនធឺណិត — AI នឹងមិនដំណើរការ'));addEventListener('online',()=>toast('ត្រឡប់មកអនឡាញវិញ ✓'));
 const A={};
-A.plan=async(_,b)=>{
-  if(b)b.disabled=true;prog('AI កំពុងរៀបចំផែនការ… (អាចប្រើពេលបន្តិច)');
-  const left=Math.ceil((new Date(BAC.date+'T00:00')-new Date(today()+'T00:00'))/864e5),dn=['អាទិត្យ','ច័ន្ទ','អង្គារ','ពុធ','ព្រហស្បតិ៍','សុក្រ','សៅរ៍'];
-  const days=[...Array(7)].map((_,i)=>{const d=new Date();d.setDate(d.getDate()+i);return dn[d.getDay()]+' '+d.toLocaleDateString('en-CA')}).join(', ');
-  const ready=S.map(s=>{const r=readiness(s[0]),tp={};(sd(s[0]).mist||[]).forEach(x=>{if(x.tp)tp[x.tp]=(tp[x.tp]||0)+1});const wt=Object.entries(tp).sort((a,b)=>b[1]-a[1]).slice(0,2).map(x=>x[0]).join(', ');return s[1]+': '+(r==null?'no data yet':r+'%')+(wt?' (weak topics: '+wt+')':'')}).join('\n');
-  const tasks=[];S.forEach(s=>sd(s[0]).hw.filter(h=>!h.done).forEach(h=>tasks.push({k:s[0],s:s[1],t:htitle(h)||hty(h).map(c=>c[0]).join('+')||'កិច្ចការ',due:h.due||'no deadline'})));
-  tasks.sort((a,b)=>(a.due).localeCompare(b.due)||nextCls(a.k)-nextCls(b.k));
-  const sch=Object.entries(SCH).map(([d,es])=>dn[d]+': '+es.map(e=>e[0]+'-'+e[1]+' '+subj(e[2])[1]).join(', ')).join('\n');
-  const r=await ask([{role:'system',content:'You are a caring Cambodian Grade 12 (BacII) study coach. Write a realistic 7-day study plan in Khmer as Markdown. For each day use a heading "## <weekday> <date>", then 2-4 short study blocks, each with the subject, what to do (quiz, flashcards, review mistakes, read the lesson) and minutes. Do tasks that are due first; give more time to weak subjects and weak topics; at most 2.5 hours per weekday after school (class times are given) and up to 4 hours on weekends; include rest. Use only the data given; never invent deadlines or subjects. Be concise.'},{role:'user',content:'Today: '+today()+'. Days until BacII: '+left+'.\nThe 7 days: '+days+'.\n\nReadiness per subject:\n'+ready+'\n\nTasks (nearest deadline first):\n'+(tasks.map(t=>'- '+t.s+': '+t.t+' (due '+t.due+')').join('\n')||'none')+'\n\nWeekly class schedule:\n'+sch}]);
-  if(b)b.disabled=false;
-  if(!r)return toast('AI មិនអាចបង្កើតផែនការបាន៖ '+(ERR||''));
-  localStorage.setItem(planKey(),JSON.stringify({t:r,d:new Date().toLocaleString()}));toast('បានបង្កើតផែនការ ✓');render();
-};
+A.theme=v=>{if(THEMES.includes(v))setTheme(v)};
 A.npost=async()=>{const i=$('#nti'),t=(i&&i.value||'').trim(),cl=normCls($('#ntc')?.value)||CLS();if(!t)return;if(!cl)return toast('សូមបញ្ចូលថ្នាក់រៀន');await loadNotices(true);const items=[{id:Date.now().toString(36),t,d:today(),ts:Date.now(),cls:cl},...(NOTES||[])].slice(0,30);try{await setDoc(doc(db,'config','notices'),{items});NOTES=items;NOTESTS=Date.now();toast('បានផ្សាយប្រកាស ✓');loadNotices()}catch(e){toast('មិនអាចផ្សាយបាន៖ '+e.message)}};
 A.ndelpub=async id=>{if(!confirm('លុបប្រកាសនេះឬ?'))return;const items=(NOTES||[]).filter(n=>n.id!=id);try{await setDoc(doc(db,'config','notices'),{items});NOTES=items;loadNotices()}catch(e){toast('មិនអាចលុបបាន')}};
 
@@ -433,7 +508,6 @@ function dash(){
 
     ${todayCard()}
     ${readyCard()}
-    ${planCard()}
     ${examCard()}
     ${mockCard()}
 
@@ -577,8 +651,10 @@ let NEDIT=null;
 function nlist(){
   const k=view,d=sd(k);
   if(d.notes&&d.notes.trim()&&!(d.nl&&d.nl.length)){d.nl=[{id:'old',t:'កំណត់ត្រាចាស់',b:d.notes,d:today(),ts:1,pin:0}];d.notes='';save(k)}
+  // AI answers saved earlier in a subject that has no formulas tab were stuck in the hidden formulas list: move them into notes.
+  if(!SCI.has(k)){const st=(d.forms||[]).filter(x=>String(x.t||'').startsWith('💬 '));if(st.length){d.nl=d.nl||[];st.forEach((x,j)=>d.nl.push({id:'m'+Date.now().toString(36)+j,t:x.t,b:x.b,md:1,d:today(),ts:Date.now()+j,pin:0}));d.forms=d.forms.filter(x=>!st.includes(x));save(k)}}
   const nl=(d.nl||[]).slice().sort((a,b)=>(b.pin||0)-(a.pin||0)||(b.ts||0)-(a.ts||0));
-  $('#pane').innerHTML=`<div class="space-y-2 mb-4"><input id="nt" class="inp" placeholder="ចំណងជើង (មិនបង្ខំ)"><textarea id="nb" class="inp" rows="5" placeholder="សរសេរកំណត់ត្រារបស់អ្នកនៅទីនេះ…"></textarea><div class="flex gap-2"><button data-a="nsave" class="btn flex-1"><i class="fa-solid fa-paper-plane"></i>ចុះផ្សាយ</button><button data-a="nclr" class="btn btn-sec">សម្អាត</button>${nl.length?'<button data-a="nprint" class="btn btn-sec" title="បោះពុម្ព / PDF"><i class="fa-solid fa-print"></i></button>':''}</div></div><p class="text-xs text-slate-400 mb-2">កំណត់ត្រារបស់ខ្ញុំ ${nl.length}</p>`+(nl.length?nl.map(n=>`<div class="glass-soft p-3.5 mb-2.5"><div class="flex items-start justify-between gap-2"><p class="font-semibold text-sm">${n.pin?'📌 ':''}${esc(n.t||'កំណត់ត្រា')}</p><span class="text-[10px] text-slate-500 whitespace-nowrap">${n.d||''}</span></div><p class="text-sm text-slate-200 mt-1.5 whitespace-pre-wrap break-words">${esc(n.b||'')}</p><div class="flex flex-wrap gap-3 text-xs mt-2.5"><button data-a="nedit" data-v="${n.id}" class="text-blue-300 hover:underline">កែសម្រួល</button><button data-a="npin" data-v="${n.id}" class="text-amber-300 hover:underline">${n.pin?'ដកខ្ទាស់':'ខ្ទាស់'}</button><button data-a="ncopy" data-v="${n.id}" class="text-slate-300 hover:underline">ចម្លង</button><button data-a="ndel" data-v="${n.id}" class="text-red-400 hover:underline">លុប</button></div></div>`).join(''):'<p class="text-sm text-slate-400 text-center py-6">មិនទាន់មានកំណត់ត្រាទេ។ សរសេរខាងលើ ហើយចុច «ចុះផ្សាយ»។</p>');
+  $('#pane').innerHTML=`<div class="space-y-2 mb-4"><input id="nt" class="inp" placeholder="ចំណងជើង (មិនបង្ខំ)"><textarea id="nb" class="inp" rows="5" placeholder="សរសេរកំណត់ត្រារបស់អ្នកនៅទីនេះ…"></textarea><div class="flex gap-2"><button data-a="nsave" class="btn flex-1"><i class="fa-solid fa-paper-plane"></i>ចុះផ្សាយ</button><button data-a="nclr" class="btn btn-sec">សម្អាត</button>${nl.length?'<button data-a="nprint" class="btn btn-sec" title="បោះពុម្ព / PDF"><i class="fa-solid fa-print"></i></button>':''}</div></div><p class="text-xs text-slate-400 mb-2">កំណត់ត្រារបស់ខ្ញុំ ${nl.length}</p>`+(nl.length?nl.map(n=>`<div class="glass-soft p-3.5 mb-2.5"><div class="flex items-start justify-between gap-2"><p class="font-semibold text-sm">${n.pin?'📌 ':''}${esc(n.t||'កំណត់ត្រា')}</p><span class="text-[10px] text-slate-500 whitespace-nowrap">${n.d||''}</span></div>${n.md?`<div class="md text-sm text-slate-200 mt-1.5 break-words">${md(n.b||'')}</div>`:`<p class="text-sm text-slate-200 mt-1.5 whitespace-pre-wrap break-words">${esc(n.b||'')}</p>`}<div class="flex flex-wrap gap-3 text-xs mt-2.5"><button data-a="nedit" data-v="${n.id}" class="text-blue-300 hover:underline">កែសម្រួល</button><button data-a="npin" data-v="${n.id}" class="text-amber-300 hover:underline">${n.pin?'ដកខ្ទាស់':'ខ្ទាស់'}</button><button data-a="ncopy" data-v="${n.id}" class="text-slate-300 hover:underline">ចម្លង</button><button data-a="ndel" data-v="${n.id}" class="text-red-400 hover:underline">លុប</button></div></div>`).join(''):'<p class="text-sm text-slate-400 text-center py-6">មិនទាន់មានកំណត់ត្រាទេ។ សរសេរខាងលើ ហើយចុច «ចុះផ្សាយ»។</p>');rm($('#pane'));
 }
 A.nsave=async()=>{const k=view,t=$('#nt').value.trim(),b=$('#nb').value.trim();if(!b&&!t)return toast('សូមសរសេរអ្វីមួយសិន');const d=sd(k);d.nl=d.nl||[];if(NEDIT){const n=d.nl.find(x=>x.id==NEDIT);if(n){n.t=t;n.b=b;n.d=today()}NEDIT=null}else d.nl.push({id:Date.now().toString(36),t,b,d:today(),ts:Date.now(),pin:0});await save(k);toast('បានចុះផ្សាយ ✓');nlist()};
 A.nedit=id=>{const n=(sd(view).nl||[]).find(x=>x.id==id);if(!n)return;NEDIT=id;$('#nt').value=n.t||'';$('#nb').value=n.b||'';$('#nb').focus();window.scrollTo({top:0,behavior:'smooth'});toast('កំពុងកែសម្រួល — ចុច «ចុះផ្សាយ» ដើម្បីរក្សាទុក')};
@@ -597,7 +673,7 @@ function mist(){
   $('#pane').innerHTML=`<div class="mb-2.5"><h3 class="font-bold text-sm">📒 កំហុសរបស់ខ្ញុំ (${subj(k)[1]})</h3><p class="text-xs text-slate-400">សំណួរដែលឆ្លើយខុស មកទីនេះដោយស្វ័យប្រវត្តិ</p></div>${m.length?`<div class="flex flex-wrap gap-3 mb-3 text-xs"><button data-a="mclassify" class="text-sky-300 hover:underline">🗂 ចាត់ក្រុមតាមប្រធានបទ (AI)</button><button data-a="mretry" class="text-emerald-300 hover:underline">🔁 ធ្វើទាំងអស់ឡើងវិញ</button><button data-a="mclr" class="text-red-400 hover:underline">សម្អាត</button></div>`:''}${body}`;
   rm($('#pane'));
 }
-A.mtopic=v=>{const g=decodeURIComponent(v),m=(sd(view).mist||[]).filter(x=>x.tp==g);if(!m.length)return;tab='quiz';render();Q={k:view,retry:true,qs:m.slice().sort(()=>Math.random()-.5).slice(0,30).map(x=>({q:x.q,options:x.o,answer:x.a,why:'',k:view})),i:0,s:0};showQ()};
+A.mtopic=v=>{const g=decodeURIComponent(v),m=(sd(view).mist||[]).filter(x=>x.tp==g);if(!m.length)return;tab='quiz';render();setQ({k:view,retry:true,qs:m.slice().sort(()=>Math.random()-.5).slice(0,30).map(x=>({q:x.q,options:x.o,answer:x.a,why:'',k:view})),i:0,s:0});showQ()};
 A.mclassify=async(_,b)=>{
   const k=view,d=sd(k),m=d.mist||[],todo=m.filter(x=>!x.tp);if(!todo.length)return toast('បានចាត់ក្រុមរួចហើយ ✓');
   if(b)b.disabled=true;let ok=0;
@@ -607,7 +683,7 @@ A.mclassify=async(_,b)=>{
     if(r)r.split('\n').forEach(l=>{const mm=l.match(/^\s*(\d+)\s*[:.)\-]\s*(.+)$/);if(mm&&part[+mm[1]-1]){part[+mm[1]-1].tp=mm[2].replace(/[*#`"]/g,'').trim().slice(0,40);ok++}})}
   await save(k);if(b)b.disabled=false;toast(ok?'បានចាត់ក្រុម '+ok+' សំណួរ ✓':'AI មិនអាចចាត់ក្រុមបាន៖ '+(ERR||''));if(view==k&&tab=='mist')mist();
 };
-A.mretry=()=>{const m=sd(view).mist||[];if(!m.length)return toast('មិនទាន់មានកំហុស');tab='quiz';render();Q={k:view,retry:true,qs:m.slice().sort(()=>Math.random()-.5).slice(0,30).map(x=>({q:x.q,options:x.o,answer:x.a,why:'',k:view})),i:0,s:0};showQ()};
+A.mretry=()=>{const m=sd(view).mist||[];if(!m.length)return toast('មិនទាន់មានកំហុស');tab='quiz';render();setQ({k:view,retry:true,qs:m.slice().sort(()=>Math.random()-.5).slice(0,30).map(x=>({q:x.q,options:x.o,answer:x.a,why:'',k:view})),i:0,s:0});showQ()};
 A.mdel=id=>{sd(view).mist=(sd(view).mist||[]).filter(y=>y.i!=id);save(view);mist()};
 A.mclr=()=>{if(confirm('សម្អាតកំហុសទាំងអស់ឬ?')){sd(view).mist=[];save(view);mist()}};
 A.mask=id=>{const x=(sd(view).mist||[]).find(y=>y.i==id);if(!x)return;tab='ai';render();const ci=$('#ci');if(ci){ci.value='ខ្ញុំឆ្លើយខុសសំណួរនេះ សូមពន្យល់ហេតុអ្វីចម្លើយត្រឹមត្រូវ និងរបៀបគិត៖ '+x.q+' | ចម្លើយត្រឹមត្រូវ៖ '+((x.o||[])[x.a]||'');A.send()}};
@@ -764,8 +840,17 @@ async function oaCall(u,k,m,messages,json,vision){
   return data.choices?.[0]?.message?.content||'';
 }
 
+// Free AI tiers cap a single request (Groq: "413 Request too large" / tokens-per-minute). When a provider says the prompt is too big,
+// retry the same model with a shorter one (older chat turns dropped, long excerpts clipped) instead of failing.
+const tooBig=m=>{m=String(m||'');if(/\b413\b|request too large|too large|reduce the length|context[ _-]?(length|window)|maximum context/i.test(m))return true;const r=/Limit (\d+)[\s\S]*?Requested (\d+)/i.exec(m);return !!r&&+r[2]>+r[1]};
+function shrinkMsgs(ms,f){
+  const sy=ms.filter(m=>m.role=='system'),rest=ms.filter(m=>m.role!='system'),keep=rest.slice(-Math.max(1,Math.ceil(rest.length*f)));
+  return [...sy,...keep].map(m=>{if(typeof m.content!='string')return m;const n=Math.max(1500,Math.floor(m.content.length*f));return m.content.length>n?{...m,content:m.content.slice(0,n)+'…'}:m});
+}
 async function ask(messages,json,vision,check){
   messages=messages.map(m=>({role:m.role,content:m.content}));
+  // answer checkers must see the whole answer, so they are never shortened
+  let msgs=messages,lvl=0;const canShrink=!vision&&!/^You are a strict /.test(typeof messages[0]?.content=='string'?messages[0].content:'');
   ERR='';const t0=Date.now(),EM={},dead=new Set(),L=[],gKeys=kl('groq');
   if(gKeys.length){
     const av=await avail();let models;
@@ -779,7 +864,8 @@ async function ask(messages,json,vision,check){
   for(const x of L){
     const dk=x.u+'|'+x.k;if(dead.has(dk))continue;if(Date.now()-t0>420000)break;
     try{
-      let t=await oaCall(x.u,x.k,x.m,messages,json,vision);
+      let t;
+      for(;;){try{t=await oaCall(x.u,x.k,x.m,msgs,json,vision);break}catch(e){if(canShrink&&lvl<3&&tooBig(e.message)){msgs=shrinkMsgs(messages,[.6,.4,.25][lvl++]);continue}throw e}}
       t=(t||'').replace(/<think>[\s\S]*?<\/think>/g,'').trim();
       if(!t)throw new Error('គ្មានចម្លើយ');
       if(check&&!check(t))throw new Error('ទម្រង់មិនត្រឹមត្រូវ');
@@ -792,6 +878,7 @@ async function ask(messages,json,vision,check){
     }
   }
   ERR=(gKeys.length?'':'មិនទាន់មានកូនសោ Groq · ')+(Object.entries(EM).map(([a,b])=>a+': '+b).join(' | ')||'សូមពិនិត្យអ៊ីនធឺណិត')+(/401|Invalid API/i.test(EM.Groq||'')?' · Admin៖ កូនសោ Groq មិនត្រឹមត្រូវ — ដាក់កូនសោថ្មីក្នុង Profile → API រួមសម្រាប់ថ្នាក់':'');
+  ERR=ERR.replace(/org_[A-Za-z0-9]+/g,'org').replace(/`/g,'').slice(0,320);
   return null;
 }
 
@@ -876,7 +963,8 @@ const bub=(m,i)=>m.role=='user'
       <div class="md">${md(cleanAI(m.content))}</div>
       <div class="flex flex-wrap items-center gap-3 mt-2 pt-2 border-t border-slate-700/40 text-xs text-slate-400">
         <button data-a="cpmsg" data-v="${i}" class="hover:text-white flex items-center gap-1"><i class="fa-solid fa-copy"></i>ចម្លង</button>
-        <button data-a="svmsg" data-v="${i}" class="hover:text-emerald-300 flex items-center gap-1"><i class="fa-solid fa-bookmark"></i>ទុកក្នុងរូបមន្ត</button>
+        <button data-a="svnote" data-v="${i}" class="hover:text-emerald-300 flex items-center gap-1"><i class="fa-solid fa-note-sticky"></i>ទុកក្នុងកំណត់ត្រា</button>
+        ${SCI.has(view)?`<button data-a="svmsg" data-v="${i}" class="hover:text-emerald-300 flex items-center gap-1"><i class="fa-solid fa-bookmark"></i>ទុកក្នុងរូបមន្ត</button>`:''}
         <span class="ml-auto text-[11px] text-slate-500">${m.by?esc(m.by):''}</span>
       </div>
     </div>`;
@@ -894,7 +982,7 @@ const CH=[
   ['សួរខ្ញុំ ៥ សំណួរ','សូមសួរខ្ញុំ ៥ សំណួរខ្លីៗ ម្តងមួយ លើមេរៀននេះតាមស្តង់ដារបាក់ឌុប ហើយកែចម្លើយរបស់ខ្ញុំរាល់ពេល។'],
   ['បង្រៀនខ្ញុំរហូតយល់','សូមបង្រៀនខ្ញុំមេរៀននេះម្តងមួយចំណុចតូចៗ៖ ពន្យល់ចំណុចមួយ សួរខ្ញុំ ១ សំណួរដើម្បីពិនិត្យការយល់ដឹង រង់ចាំចម្លើយរបស់ខ្ញុំ ហើយទើបបន្តទៅចំណុចបន្ទាប់។ បើខ្ញុំឆ្លើយខុស សូមពន្យល់ម្តងទៀតតាមរបៀបងាយជាងមុន។']
 ];
-const CHP={};
+const CHP={},DRAFT={},PEND={};let AIK=''; // unsent text and "answer on its way" flags per chat, so they survive leaving the tab
 const SRC={},srcOf=k=>SRC[k]===undefined?'all':SRC[k],FM=k=>{const v=srcOf(k);return !!v&&v!='all'};
 const ck=k=>{const v=srcOf(k);return v=='all'?k:k+'|'+(v||'g')},cdoc=c=>{const q=c.split('|');return q[1]?'_chat_'+q[1]:'_chat'};
 const loadChat=c=>chat[c]?Promise.resolve():(CHP[c]=CHP[c]||getDoc(txtRef(c.split('|')[0],cdoc(c))).then(r=>{if(!chat[c])chat[c]=r.exists()?JSON.parse(r.data().t||'[]'):[]}).catch(()=>{if(!chat[c])chat[c]=[]}).finally(()=>{delete CHP[c]}));
@@ -919,7 +1007,7 @@ async function learnAll(k,max,quiet){
 }
 function autoLearn(k){const d=sd(k);if(LRN[k]||!d.files.some(f=>f.n&&!f.pend&&!(d.know||{})[f.id])||LRN['t'+k]>Date.now()-6e5)return;LRN[k]=1;LRN['t'+k]=Date.now();learnAll(k,2,true).finally(()=>{LRN[k]=0})}
 function ai(){
-  const k=view,cc=ck(k),c=chat[cc]||[];IMG=null;ATT=null;
+  const k=view,cc=ck(k),c=chat[cc]||[];if(AIK!==k){IMG=null;ATT=null;AIK=k}
   $('#pane').innerHTML=`<div class="flex gap-2 mb-2">${srcSel(k,true)}${c.length?`<button data-a="clrai" class="btn btn-sec px-3" title="សម្អាតការសន្ទនា"><i class="fa-solid fa-broom"></i></button>`:''}</div>
   <p class="text-[11px] text-emerald-300 mb-1.5">${FM(k)?`🔒 AI ឆ្លើយតាមឯកសារនេះតែមួយ មិនលាយឡំឯកសារផ្សេង · ប្រវត្តិសន្ទនាដាច់ដោយឡែក · <button data-a="peek" class="underline">👁 មើលអត្ថបទដែល AI អាន</button>`:srcOf(k)=='all'?'📚 AI ស្វែងរកក្នុងឯកសារទាំងអស់ · បើរកមិនឃើញ ប្រើចំណេះដឹងទូទៅ':'🧠 AI ប្រើចំណេះដឹងទូទៅ (មិនអានឯកសារ)'}</p>
   <p class="text-[11px] text-slate-500 mb-2"><i class="fa-solid fa-brain text-purple-300 mr-1"></i>គ្រូ AI ${subj(k)[1]} ឆ្លើយតែមុខវិជ្ជានេះ · អានឯកសារ និងរូបភាព · រៀន និងចងចាំមេរៀនពីឯកសាររបស់អ្នក</p>
@@ -935,9 +1023,10 @@ function ai(){
     <input id="ci" class="inp" placeholder="វាយសំណួរ ឬលំហាត់ (ឧ. ទំព័រ ៤០-៦០)…">
     <button data-a="send" class="btn" title="ផ្ញើ"><i class="fa-solid fa-paper-plane"></i></button>
   </div>`;
-  if(c.length)draw($('#cl'),c);
+  if(c.length)draw($('#cl'),c,!!PEND[cc]&&Date.now()-PEND[cc]<3e5);
   else if(!chat[cc])loadChat(cc).then(()=>{if(view==k&&tab=='ai')ai()});
   $('#src').value=srcOf(k);$('#src').onchange=e=>{SRC[k]=e.target.value;ai()};autoLearn(k);
+  const ci=$('#ci');ci.value=DRAFT[cc]||'';ci.oninput=()=>{DRAFT[cc]=ci.value};if(IMG)$('#pc').classList.remove('hide');if(ATT){$('#pa').classList.remove('hide');$('#pan').textContent=ATT.name}
   $('#ci').onkeydown=e=>{if(e.key=='Enter')A.send()};
   $('#ph').onchange=async e=>{const f=e.target.files[0];if(!f)return;IMG=await shrink(f);$('#pc').classList.remove('hide')};
   $('#at').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;if(f.type.startsWith('image/')){IMG=await shrink(f);$('#pc').classList.remove('hide');return}toast('កំពុងអាន '+f.name+'…');const t=(await extract(f)).trim();if(t.length<10)return toast('មិនអាចអានឯកសារនេះបានទេ');ATT={name:f.name,t:t.slice(0,12000)};$('#pan').textContent=f.name;$('#pa').classList.remove('hide');const id=await saveDoc(view,f,t);if(id){prog('AI កំពុងសិក្សាឯកសារនេះឱ្យយល់…');await learnFile(view,{id,name:f.name})}toast('AI បានសិក្សាឯកសារនេះរួច ✓ — សួរសំណួរបាន')};
@@ -952,13 +1041,14 @@ A.memv=()=>{const d=sd(view),m=(d.mem||'')+((d.recent||[]).length?'\n\nសំណ
 A.clrai=()=>{const c=ck(view);chat[c]=[];saveChat(c);ai()};
 A.rmph=()=>{IMG=null;$('#pc').classList.add('hide')};
 A.cpmsg=i=>{const t=cleanAI(chat[ck(view)]?.[i]?.content||'');navigator.clipboard?.writeText(t).then(()=>toast('បានចម្លងចម្លើយ ✓'))};
-A.svmsg=async i=>{const t=cleanAI(chat[ck(view)]?.[i]?.content||'');if(!t)return;fL(view).push({t:'💬 '+t.replace(/[#*$\\]/g,'').trim().split('\n')[0].slice(0,40),b:t});await save(view);toast('បានរក្សាទុកក្នុងរូបមន្ត ✓')};
+A.svnote=async i=>{const t=cleanAI(chat[ck(view)]?.[i]?.content||'');if(!t)return;const d=sd(view);d.nl=d.nl||[];d.nl.push({id:Date.now().toString(36),t:'💬 '+t.replace(/[#*$\\]/g,'').trim().split('\n')[0].slice(0,40),b:t,md:1,d:today(),ts:Date.now(),pin:0});await save(view);toast('បានរក្សាទុកក្នុងកំណត់ត្រា ✓')};
+A.svmsg=async i=>{if(!SCI.has(view))return A.svnote(i);const t=cleanAI(chat[ck(view)]?.[i]?.content||'');if(!t)return;fL(view).push({t:'💬 '+t.replace(/[#*$\\]/g,'').trim().split('\n')[0].slice(0,40),b:t});FSEL[view]='';await save(view);toast('បានរក្សាទុកក្នុងរូបមន្ត ✓ (ផ្នែក «ទូទៅ»)')};
 A.send=async()=>{
   const k=view,i=$('#ci'),q=i.value.trim();if(!q&&!IMG&&!ATT)return;
   const cc=ck(k);await loadChat(cc);const c=chat[cc],ctx=await getSrc(k,srcOf(k),q),srcs=[...LASTSRC],img=IMG,att=ATT;IMG=null;ATT=null;$('#pa')?.classList.add('hide');$('#pc')?.classList.add('hide');
-  c.push({role:'user',content:(img?'📷 ':'')+(att?'📎 '+att.name+' · ':'')+(q||(att?'សូមអានឯកសារនេះ':'ដោះស្រាយលំហាត់ក្នុងរូបនេះ'))});i.value='';draw($('#cl'),c,true);
-  if(FM(k)&&ctx.trim().length<30){c.push({role:'assistant',content:'⚠ AI មិនអាចអានអត្ថបទពីឯកសារនេះបានទេ (អក្សរខ្មែរក្នុង PDF អាចខូច)។ ចុច «👁 មើលអត្ថបទដែល AI អាន» ដើម្បីពិនិត្យ ឬលុបឯកសារ រួចផ្ទុកឡើងម្តងទៀត — ប្រព័ន្ធនឹងស្កេនទំព័រដោយ AI។'});saveChat(cc);draw($('#cl'),c);return}
-  const h=c.slice(-10);
+  c.push({role:'user',content:(img?'📷 ':'')+(att?'📎 '+att.name+' · ':'')+(q||(att?'សូមអានឯកសារនេះ':'ដោះស្រាយលំហាត់ក្នុងរូបនេះ'))});i.value='';DRAFT[cc]='';PEND[cc]=Date.now();draw($('#cl'),c,true);
+  if(FM(k)&&ctx.trim().length<30){c.push({role:'assistant',content:'⚠ AI មិនអាចអានអត្ថបទពីឯកសារនេះបានទេ (អក្សរខ្មែរក្នុង PDF អាចខូច)។ ចុច «👁 មើលអត្ថបទដែល AI អាន» ដើម្បីពិនិត្យ ឬលុបឯកសារ រួចផ្ទុកឡើងម្តងទៀត — ប្រព័ន្ធនឹងស្កេនទំព័រដោយ AI។'});PEND[cc]=0;saveChat(cc);draw($('#cl'),c);return}
+  const h=c.filter(m=>!(m.role=='assistant'&&String(m.content).startsWith('⚠'))).slice(-10); // error bubbles are not sent back to the model
   if(att)h[h.length-1]={role:'user',content:(q||'សូមអាន សង្ខេប និងឆ្លើយសំណួរពីឯកសារនេះ។')+'\n\n[ឯកសារភ្ជាប់៖ '+att.name+']\n"""'+att.t+'"""'};
   if(img)h[h.length-1]={role:'user',content:[{type:'text',text:q||'សូមអានលំហាត់ក្នុងរូបនេះឱ្យច្បាស់ ហើយដោះស្រាយមួយជំហានម្តងៗជាភាសាខ្មែរ។'},{type:'image_url',image_url:{url:img}}]};
   const SM=[{role:'system',content:sys(k)+STYS[STY][1]+digest(k)+(FM(k)?' SINGLE-FILE MODE: use ONLY the excerpts from the one file the student selected. Never use other lessons or files, or earlier chat about other files. If the excerpts do not contain the answer, say "មិនមានក្នុងឯកសារនេះ" in one short sentence, then answer from general knowledge of the subject and mark it "(ចំណេះដឹងទូទៅ)".':'')+(STRICT?' STRICT MODE: answer ONLY from the excerpts below. If they do not contain the answer, reply exactly "មិនមានក្នុងឯកសារ" and ask the student to upload or photograph the page. Do not use outside knowledge.':'')+(ctx?`\n\nឯកសារ និងកំណត់ត្រារបស់សិស្ស (ប្រើជាប្រភពសំខាន់)៖\n"""${ctx.slice(0,9000)}"""`:'')}];let r=await ask([...SM,...h],false,!!img);
@@ -969,23 +1059,32 @@ A.send=async()=>{
     if(v){if(!/^\s*OK[.!]?\s*$/i.test(v.trim())&&v.trim().length>20)r=v.trim();WHO+=' · ✓ពិនិត្យ'}
   }
   c.push({role:'assistant',by:r?WHO:'',content:(r?cleanAI(r,false)+(srcs.length?'\n\n'+FOOT+' '+[...new Set(srcs)].slice(0,4).join(' · '):''):null)||'⚠ '+(img?'AI មិនអាចអានរូបភាពបានទេឥឡូវនេះ។ សូមព្យាយាមម្តងទៀត ឬវាយលំហាត់ជាអក្សរ។':'AI កំពុងរវល់ សូមព្យាយាមម្តងទៀតបន្តិចក្រោយ។')+(ERR?` (${ERR})`:'')});
-  saveChat(cc);if(r)updMem(k);
+  PEND[cc]=0;saveChat(cc);if(r)updMem(k);
   if(r&&img)saveShot(k,img);
-  if(view==k&&tab=='ai')draw($('#cl'),c);
+  if(view==k&&tab=='ai'&&ck(k)==cc)draw($('#cl'),c);
 };
 A.chip=i=>{const c=CH[i];$('#ci').value=c[1]+' (មុខវិជ្ជា '+subj(view)[1]+')';if(c[2]){toast('ថតរូបលំហាត់ និងចម្លើយរបស់អ្នក រួចចុចផ្ញើ');$('#ph').click();return}A.send()};
 
 // ---------- FLASHCARDS ----------
-let CQ=[],CI=0,CF=false;
+let CQ=[],CI=0,CF=false,CQK=''; // CQK = subject of the review session in progress, so it can be resumed
 const dueC=k=>(sd(k).cards||[]).filter(c=>c.due<=today());
 function cards(){
   const k=view,n=(sd(k).cards||[]).length,d=dueC(k).length;
   $('#pane').innerHTML=`<div class="space-y-2 mb-3">${srcSel(k,true)}<div class="flex gap-2"><input id="qt" class="inp" placeholder="ប្រធានបទ"><input id="cn" type="number" min="1" value="10" class="inp" style="width:74px" title="ចំនួនប័ណ្ណ"><button data-a="mkc" class="btn whitespace-nowrap"><i class="fa-solid fa-plus"></i>បង្កើតប័ណ្ណ</button></div></div>
   <p class="text-xs text-slate-400 mb-2">សរុប ${n} ប័ណ្ណ · ត្រូវរំលឹកថ្ងៃនេះ ${d} ប័ណ្ណ · សំណួរដែលឆ្លើយខុសនឹងត្រូវបន្ថែមមកទីនេះដោយស្វ័យប្រវត្តិ</p>
   ${d?'<button data-a="cstudy" class="btn w-full">ចាប់ផ្តើមរំលឹកឥឡូវនេះ</button>':''}
-  <div id="cs" class="mt-3"></div>
+  <div id="cs" class="mt-3"></div>${cardList(k)}
   ${(sd(view).cards||[]).some(mathy)?'<button data-a="fixcards" class="text-xs text-blue-300 mt-3 mr-4 hover:underline">🔧 កែ format គណិតនៃប័ណ្ណចាស់ដោយ AI</button>':''}${n?'<button data-a="cclear" class="text-xs text-red-400 mt-3 hover:underline">លុបប័ណ្ណទាំងអស់</button>':''}`;
+  rm($('#pane'));
+  if(CQK===k&&CQ.length&&CI<CQ.length)showC();
+  else if(GENC[k]&&Date.now()-GENC[k]<6e5)$('#cs').innerHTML='<p class="text-sm text-slate-400">កំពុងបង្កើតប័ណ្ណចងចាំ… អ្នកអាចទៅផ្ទាំងផ្សេងបាន ប័ណ្ណនឹងរង់ចាំអ្នក</p>';
 }
+// every card of the subject stays visible (and deletable) here, so nothing seems to "disappear" after it is generated
+function cardList(k){
+  const all=sd(k).cards||[];if(!all.length)return '';
+  return `<details class="mt-3 glass-soft p-3"><summary class="cursor-pointer text-sm font-semibold">📇 មើលប័ណ្ណទាំងអស់ (${all.length})</summary><div class="space-y-2 mt-2.5 max-h-[50vh] overflow-y-auto pr-1">${all.map((c,i)=>[c,i]).reverse().slice(0,150).map(([c,i])=>`<div class="rounded-xl p-2.5 bg-black/10 text-sm flex justify-between gap-2"><div class="min-w-0"><div class="font-semibold break-words md">${md(c.f)}</div><div class="text-slate-300 mt-1 break-words md">${md(c.b)}</div></div><button data-a="delcard" data-v="${i}" class="text-red-400 text-xs shrink-0" title="លុប"><i class="fa-solid fa-xmark"></i></button></div>`).join('')}</div></details>`;
+}
+A.delcard=i=>{const d=sd(view);d.cards=(d.cards||[]).filter((_,j)=>j!=+i);save(view);cards();$('#pane details')?.setAttribute('open','')};
 async function genMany(...a){SPEED=1;try{return await genMany0(...a)}finally{SPEED=0}}
 async function genMany0(total,label,mk,key){
   const out=[];let fail=0;
@@ -999,18 +1098,19 @@ async function genMany0(total,label,mk,key){
   return out.slice(0,total);
 }
 A.mkc=async(_,b)=>{
-  const k=view,N=Math.max(1,Math.floor(+$('#cn').value||10));if(N>60&&!confirm('ប័ណ្ណ '+N+' ត្រូវប្រើពេលយូរ។ បន្តឬ?'))return;
-  b.disabled=true;$('#cs').innerHTML='<p class="text-sm text-slate-400">កំពុងបង្កើតប័ណ្ណចងចាំ…</p>';
+  const k=view;if(GENC[k]&&Date.now()-GENC[k]<6e5)return toast('កំពុងបង្កើតប័ណ្ណ… សូមរង់ចាំបន្តិច');
+  const N=Math.max(1,Math.floor(+$('#cn').value||10));if(N>60&&!confirm('ប័ណ្ណ '+N+' ត្រូវប្រើពេលយូរ។ បន្តឬ?'))return;
+  GENC[k]=Date.now();b.disabled=true;$('#cs').innerHTML='<p class="text-sm text-slate-400">កំពុងបង្កើតប័ណ្ណចងចាំ… អ្នកអាចទៅផ្ទាំងផ្សេងបាន ប័ណ្ណនឹងរង់ចាំអ្នក</p>';
   const top=$('#qt').value.trim(),ctx=await getSrc(k,$('#src').value,top);
   const cs=await genMany(N,'កំពុងបង្កើតប័ណ្ណ',async(n,prev)=>{
     const r=await ask([{role:'system',content:sys(k)+' Output ONLY '+n+' flashcards in this exact plain-text format, each separated by a line containing only ---. No JSON, no code fences.\nF: <front: a question or term>\nB: <back: short clear answer, under 30 words>\nDouble-check every fact against the source before writing it.\n'+(SCI.has(k)?MATHF+' ':'')+LQ(k)+(prev.length?' Do NOT repeat these: '+prev.join(' | ').slice(0,1500)+'.':'')},{role:'user',content:`Make ${n} flashcards${top?` about: ${top}`:''}.${ctx?`\nBase them on:\n"""${ctx.slice(0,5200)}"""`:''}`}],false,false,t=>parseCards(t).length>0);
     return parseCards(r);
   },'f');
-  b.disabled=false;
-  if(!cs.length){if($('#cs'))$('#cs').innerHTML=`<p class="text-sm text-amber-300">មិនអាចបង្កើតប័ណ្ណបានទេ ${esc(ERR||'សូមព្យាយាមម្តងទៀត')}</p>`;return}
+  b.disabled=false;GENC[k]=0;
+  if(!cs.length){if(view==k&&tab=='cards'&&$('#cs'))$('#cs').innerHTML=`<p class="text-sm text-amber-300">មិនអាចបង្កើតប័ណ្ណបានទេ ${esc(ERR||'សូមព្យាយាមម្តងទៀត')}</p>`;return}
   const d=sd(k);d.cards=[...(d.cards||[]),...cs.map(x=>({...x,box:1,due:today()}))].slice(-1000);await save(k);toast('បានបង្កើត '+cs.length+' ប័ណ្ណ ✓');if(view==k&&tab=='cards')cards();
 };
-A.cstudy=()=>{CQ=dueC(view).sort(()=>Math.random()-.5);CI=0;CF=false;showC()};
+A.cstudy=()=>{CQ=dueC(view).sort(()=>Math.random()-.5);CI=0;CF=false;CQK=view;showC()};
 function showC(){
   const z=$('#cs'),c=CQ[CI];if(!z)return;
   if(!c){z.innerHTML='<p class="text-center py-5 font-bold text-emerald-400">🎉 អស្ចារ្យណាស់! អ្នកបានរំលឹកប័ណ្ណថ្ងៃនេះចប់អស់ហើយ!</p>';return}
@@ -1030,7 +1130,7 @@ A.fixcards=async()=>{
     const out=r?parseCards(r):[];if(out.length==part.length){out.forEach((c,j)=>{d.cards[part[j]].f=c.f;d.cards[part[j]].b=c.b});fixed+=part.length}}}finally{SPEED=0}
   await save(k);toast(fixed?'បានកែ format '+fixed+' ប័ណ្ណ ✓':'AI មិនអាចកែបាន៖ '+(ERR||''));if(view==k&&tab=='cards')cards();
 };
-A.cclear=()=>{if(confirm('លុបប័ណ្ណទាំងអស់ឬ?')){sd(view).cards=[];save(view);cards()}};
+A.cclear=()=>{if(confirm('លុបប័ណ្ណទាំងអស់ឬ?')){sd(view).cards=[];CQ=[];CQK='';save(view);cards()}};
 
 // ---------- PWA ----------
 if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
@@ -1145,7 +1245,7 @@ A.delpub=async id=>{if(!confirm('លុបឈ្មោះនេះចេញព�
 // ---------- VOICE ----------
 A.mic=()=>{const R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R)return toast('កម្មវិធីរុករកនេះមិនគាំទ្រការបញ្ចូលសំឡេងទេ');const r=new R();r.lang=sd(view).lang=='en'?'en-US':'km-KH';r.onresult=e=>{const i=$('#ci');if(i)i.value=e.results[0][0].transcript};r.onerror=()=>toast('ស្តាប់មិនឮទេ');r.start();toast('🎤 កំពុងស្តាប់…')};
 
-// ---------- PLAN, BADGES, BACKUP ----------
+// ---------- BADGES, REPORT-PAGE STUDY PLAN, BACKUP IMPORT ----------
 const BADGES=(tot,q,mast,ra)=>[
   ['🔥','រៀនជាប់គ្នា ៧ ថ្ងៃ',(ME.best||streakN)>=7],
   ['⏱️','រៀនគ្រប់ ១០ ម៉ោង',tot>=600],
@@ -1252,7 +1352,7 @@ function profile(){
       </div>
     </div>
     <div class="glass p-5 space-y-3">${statsHTML()}</div>
-    <div class="glass p-5 text-center"><img src="logo.png" alt="" class="mx-auto w-16 h-16 object-contain mb-2"><p class="text-xs text-slate-400">NGS-HUB · ថ្នាក់រៀន</p><p class="text-sm font-semibold mt-1">បង្កើតដោយ សារ៉ែន សិរីបុញ្ញវឌ្ឍក៍</p><div class="flex items-center justify-center gap-1.5 mt-3 text-[11px] text-slate-500">ទំហំអក្សរ <button data-a="fsm" class="px-2 py-0.5 rounded bg-slate-800/80 text-slate-300">A−</button><button data-a="fsp" class="px-2 py-0.5 rounded bg-slate-800/80 text-slate-300">A+</button></div></div>
+    <div class="glass p-5 text-center"><img src="logo.png" alt="" class="mx-auto w-16 h-16 object-contain mb-2"><p class="text-xs text-slate-400">NGS-HUB · ថ្នាក់រៀន</p><p class="text-sm font-semibold mt-1">បង្កើតដោយ សារ៉ែន សិរីបុញ្ញវឌ្ឍក៍</p><div class="mt-3 text-[11px] text-slate-500">រូបរាង (Theme)<div class="grid grid-cols-3 gap-2 mt-1.5"><button data-a="theme" data-v="light" class="seg ${themeMode()=='light'?'on':''}"><i class="fa-solid fa-sun"></i>ពន្លឺ</button><button data-a="theme" data-v="dark" class="seg ${themeMode()=='dark'?'on':''}"><i class="fa-solid fa-moon"></i>ងងឹត</button><button data-a="theme" data-v="auto" class="seg ${themeMode()=='auto'?'on':''}"><i class="fa-solid fa-circle-half-stroke"></i>តាមឧបករណ៍</button></div></div><div class="flex items-center justify-center gap-1.5 mt-3 text-[11px] text-slate-500">ទំហំអក្សរ<button data-a="fsm" class="px-2 py-0.5 rounded bg-slate-800/80 text-slate-300">A−</button><button data-a="fsp" class="px-2 py-0.5 rounded bg-slate-800/80 text-slate-300">A+</button></div></div>
   </div>`;
   $('#pph').onchange=async e=>{const f=e.target.files[0];if(!f)return;PAV=await shrink(f,256);$('#pav').innerHTML=avatar(84,{avatar:PAV})};
 }
@@ -1294,38 +1394,59 @@ function examCard(){
 }
 
 // ---------- QUIZ ----------
+// quiz sessions are kept per subject (memory + localStorage) so leaving the tab and coming back resumes them
+const QSES={},GENQ={},GENC={},QOPT={};
+const qKey=k=>'qz:'+(U?.uid||'x')+':'+k;
+const qSave=k=>{try{QSES[k]?localStorage.setItem(qKey(k),JSON.stringify(QSES[k])):localStorage.removeItem(qKey(k))}catch(e){}};
+const qGet=k=>{if(QSES[k]===undefined){try{QSES[k]=JSON.parse(localStorage.getItem(qKey(k))||'null')}catch(e){QSES[k]=null}}return QSES[k]};
+const setQ=s=>{Q=s;QSES[s.k]=s;qSave(s.k)};
 function quiz(){
-  const k=view,last=sd(k).scores.slice(-3).reverse();
+  const k=view,last=sd(k).scores.slice(-3).reverse(),ss=qGet(k),o=QOPT[k];
   $('#pane').innerHTML=`<div class="space-y-2.5 mb-3">${srcSel(k,true)}
     <div class="flex gap-2"><input id="qt" class="inp" placeholder="ប្រធានបទ"><button data-a="mk" class="btn whitespace-nowrap"><i class="fa-solid fa-wand-magic-sparkles"></i>បង្កើតសំណួរ</button></div>
     <div class="flex gap-2"><input id="qn" type="number" min="1" value="10" class="inp" style="max-width:120px" placeholder="ចំនួនសំណួរ" title="ចំនួនសំណួរ"><select id="ql" class="inp"><option value="easy">កម្រិតងាយ</option><option value="medium" selected>កម្រិតមធ្យម</option><option value="hard">កម្រិតពិបាក (បាក់ឌុប)</option></select></div>
   </div>
   <div id="qz"></div>
   ${last.length?`<p class="text-xs text-slate-400 mt-3">ពិន្ទុថ្មីៗ៖ ${last.map(s=>`${s.s}/${s.n} (${s.d})`).join(' · ')}</p>`:''}`;
+  if(o){$('#qt').value=o.t;$('#qn').value=o.n;$('#ql').value=o.l}
+  if(ss){Q=ss;showQ()}
+  else if(GENQ[k]&&Date.now()-GENQ[k]<6e5)$('#qz').innerHTML='<p class="text-sm text-slate-400">កំពុងបង្កើតសំណួរតេស្ត… អ្នកអាចទៅផ្ទាំងផ្សេងបាន សំណួរនឹងរង់ចាំអ្នក</p>';
 }
 A.mk=async(_,b)=>{
-  const k=view,N=Math.max(1,Math.floor(+$('#qn').value||10)),LV=$('#ql').value;if(N>60&&!confirm('សំណួរ '+N+' ត្រូវប្រើពេលយូរ។ បន្តឬ?'))return;
-  b.disabled=true;$('#qz').innerHTML='<p class="text-sm text-slate-400">កំពុងបង្កើតសំណួរតេស្ត…</p>';
+  const k=view;if(GENQ[k]&&Date.now()-GENQ[k]<6e5)return toast('កំពុងបង្កើតសំណួរ… សូមរង់ចាំបន្តិច');
+  const N=Math.max(1,Math.floor(+$('#qn').value||10)),LV=$('#ql').value;if(N>60&&!confirm('សំណួរ '+N+' ត្រូវប្រើពេលយូរ។ បន្តឬ?'))return;
+  GENQ[k]=Date.now();QOPT[k]={t:$('#qt').value,n:$('#qn').value,l:LV};
+  b.disabled=true;$('#qz').innerHTML='<p class="text-sm text-slate-400">កំពុងបង្កើតសំណួរតេស្ត… អ្នកអាចទៅផ្ទាំងផ្សេងបាន សំណួរនឹងរង់ចាំអ្នក</p>';
   const top=$('#qt').value.trim(),ctx=await getSrc(k,$('#src').value,top);
   const qs=await genMany(N,'កំពុងបង្កើតសំណួរ',async(n,prev)=>{
     const r=await ask([{role:'system',content:sys(k)+' Output ONLY '+n+' '+LV+' multiple-choice questions in this exact plain-text format, each separated by a line containing only ---. No JSON, no code fences.\nQ: <question>\nA) <option>\nB) <option>\nC) <option>\nD) <option>\nANSWER: <A, B, C or D>\nWHY: <short explanation>\nSolve every question yourself first and double-check that the marked answer is really correct. Exactly one option is correct and the options must be different. '+(SCI.has(k)?MATHF+' ':'')+LQ(k)+(prev.length?' Do NOT repeat these questions: '+prev.join(' | ').slice(0,1500)+'.':'')},{role:'user',content:`Make ${n} questions${top?` about: ${top}`:''}.${ctx?`\nBase them on:\n"""${ctx.slice(0,5200)}"""`:''}`}],false,false,t=>parseQuiz(t,k).length>0);
     return await verifyQuiz(k,parseQuiz(r,k));
   },'q');
-  b.disabled=false;
-  if(!qs.length){if($('#qz'))$('#qz').innerHTML='<p class="text-sm text-amber-300">មិនអាចបង្កើតសំណួរបានទេ '+esc(ERR||'សូមព្យាយាមម្តងទៀត')+'</p>';return}
-  Q={k,qs,i:0,s:0};showQ();
+  b.disabled=false;GENQ[k]=0;const here=view==k&&tab=='quiz'&&$('#qz');
+  if(!qs.length){if(here)$('#qz').innerHTML='<p class="text-sm text-amber-300">មិនអាចបង្កើតសំណួរបានទេ '+esc(ERR||'សូមព្យាយាមម្តងទៀត')+'</p>';else toast('មិនអាចបង្កើតសំណួរបានទេ — សូមព្យាយាមម្តងទៀត');return}
+  setQ({k,qs,i:0,s:0});if(here)showQ();else toast('✅ សំណួររួចរាល់ — បើកផ្ទាំង «សំណួរ» ដើម្បីធ្វើ');
 };
 function showQ(){
-  const z=$('#qz');if(!z)return;const q=Q.qs[Q.i];
-  if(!q){const n=Q.qs.length,d=sd(Q.k);d.scores=[...d.scores,{s:Q.s,n,d:today()}].slice(-20);save(Q.k);z.innerHTML=`<div class="text-center py-5"><p class="text-4xl font-extrabold text-emerald-400">${Q.s}/${n}</p><p class="text-sm text-slate-400 mt-1">បានរក្សាទុកពិន្ទុ ✓</p></div>`;return}
-  z.innerHTML=`<p class="text-xs text-slate-400 mb-1">សំណួរទី ${Q.i+1}/${Q.qs.length}</p><p class="font-semibold mb-3">${esc(q.q)}</p>`+q.options.map((o,j)=>`<button data-a="pick" data-v="${j}" class="qo w-full text-left p-3 mb-2 rounded-xl glass-soft text-sm transition">${esc(o)}</button>`).join('')+'<div id="qw"></div>';rm(z);
+  const z=$('#qz');if(!z||!Q||Q.k!==view)return;const q=Q.qs[Q.i];
+  if(!q){
+    const n=Q.qs.length;
+    if(!Q.fin){Q.fin=1;const d=sd(Q.k);d.scores=[...d.scores,{s:Q.s,n,d:today()}].slice(-20);save(Q.k);qSave(Q.k)}
+    z.innerHTML=`<div class="text-center py-5"><p class="text-4xl font-extrabold text-emerald-400">${Q.s}/${n}</p><p class="text-sm text-slate-400 mt-1">បានរក្សាទុកពិន្ទុ ✓</p><button data-a="qclear" class="btn btn-sec mt-3">សំណួរថ្មី</button></div>`;return}
+  z.innerHTML=`<p class="text-xs text-slate-400 mb-1 flex justify-between"><span>សំណួរទី ${Q.i+1}/${Q.qs.length}</span><button data-a="qclear" class="underline">លុបសំណួរនេះ</button></p><p class="font-semibold mb-3">${esc(q.q)}</p>`+q.options.map((o,j)=>`<button data-a="pick" data-v="${j}" class="qo w-full text-left p-3 mb-2 rounded-xl glass-soft text-sm transition">${esc(o)}</button>`).join('')+'<div id="qw"></div>';rm(z);
+  if(Q.done&&Q.pk!=null)revealQ();
+}
+function revealQ(){
+  const q=Q.qs[Q.i],a=+q.answer;
+  document.querySelectorAll('.qo').forEach((e,i)=>{if(i==a)e.classList.add('!bg-emerald-600/30','!border-emerald-500');else if(i==Q.pk)e.classList.add('!bg-red-600/30','!border-red-500')});
+  $('#qw').innerHTML=`<p class="text-sm text-slate-300 my-2.5 p-3 rounded-xl bg-slate-900/60">${esc(q.why||'')}</p><button data-a="nx" class="btn w-full">${Q.i+1<Q.qs.length?'សំណួរបន្ទាប់ →':'មើលលទ្ធផល'}</button>`;rm($('#qw'));
 }
 A.pick=j=>{
-  if(Q.done)return;Q.done=true;const q=Q.qs[Q.i],a=+q.answer;j=+j;if(j==a){Q.s++;if(Q.retry){const d=sd(Q.k);d.mist=(d.mist||[]).filter(x=>x.q!=q.q);save(Q.k)}}else if(!Q.retry){const d=sd(Q.k);(d.cards=d.cards||[]).push({f:q.q,b:q.options[a],box:1,due:today()});(d.mist=d.mist||[]).push({i:Date.now().toString(36),q:q.q,o:q.options,a,m:j,d:today()});d.mist=d.mist.slice(-100)}
-  document.querySelectorAll('.qo').forEach((e,i)=>{if(i==a)e.classList.add('!bg-emerald-600/30','!border-emerald-500');else if(i==j)e.classList.add('!bg-red-600/30','!border-red-500')});
-  $('#qw').innerHTML=`<p class="text-sm text-slate-300 my-2.5 p-3 rounded-xl bg-slate-900/60">${esc(q.why||'')}</p><button data-a="nx" class="btn w-full">${Q.i+1<Q.qs.length?'សំណួរបន្ទាប់ →':'មើលលទ្ធផល'}</button>`;rm($('#qw'));
+  if(Q.done)return;Q.done=true;const q=Q.qs[Q.i],a=+q.answer;j=+j;Q.pk=j;
+  if(j==a){Q.s++;if(Q.retry){const d=sd(Q.k);d.mist=(d.mist||[]).filter(x=>x.q!=q.q);save(Q.k)}}else if(!Q.retry){const d=sd(Q.k);(d.cards=d.cards||[]).push({f:q.q,b:q.options[a],box:1,due:today()});(d.mist=d.mist||[]).push({i:Date.now().toString(36),q:q.q,o:q.options,a,m:j,d:today()});d.mist=d.mist.slice(-100);save(Q.k)}
+  qSave(Q.k);revealQ();
 };
-A.nx=()=>{Q.i++;Q.done=false;showQ()};
+A.nx=()=>{Q.i++;Q.done=false;Q.pk=null;qSave(Q.k);showQ()};
+A.qclear=()=>{const k=view;QSES[k]=null;qSave(k);Q=null;quiz()};
 </script>
 </body>
 </html>
