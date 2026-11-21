@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>NGS-HUB — 12NGS-B</title>
+<title>NGS-HUB — ថ្នាក់រៀន</title>
 <meta name="theme-color" content="#060916">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -84,7 +84,7 @@ input[type=date].inp{-webkit-appearance:auto!important;appearance:auto!important
       <img src="logo.png" alt="NGS-HUB" class="mx-auto drop-shadow-lg" style="width:96px;height:96px;object-fit:contain">
       <h1 class="font-extrabold text-2xl mt-2.5 tracking-tight">NGS-HUB</h1>
       <p class="text-[11px] text-slate-400 mt-1">បង្កើតដោយ សារ៉ែន សិរីបុញ្ញវឌ្ឍក៍</p>
-      <p class="text-xs text-slate-400">កន្លែងសិក្សាឆ្លាតវៃ · 12NGS-B</p>
+      <p class="text-xs text-slate-400">កន្លែងសិក្សាឆ្លាតវៃ · ថ្នាក់រៀន</p>
     </div>
     <input id="em" type="email" class="inp" placeholder="អ៊ីមែល (Email)" autocomplete="email">
     <input id="pw" type="password" class="inp" placeholder="ពាក្យសម្ងាត់ (យ៉ាងតិច ៦ តួ)" autocomplete="current-password">
@@ -103,7 +103,7 @@ input[type=date].inp{-webkit-appearance:auto!important;appearance:auto!important
       <img src="logo.png" alt="" class="w-10 h-10 object-contain">
       <div>
         <div class="text-base leading-none">NGS-HUB</div>
-        <span class="block text-[11px] font-normal text-slate-400 mt-1">12NGS-B</span>
+        <span class="block text-[11px] font-normal text-slate-400 mt-1">ថ្នាក់រៀន</span>
       </div>
     </div>
     <nav id="nav" class="p-2.5 space-y-1 overflow-y-auto flex-1 noscroll"></nav>
@@ -139,8 +139,8 @@ input[type=date].inp{-webkit-appearance:auto!important;appearance:auto!important
 
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-import {getAuth,signInWithEmailAndPassword as si,createUserWithEmailAndPassword as su,sendPasswordResetEmail as fp,onAuthStateChanged,signOut,GoogleAuthProvider,linkWithPopup,reauthenticateWithPopup} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import {initializeFirestore,persistentLocalCache,persistentMultipleTabManager,doc,setDoc,getDoc,getDocs,deleteDoc,collection,query,orderBy,limit} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {getAuth,signInWithEmailAndPassword as si,createUserWithEmailAndPassword as su,sendPasswordResetEmail as fp,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+import {initializeFirestore,persistentLocalCache,persistentMultipleTabManager,doc,setDoc,getDoc,getDocs,deleteDoc,collection,query,orderBy,where,limit} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const firebaseConfig={
   apiKey:"AIzaSyDK4s6dw-Rm_pK1zEABEbSbTz7_5gPk_4k",
@@ -216,6 +216,10 @@ const today=()=>new Date().toLocaleDateString('en-CA');
 const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.remove('hide');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.add('hide'),2700)};
 const subj=k=>S.find(x=>x[0]==k);
 let U,D={},view='dash',tab='files',chat={},Q,streakN=1,ME={},TM=null,IMG=null,X=null,RAIN=null;
+// ---------- CLASS (ថ្នាក់រៀន): matching ignores case and any spaces, e.g. "12ngs-b " == "12NGS-B" ----------
+const normCls=s=>String(s||'').normalize('NFKC').replace(/[‐-―−]/g,'-').replace(/[\s​-‍﻿]+/g,'').toUpperCase();
+const CLS=()=>normCls(ME.profile&&ME.profile.cls);
+const LEGACY_CLS='12NGS-B'; // notices posted before classes existed belong to the original class
 const sd=k=>D[k]||(D[k]={notes:'',hw:[],files:[],scores:[],lang:'km'});
 const save=k=>setDoc(doc(db,'users',U.uid,'subjects',k),sd(k)).catch(e=>toast('រក្សាទុកមិនបាន៖ '+e.code));
 const txtRef=(k,id)=>doc(db,'users',U.uid,'subjects',k,'texts',id);
@@ -248,8 +252,8 @@ onAuthStateChanged(auth,async u=>{
   if(!u){D={};chat={};if(TM){clearInterval(TM.iv);TM=null}if(X){clearInterval(X.iv);X=null;$('#xo')?.remove()}return}
   try{(await getDocs(collection(db,'users',u.uid,'subjects'))).forEach(d=>D[d.id]={...sd(d.id),...d.data()});streakN=await streak()}catch(e){toast('មិនអាចផ្ទុកទិន្នន័យ៖ '+(e.code||''))}
   try{const c=await getDoc(doc(db,'config','ai'));if(c.exists())KEYS={...c.data()}}catch(e){}
-  pbtn();syncPub();
-  if(ME.profile?.name)go('dash');else{go('profile');toast('សូមស្វាគមន៍! សូមកំណត់ឈ្មោះរបស់អ្នកជាមុនសិន 👋')}
+  applyClass();pbtn();syncPub();
+  if(ME.profile?.name&&CLS())go('dash');else{go('profile');toast(ME.profile?.name?'សូមបញ្ចូលថ្នាក់រៀនរបស់អ្នកជាមុនសិន 👋':'សូមស្វាគមន៍! សូមកំណត់ឈ្មោះ និងថ្នាក់រៀនរបស់អ្នកជាមុនសិន 👋')}
 });
 
 // ---------- NAV ----------
@@ -260,7 +264,7 @@ function nav(){
     ['sched','កាលវិភាគ','fa-calendar-days','#38bdf8'],
     ['srch','ស្វែងរក','fa-magnifying-glass','#22d3ee'],
     ['report','របាយការណ៍','fa-chart-simple','#f472b6'],
-    ['friends','12NGS-B','fa-users','#34d399'],
+    ['friends','ថ្នាក់រៀន','fa-users','#34d399'],
     ...S.map(s=>[s[0],s[1],s[3],s[4]])
   ].map(([k,n,i,c])=>`<button data-k="${k}" class="w-full flex items-center gap-3 p-2.5 rounded-xl text-sm text-slate-300 hover:bg-slate-800/60 text-left transition ${view==k?'bg-slate-800/90 font-semibold text-white ring-1 ring-slate-700':''}"><i class="fa-solid ${i} w-5 text-center" style="color:${c}"></i><span class="truncate">${n}</span></button>`).join('');
 }
@@ -268,13 +272,15 @@ $('#nav').onclick=e=>{const b=e.target.closest('[data-k]');if(b)go(b.dataset.k)}
 $('#bnav').onclick=e=>{const b=e.target.closest('[data-k]');if(b)go(b.dataset.k)};
 function go(k){flushT();view=k;tab='files';side(false);nav();render()}
 
-const SCH={
+// Timetables are per class (key = normalised class). A class with no entry here simply sees no timetable.
+const SCHS={'12NGS-B':{
   1:[['07:30','09:05','math','F-M2'],['09:25','11:00','phys','F-P1'],['12:30','14:05','chem','F-C1']],
   2:[['07:30','09:05','math','H-M4'],['09:25','10:10','civ','G-FL3'],['10:15','11:00','hist','F-G1'],['12:30','14:05','eng','K2']],
   3:[['07:30','08:15','earth','H-ES1'],['08:20','09:05','hist','H-FL1'],['09:25','11:00','phys','F-P1'],['12:30','14:05','khm','H-K3']],
   4:[['07:30','09:05','khm','F-K1'],['09:25','11:00','bio','F-B1'],['12:30','14:05','math','F-M2']],
   5:[['07:30','08:15','geo','F-G1'],['08:20','09:05','eng','K2'],['09:25','11:00','bio','F-B2'],['12:30','14:05','chem','F-C1']]
-};let SD=null;
+}};let SCH={},SD=null;
+const applyClass=()=>{SCH=SCHS[CLS()]||{}};
 function srch(){
   $('#ttl').textContent='ស្វែងរក';
   $('#main').innerHTML=`<div class="max-w-3xl mx-auto"><h2 class="font-extrabold text-xl mb-3">ស្វែងរក</h2><input id="sq" class="inp mb-3" placeholder="ស្វែងរកក្នុងកំណត់ត្រា ប័ណ្ណ កំហុស រូបមន្ត ឯកសារ…"><div id="sr"><p class="text-sm text-slate-400">វាយយ៉ាងតិច ២ អក្សរ ដើម្បីស្វែងរកក្នុងមុខវិជ្ជាទាំង ១០</p></div></div>`;
@@ -311,15 +317,17 @@ function planCard(){
   return `<div class="glass p-4"><div class="flex items-center justify-between mb-2"><h3 class="font-bold text-sm">🗓 ផែនការសិក្សា ៧ ថ្ងៃ (AI)</h3><button data-a="plan" class="text-xs text-blue-300 hover:underline">${pl?'បង្កើតថ្មី':'បង្កើតផែនការ'}</button></div>${pl?`<div class="md text-sm">${md(pl.t)}</div><p class="text-[10px] text-slate-500 mt-2">បង្កើតនៅ ${esc(pl.d)}</p>`:'<p class="text-xs text-slate-400">AI រៀបចំផែនការតាមកិច្ចការ កាលវិភាគ និងមុខវិជ្ជាខ្សោយរបស់អ្នក</p>'}</div>`;
 }
 let NOTES=null,NOTESTS=0;
+// Students only see notices for their own class; the admin sees all of them (each tagged with its class).
+const myNotes=()=>(NOTES||[]).filter(n=>U?.uid===ADMIN_UID||normCls(n.cls||LEGACY_CLS)==CLS());
 function noticeInner(){
   const adm=U?.uid===ADMIN_UID,seen=+localStorage.getItem('nseen')||0;
-  return `<h3 class="font-bold text-sm mb-1">📢 ប្រកាសពីថ្នាក់</h3>`+(NOTES&&NOTES.length?NOTES.slice(0,3).map(n=>`<div class="py-2 border-b border-slate-700/40 last:border-0"><p class="text-sm whitespace-pre-wrap break-words">${n.ts>seen?'<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 mr-1.5">ថ្មី</span>':''}${esc(n.t)}</p><div class="flex justify-between mt-1"><span class="text-[11px] text-slate-500">${esc(n.d||'')}</span>${adm?`<button data-a="ndelpub" data-v="${n.id}" class="text-[11px] text-red-400">លុប</button>`:''}</div></div>`).join(''):'<p class="text-xs text-slate-400">មិនទាន់មានប្រកាសទេ</p>')+(adm?`<div class="flex gap-2 mt-3"><input id="nti" class="inp" placeholder="សរសេរប្រកាសដល់ថ្នាក់…"><button data-a="npost" class="btn whitespace-nowrap">ផ្សាយ</button></div>`:'');
+  return `<h3 class="font-bold text-sm mb-1">📢 ប្រកាសពីថ្នាក់</h3>`+(myNotes().length?myNotes().slice(0,3).map(n=>`<div class="py-2 border-b border-slate-700/40 last:border-0"><p class="text-sm whitespace-pre-wrap break-words">${n.ts>seen?'<span class="text-[10px] px-1.5 py-0.5 rounded-full bg-rose-500/20 text-rose-300 mr-1.5">ថ្មី</span>':''}${esc(n.t)}</p><div class="flex justify-between mt-1"><span class="text-[11px] text-slate-500">${esc(n.d||'')}${adm?' · '+esc(normCls(n.cls||LEGACY_CLS)):''}</span>${adm?`<button data-a="ndelpub" data-v="${n.id}" class="text-[11px] text-red-400">លុប</button>`:''}</div></div>`).join(''):'<p class="text-xs text-slate-400">មិនទាន់មានប្រកាសទេ</p>')+(adm?`<div class="flex gap-2 mt-3"><input id="nti" class="inp" placeholder="សរសេរប្រកាសដល់ថ្នាក់…"><input id="ntc" class="inp" style="max-width:104px" placeholder="ថ្នាក់រៀន" value="${esc(CLS())}"><button data-a="npost" class="btn whitespace-nowrap">ផ្សាយ</button></div>`:'');
 }
 function noticeCard(){return `<div id="ntb" class="glass p-4 hide"></div>`}
 async function loadNotices(force){
   try{if(force||!NOTES||Date.now()-NOTESTS>120000){const r=await getDoc(doc(db,'config','notices'));NOTES=r.exists()?(r.data().items||[]):[];NOTESTS=Date.now()}}catch(e){NOTES=NOTES||[]}
-  const b=$('#ntb');if(!b)return;b.classList.toggle('hide',!(NOTES.length||U?.uid===ADMIN_UID));b.innerHTML=noticeInner();
-  if(NOTES.length)setTimeout(()=>localStorage.setItem('nseen',Math.max(...NOTES.map(n=>n.ts||0))),5000);
+  const b=$('#ntb');if(!b)return;b.classList.toggle('hide',!(myNotes().length||U?.uid===ADMIN_UID));b.innerHTML=noticeInner();
+  if(myNotes().length)setTimeout(()=>localStorage.setItem('nseen',Math.max(...myNotes().map(n=>n.ts||0))),5000);
 }
 function weekDots(){
   const b=new Date(),dow=(b.getDay()+6)%7,nm=['ច','អ','ព','ព្រ','សុ','ស','អា'];
@@ -340,7 +348,7 @@ function sched(){
     const s=subj(k),on=g==di+1&&now>=a&&now<b;
     cells+=`<div class="sc" style="grid-column:${di+2};grid-row:${r1+2}/${r2+3};border-color:${s[4]};background:${s[4]}${on?'55':'1f'}"><b style="color:${s[4]}">${s[1]}</b><span>${r||'—'}</span></div>`}));
   const head=days.map((d,i)=>`<div class="sh ${g==i+1?'on':''}" style="grid-column:${i+2};grid-row:1">${d}</div>`).join(''),times=SLOTS.map((t,i)=>`<div class="st" style="grid-column:1;grid-row:${i+2}">${t[0]}<br>${t[1]}</div>`).join('');
-  $('#main').innerHTML=`<div class="max-w-3xl mx-auto"><h2 class="font-extrabold text-xl mb-3">កាលវិភាគ 12NGS-B</h2><div class="glass p-2.5 md:p-4"><div class="sgrid">${head}${times}${cells}</div></div></div>`;
+  $('#main').innerHTML=`<div class="max-w-3xl mx-auto"><h2 class="font-extrabold text-xl mb-3">កាលវិភាគ ថ្នាក់រៀន${CLS()?' · '+esc(CLS()):''}</h2><div class="glass p-2.5 md:p-4">${cells?`<div class="sgrid">${head}${times}${cells}</div>`:`<p class="text-sm text-slate-400 p-3">${CLS()?'មិនទាន់មានកាលវិភាគសម្រាប់ថ្នាក់ '+esc(CLS())+' ទេ។':'សូមបញ្ចូលថ្នាក់រៀនក្នុងប្រវត្តិរូបជាមុនសិន។'}</p>`}</div></div>`;
 }
 function render(){
   if(view=='dash')return dash();
@@ -355,7 +363,7 @@ function render(){
     <div class="flex items-center justify-between gap-3">
       <div class="flex items-center gap-3">
         <div class="w-11 h-11 rounded-2xl flex items-center justify-center shadow" style="background:${s[4]}28;color:${s[4]};border:1px solid ${s[4]}55"><i class="fa-solid ${s[3]} text-lg"></i></div>
-        <div><h2 class="font-extrabold text-xl leading-tight">${s[1]}</h2><p class="text-xs text-slate-400">${s[2]} · 12NGS-B · ⏱ ${Math.round(sd(s[0]).log?.[today()]||0)} នាទីថ្ងៃនេះ</p></div>
+        <div><h2 class="font-extrabold text-xl leading-tight">${s[1]}</h2><p class="text-xs text-slate-400">${s[2]} · ថ្នាក់រៀន · ⏱ ${Math.round(sd(s[0]).log?.[today()]||0)} នាទីថ្ងៃនេះ</p></div>
       </div>
       <button data-t="ai" class="chip flex items-center gap-1.5 text-blue-300 border-blue-500/30 bg-blue-500/10"><i class="fa-solid fa-wand-magic-sparkles"></i>សួរគ្រូ AI</button>
     </div>
@@ -382,7 +390,7 @@ A.plan=async(_,b)=>{
   if(!r)return toast('AI មិនអាចបង្កើតផែនការបាន៖ '+(ERR||''));
   localStorage.setItem(planKey(),JSON.stringify({t:r,d:new Date().toLocaleString()}));toast('បានបង្កើតផែនការ ✓');render();
 };
-A.npost=async()=>{const i=$('#nti'),t=(i&&i.value||'').trim();if(!t)return;await loadNotices(true);const items=[{id:Date.now().toString(36),t,d:today(),ts:Date.now()},...(NOTES||[])].slice(0,30);try{await setDoc(doc(db,'config','notices'),{items});NOTES=items;NOTESTS=Date.now();toast('បានផ្សាយប្រកាស ✓');loadNotices()}catch(e){toast('មិនអាចផ្សាយបាន៖ '+e.message)}};
+A.npost=async()=>{const i=$('#nti'),t=(i&&i.value||'').trim(),cl=normCls($('#ntc')?.value)||CLS();if(!t)return;if(!cl)return toast('សូមបញ្ចូលថ្នាក់រៀន');await loadNotices(true);const items=[{id:Date.now().toString(36),t,d:today(),ts:Date.now(),cls:cl},...(NOTES||[])].slice(0,30);try{await setDoc(doc(db,'config','notices'),{items});NOTES=items;NOTESTS=Date.now();toast('បានផ្សាយប្រកាស ✓');loadNotices()}catch(e){toast('មិនអាចផ្សាយបាន៖ '+e.message)}};
 A.ndelpub=async id=>{if(!confirm('លុបប្រកាសនេះឬ?'))return;const items=(NOTES||[]).filter(n=>n.id!=id);try{await setDoc(doc(db,'config','notices'),{items});NOTES=items;loadNotices()}catch(e){toast('មិនអាចលុបបាន')}};
 
 A.fsm=()=>{setFS(FS-1);toast('ទំហំអក្សរ '+FS)};A.fsp=()=>{setFS(FS+1);toast('ទំហំអក្សរ '+FS)};
@@ -812,7 +820,7 @@ const SR={
   khm:'Answer Khmer language and literature questions in correct Khmer spelling; never invent poems, authors, dates or quotations — if unsure, say so.',
   hist:'Give dates, names and causes/effects precisely as in the MoEYS history textbook; if unsure of a date or name, say so instead of guessing.'
 };
-const sys=k=>{const s=subj(k),mem='';return `You are the dedicated ${s[2]} (${s[1]}) AI tutor for Grade 12 students (class 12NGS-B, Cambodia, MoEYS BacII curriculum). You teach ONLY ${s[2]}. If the student asks about a different subject, politely tell them in Khmer that this tutor covers only ${s[1]} and to open that subject's own tutor, and do not answer it. Never mix in other subjects, even if the provided files or notes contain them: ignore off-subject material. Student: ${ME.profile?.name||'a Grade 12 student'}. ALWAYS reply in natural, clear Khmer (keep key technical terms in English in brackets${k=='eng'?'; for English, explain grammar in Khmer and give examples in English':''}).  ${SR[k]||''} The student's own uploaded files (lessons មេរៀន, homework កិច្ចការផ្ទះ, past exams វិញ្ញាសា) and notes are given below as excerpts labelled with the file name. When the answer can come from them, answer from them and name the file (e.g. តាមឯកសារ «name» ទំព័រ N when the label shows a page). If the excerpts do not contain it, say so in one short sentence, then answer from your own knowledge of ${s[2]}. The student's files and pictures are the authority: base your answer on them and never contradict them. Re-check every calculation step by step. If text read from a picture looks garbled or unclear, say exactly what is unclear and ask for a clearer photo instead of guessing. Follow the method, notation and Khmer terms of the Cambodian MoEYS Grade 12 textbooks used for the BacII exam; if you are not sure what the official textbook says, say so instead of guessing. Never invent file content. ACCURACY FIRST: take your time, reread the excerpts, copy Khmer technical terms exactly as written in the student's files (never invent or substitute terms), recompute every calculation and verify the final answer (for example by substitution) before replying. Never guess. If you are not sure about a fact, say so plainly. Lead with the core formula or final answer, then numbered steps. Write all math/science in LaTeX using $...$ or $$...$$.${mem?`\n\nWhat you remember about this student in ${s[1]} (use it to personalise your help): ${mem}`:''}`};
+const sys=k=>{const s=subj(k),mem='';return `You are the dedicated ${s[2]} (${s[1]}) AI tutor for Grade 12 students (${CLS()?'class '+CLS()+', ':''}Cambodia, MoEYS BacII curriculum). You teach ONLY ${s[2]}. If the student asks about a different subject, politely tell them in Khmer that this tutor covers only ${s[1]} and to open that subject's own tutor, and do not answer it. Never mix in other subjects, even if the provided files or notes contain them: ignore off-subject material. Student: ${ME.profile?.name||'a Grade 12 student'}. ALWAYS reply in natural, clear Khmer (keep key technical terms in English in brackets${k=='eng'?'; for English, explain grammar in Khmer and give examples in English':''}).  ${SR[k]||''} The student's own uploaded files (lessons មេរៀន, homework កិច្ចការផ្ទះ, past exams វិញ្ញាសា) and notes are given below as excerpts labelled with the file name. When the answer can come from them, answer from them. NEVER write file names, page numbers or source citations (such as "តាមឯកសារ «name»") inside the answer text; the app adds the list of files you read at the bottom automatically. If the excerpts do not contain it, say so in one short sentence, then answer from your own knowledge of ${s[2]}. The student's files and pictures are the authority: base your answer on them and never contradict them. Re-check every calculation step by step. If text read from a picture looks garbled or unclear, say exactly what is unclear and ask for a clearer photo instead of guessing. Follow the method, notation and Khmer terms of the Cambodian MoEYS Grade 12 textbooks used for the BacII exam; if you are not sure what the official textbook says, say so instead of guessing. Never invent file content. ACCURACY FIRST: take your time, reread the excerpts, copy Khmer technical terms exactly as written in the student's files (never invent or substitute terms), recompute every calculation and verify the final answer (for example by substitution) before replying. Never guess. If you are not sure about a fact, say so plainly. Lead with the core formula or final answer, then numbered steps. Write all math/science in LaTeX using $...$ or $$...$$.${mem?`\n\nWhat you remember about this student in ${s[1]} (use it to personalise your help): ${mem}`:''}`};
 
 const LQ=k=>k=='eng'?'Write the questions and options in English and the explanations in Khmer.':'Write ALL questions, options and explanations in clear Khmer.';
 const srcSel=(k,all)=>`<select id="src" class="inp">${all?'<option value="all">📚 ឯកសារទាំងអស់ (AI ស្វែងរកក្នុងឯកសារទាំងអស់)</option>':''}<option value="">🧠 ចំណេះដឹងទូទៅ (មិនប្រើឯកសារ)</option>${ftsOf(view).map(([t])=>{const fs=sd(k).files.filter(f=>rd(f)&&f.tag==t);return fs.length?`<optgroup label="${t}">${fs.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join('')}</optgroup>`:''}).join('')}</select>`;
@@ -839,13 +847,22 @@ async function getRel(k,q,max=8000,tag='',only=''){
   LASTSRC=[...used];return o;
 }
 async function getSrc(k,v,q){
-  LASTSRC=[];if(v&&v!='all'&&v!='notes'){const f=sd(k).files.find(x=>x.id==v);if(f)LASTSRC=[f.name]}
+  LASTSRC=[];if(v&&v!='all'&&v!='notes'){const f=sd(k).files.find(x=>x.id==v);if(f)LASTSRC=[f.tag+': '+f.name]}
   if(!v)return'';if(v=='notes')return sd(k).notes;
   if(v=='all')return getRel(k,q,5200);
   if(v=='all-old'){const d=sd(k);let o=d.notes.trim()?'[កំណត់ត្រា]\n'+d.notes.slice(0,3000)+'\n\n':'';for(const f of d.files.filter(f=>f.n).slice(-6)){try{const r=await getDoc(txtRef(k,f.id));if(r.exists())o+=`[${f.tag}: ${f.name}]\n`+r.data().t.slice(0,3500)+'\n\n'}catch(e){}}return o}
   return getRel(k,q,5200,'',v);
 }
 
+const FOOT='📚 ឯកសារដែល AI បានអាន៖';
+// Removes inline source citations such as (តាមឯកសារ «IMG_1.jpg») from an AI answer. The "📚 …" footer is kept (keep=true) or dropped (keep=false).
+function cleanAI(t,keep=true){
+  t=String(t||'');const i=t.indexOf('\n\n'+FOOT),foot=i>=0?t.slice(i):'';let b=i>=0?t.slice(0,i):t;
+  b=b.replace(/[ \t]*[(（][^()（）\n]*?ឯកសារ[^()（）\n]*?«[^»\n]*»[^()（）\n]*[)）]/g,'')
+     .replace(/[ \t]*[(（][^()（）\n]*?ឯកសារ[^()（）\n]*?\.(?:jpe?g|png|gif|webp|bmp|heic|pdf|docx?|txt|md)\b[^()（）\n]*[)）]/gi,'')
+     .replace(/[ \t]*(?:តាម|ពី|យោងតាម)ឯកសារ\s*«[^»\n]*»(?:[ \t]*ទំព័រ[ \t]*[0-9០-៩]+(?:[ \t]*[-–][ \t]*[0-9០-៩]+)?)?/g,'');
+  return b.trimEnd()+(keep?foot:'');
+}
 function md(t){
   const M=[];
   t=String(t||'').replace(/\$\$[\s\S]+?\$\$|\$[^$\n]+?\$|\\\([\s\S]+?\\\)|\\\[[\s\S]+?\\\]/g,m=>{M.push(m);return 'MQX'+(M.length-1)+'XQM'});
@@ -856,9 +873,8 @@ const rm=el=>{try{renderMathInElement(el,{delimiters:[{left:'$$',right:'$$',disp
 const bub=(m,i)=>m.role=='user'
   ?`<div class="ml-10 rounded-2xl rounded-br-sm p-3.5 text-sm leading-relaxed bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow">${esc(m.content)}</div>`
   :`<div class="mr-3 rounded-2xl rounded-bl-sm p-3.5 text-sm leading-relaxed glass-soft">
-      <div class="md">${md(m.content)}</div>
+      <div class="md">${md(cleanAI(m.content))}</div>
       <div class="flex flex-wrap items-center gap-3 mt-2 pt-2 border-t border-slate-700/40 text-xs text-slate-400">
-        <button data-a="say" data-v="${i}" class="hover:text-white flex items-center gap-1"><i class="fa-solid fa-volume-high"></i>អាន</button>
         <button data-a="cpmsg" data-v="${i}" class="hover:text-white flex items-center gap-1"><i class="fa-solid fa-copy"></i>ចម្លង</button>
         <button data-a="svmsg" data-v="${i}" class="hover:text-emerald-300 flex items-center gap-1"><i class="fa-solid fa-bookmark"></i>ទុកក្នុងរូបមន្ត</button>
         <span class="ml-auto text-[11px] text-slate-500">${m.by?esc(m.by):''}</span>
@@ -935,8 +951,8 @@ A.strict=()=>{STRICT=!STRICT;toast(STRICT?'AI នឹងឆ្លើយតាម�
 A.memv=()=>{const d=sd(view),m=(d.mem||'')+((d.recent||[]).length?'\n\nសំណួរថ្មីៗ៖\n• '+d.recent.slice(-5).join('\n• '):'');if(!m.trim())return toast('AI មិនទាន់ចងចាំអ្វីទេ — សួរសំណួរមួយសិន');if(confirm('AI '+subj(view)[1]+' ចងចាំ៖\n\n'+m+'\n\nលុបការចងចាំនេះ?')){d.mem='';d.recent=[];save(view);toast('បានលុបការចងចាំ ✓')}};
 A.clrai=()=>{const c=ck(view);chat[c]=[];saveChat(c);ai()};
 A.rmph=()=>{IMG=null;$('#pc').classList.add('hide')};
-A.cpmsg=i=>{const t=chat[ck(view)]?.[i]?.content||'';navigator.clipboard?.writeText(t).then(()=>toast('បានចម្លងចម្លើយ ✓'))};
-A.svmsg=async i=>{const t=chat[ck(view)]?.[i]?.content||'';if(!t)return;fL(view).push({t:'💬 '+t.replace(/[#*$\\]/g,'').trim().split('\n')[0].slice(0,40),b:t});await save(view);toast('បានរក្សាទុកក្នុងរូបមន្ត ✓')};
+A.cpmsg=i=>{const t=cleanAI(chat[ck(view)]?.[i]?.content||'');navigator.clipboard?.writeText(t).then(()=>toast('បានចម្លងចម្លើយ ✓'))};
+A.svmsg=async i=>{const t=cleanAI(chat[ck(view)]?.[i]?.content||'');if(!t)return;fL(view).push({t:'💬 '+t.replace(/[#*$\\]/g,'').trim().split('\n')[0].slice(0,40),b:t});await save(view);toast('បានរក្សាទុកក្នុងរូបមន្ត ✓')};
 A.send=async()=>{
   const k=view,i=$('#ci'),q=i.value.trim();if(!q&&!IMG&&!ATT)return;
   const cc=ck(k);await loadChat(cc);const c=chat[cc],ctx=await getSrc(k,srcOf(k),q),srcs=[...LASTSRC],img=IMG,att=ATT;IMG=null;ATT=null;$('#pa')?.classList.add('hide');$('#pc')?.classList.add('hide');
@@ -952,7 +968,7 @@ A.send=async()=>{
     const v=await ask([{role:'system',content:'You are a strict '+subj(k)[2]+' answer checker for Grade 12 BacII. Review the tutor answer to the student question. Recompute every calculation, and check formulas and logic against the excerpts if any are given. If everything is correct reply with exactly: OK . Otherwise reply with the COMPLETE corrected answer only (same Khmer language and format, math in LaTeX, no commentary about the checking).'},{role:'user',content:'QUESTION:\n'+(q||'')+(ctx?'\n\nEXCERPTS:\n'+ctx.slice(0,3500):'')+'\n\nTUTOR ANSWER:\n'+r}]);
     if(v){if(!/^\s*OK[.!]?\s*$/i.test(v.trim())&&v.trim().length>20)r=v.trim();WHO+=' · ✓ពិនិត្យ'}
   }
-  c.push({role:'assistant',by:r?WHO:'',content:(r?r+(srcs.length?'\n\n📚 ឯកសារដែល AI បានអាន៖ '+srcs.slice(0,4).join(' · '):''):null)||'⚠ '+(img?'AI មិនអាចអានរូបភាពបានទេឥឡូវនេះ។ សូមព្យាយាមម្តងទៀត ឬវាយលំហាត់ជាអក្សរ។':'AI កំពុងរវល់ សូមព្យាយាមម្តងទៀតបន្តិចក្រោយ។')+(ERR?` (${ERR})`:'')});
+  c.push({role:'assistant',by:r?WHO:'',content:(r?cleanAI(r,false)+(srcs.length?'\n\n'+FOOT+' '+[...new Set(srcs)].slice(0,4).join(' · '):''):null)||'⚠ '+(img?'AI មិនអាចអានរូបភាពបានទេឥឡូវនេះ។ សូមព្យាយាមម្តងទៀត ឬវាយលំហាត់ជាអក្សរ។':'AI កំពុងរវល់ សូមព្យាយាមម្តងទៀតបន្តិចក្រោយ។')+(ERR?` (${ERR})`:'')});
   saveChat(cc);if(r)updMem(k);
   if(r&&img)saveShot(k,img);
   if(view==k&&tab=='ai')draw($('#cl'),c);
@@ -1088,7 +1104,7 @@ function statsHTML(){
   <div class="flex flex-wrap gap-1.5">${BADGES(tot,q,mast,ra).map(([i,l,on])=>`<span class="text-xs px-2.5 py-1 rounded-full ${on?'bg-amber-500/20 text-amber-200 border border-amber-500/30':'bg-slate-800/60 text-slate-500'}">${i} ${l}</span>`).join('')}</div>`;
 }
 A.gorep=()=>go('report');
-A.share=()=>{const u=location.origin+location.pathname;navigator.share?navigator.share({title:'NGS-HUB',text:'ចូលរួមរៀនក្នុងថ្នាក់ 12NGS-B លើ NGS-HUB',url:u}).catch(()=>{}):navigator.clipboard?.writeText(u).then(()=>toast('បានចម្លងតំណ ✓'))};
+A.share=()=>{const u=location.origin+location.pathname;navigator.share?navigator.share({title:'NGS-HUB',text:'ចូលរួមរៀនក្នុងថ្នាក់រៀន លើ NGS-HUB',url:u}).catch(()=>{}):navigator.clipboard?.writeText(u).then(()=>toast('បានចម្លងតំណ ✓'))};
 
 function report(){
   $('#ttl').textContent='របាយការណ៍';
@@ -1109,38 +1125,24 @@ A.coach=async(_,b)=>{
 };
 
 // ---------- CLASS ----------
-const CLASS='12NGS-B';
+// The class list shows only students whose class matches yours. `status` already existed in the Firestore rules, so it now holds the normalised class.
 async function syncPub(){
+  const cls=CLS();if(!cls)return;
   const r=doc(db,'publicProfiles',U.uid);let prev=0;try{prev=(await getDoc(r)).data()?.points||0}catch(e){}
   const tot=S.reduce((t,x)=>t+allMin(x[0]),0),qa=S.map(x=>avgQ(x[0])).filter(x=>x!=null),pts=prev?Math.max(prev,Math.min(tot,prev+100)):tot;
-  await setDoc(r,{displayName:(ME.profile?.name||(U.email||'សិស្ស').split('@')[0]).slice(0,30),photoURL:ME.profile?.avatar||'',status:CLASS,studyStreak:streakN,avgBand:qa.length?Math.round(qa.reduce((a,b)=>a+b,0)/qa.length):0,points:pts,updatedAt:Date.now()}).catch(()=>{});
+  await setDoc(r,{displayName:(ME.profile?.name||(U.email||'សិស្ស').split('@')[0]).slice(0,30),photoURL:ME.profile?.avatar||'',status:cls,studyStreak:streakN,avgBand:qa.length?Math.round(qa.reduce((a,b)=>a+b,0)/qa.length):0,points:pts,updatedAt:Date.now()}).catch(()=>{});
 }
 async function friends(){
-  $('#ttl').textContent='12NGS-B';
-  const isAdmin=U?.uid===ADMIN_UID;
-  $('#main').innerHTML=`<div class="max-w-md mx-auto space-y-3"><div><h2 class="font-extrabold text-xl">${CLASS}</h2><p class="text-xs text-slate-400 mt-1">តារាងមិត្តរួមថ្នាក់តម្រៀបតាមម៉ោងសិក្សា។ កំណត់ត្រា និងឯកសាររបស់អ្នកនៅតែជាឯកជនជានិច្ច។</p></div><div id="fl2" class="space-y-2"><p class="text-sm text-slate-400">កំពុងផ្ទុក…</p></div></div>`;
-  let rows=[],err='';try{rows=(await getDocs(query(collection(db,'publicProfiles'),orderBy('points','desc'),limit(100)))).docs.map(d=>({id:d.id,...d.data()}))}catch(e){err=e.code||'error'}
+  $('#ttl').textContent='ថ្នាក់រៀន';
+  const isAdmin=U?.uid===ADMIN_UID,cls=CLS();
+  $('#main').innerHTML=`<div class="max-w-md mx-auto space-y-3"><div><h2 class="font-extrabold text-xl">ថ្នាក់រៀន${cls?' · '+esc(cls):''}</h2><p class="text-xs text-slate-400 mt-1">តារាងមិត្តរួមថ្នាក់តម្រៀបតាមម៉ោងសិក្សា។ កំណត់ត្រា និងឯកសាររបស់អ្នកនៅតែជាឯកជនជានិច្ច។</p></div><div id="fl2" class="space-y-2"><p class="text-sm text-slate-400">កំពុងផ្ទុក…</p></div></div>`;
+  let rows=[],err='';if(cls)try{rows=(await getDocs(query(collection(db,'publicProfiles'),where('status','==',cls),limit(100)))).docs.map(d=>({id:d.id,...d.data()})).sort((a,b)=>(b.points||0)-(a.points||0))}catch(e){err=e.code||'error'}
   const el=$('#fl2');if(!el||view!='friends')return;
-  el.innerHTML=err?`<p class="text-sm text-amber-300">មិនអាចផ្ទុកតារាងថ្នាក់បាន (${esc(err)})។</p>`:rows.length?rows.map((r,i)=>`<div class="glass p-3.5 flex items-center gap-3 ${r.id==U.uid?'ring-1 ring-blue-400':''}"><span class="w-6 text-center font-bold text-slate-400">${['🥇','🥈','🥉'][i]||i+1}</span>${avatar(38,{avatar:r.photoURL,name:r.displayName})}<div class="min-w-0 flex-1"><p class="text-sm font-semibold truncate">${esc(r.displayName)}${r.id==U.uid?' (អ្នក)':''}</p><p class="text-xs text-slate-400">ពិន្ទុមធ្យម ${r.avgBand||0}%</p></div><div class="text-right text-xs"><p class="font-bold">🔥 ${r.studyStreak||0}</p><p class="text-slate-400">${r.points||0} នាទី</p></div>${isAdmin&&r.id!=U.uid?`<button data-a="delpub" data-v="${r.id}" class="text-red-400/70 hover:text-red-400 px-1" title="លុបចេញពីតារាង"><i class="fa-solid fa-trash-can text-xs"></i></button>`:''}</div>`).join(''):'<p class="text-sm text-slate-400">មិនទាន់មានមិត្តរួមថ្នាក់ទេ។</p>';
+  el.innerHTML=err?`<p class="text-sm text-amber-300">មិនអាចផ្ទុកតារាងថ្នាក់បាន (${esc(err)})។</p>`:rows.length?rows.map((r,i)=>`<div class="glass p-3.5 flex items-center gap-3 ${r.id==U.uid?'ring-1 ring-blue-400':''}"><span class="w-6 text-center font-bold text-slate-400">${['🥇','🥈','🥉'][i]||i+1}</span>${avatar(38,{avatar:r.photoURL,name:r.displayName})}<div class="min-w-0 flex-1"><p class="text-sm font-semibold truncate">${esc(r.displayName)}${r.id==U.uid?' (អ្នក)':''}</p><p class="text-xs text-slate-400">ពិន្ទុមធ្យម ${r.avgBand||0}%</p></div><div class="text-right text-xs"><p class="font-bold">🔥 ${r.studyStreak||0}</p><p class="text-slate-400">${r.points||0} នាទី</p></div>${isAdmin&&r.id!=U.uid?`<button data-a="delpub" data-v="${r.id}" class="text-red-400/70 hover:text-red-400 px-1" title="លុបចេញពីតារាង"><i class="fa-solid fa-trash-can text-xs"></i></button>`:''}</div>`).join(''):(cls?'<p class="text-sm text-slate-400">មិនទាន់មានមិត្តរួមថ្នាក់ទេ។</p>':'<p class="text-sm text-amber-300">សូមបញ្ចូលថ្នាក់រៀនក្នុងប្រវត្តិរូបជាមុនសិន។</p>');
 }
 A.delpub=async id=>{if(!confirm('លុបឈ្មោះនេះចេញពីតារាងថ្នាក់ឬ?'))return;try{await deleteDoc(doc(db,'publicProfiles',id));friends();toast('បានលុប ✓')}catch(e){toast('មិនអាចលុបបានទេ៖ '+e.code)}};
 
 // ---------- VOICE ----------
-let TTSX=0,TTSA=null;
-const SIL='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
-function pickVoice(lang){try{const vs=speechSynthesis.getVoices().filter(v=>v.lang.toLowerCase().startsWith(lang.slice(0,2)));return vs.find(v=>/natural|online|neural/i.test(v.name))||vs.find(v=>v.lang.toLowerCase()==lang.toLowerCase())||vs[0]||null}catch(e){return null}}
-const devSay=(t,lang)=>new Promise(ok=>{try{const u=new SpeechSynthesisUtterance(t);u.lang=lang;const v=pickVoice(lang);if(v)u.voice=v;u.rate=.95;u.onend=u.onerror=ok;speechSynthesis.speak(u)}catch(e){ok()}});
-const chunkT=(t,n)=>{const o=[];let c='';for(const w of t.split(' ')){if(w.length>n){if(c){o.push(c);c=''}for(let i=0;i<w.length;i+=n)o.push(w.slice(i,i+n));continue}if((c+' '+w).length>n){o.push(c);c=w}else c=(c+' '+w).trim()}if(c)o.push(c);return o};
-async function speakAll(text){
-  const my=++TTSX;try{speechSynthesis.cancel()}catch(e){}
-  const a=TTSA||(TTSA=new Audio());try{a.pause()}catch(e){}a.src=SIL;a.play().catch(()=>{});
-  const segs=[];(text.replace(/[ \t]+/g,' ').match(/[^.!?។\n]+[.!?។]*/g)||[text]).forEach(x=>{x=x.trim();if(!x)return;const l=(x.match(/[A-Za-z]/g)||[]).length/Math.max(1,x.replace(/\s/g,'').length)>.5?'en':'km',last=segs[segs.length-1];if(last&&last.l==l&&last.t.length+x.length<170)last.t+=' '+x;else segs.push({l,t:x})});
-    for(const s of segs)for(const part of chunkT(s.t,s.l=='en'?185:180)){
-    if(my!=TTSX)return;
-    await devSay(part,s.l=='en'?'en-US':'km-KH');
-  }
-}
-A.say=i=>{const t=(chat[ck(view)]?.[i]?.content||'').replace(/[*#$`\\_]/g,'').replace(/📚[^\n]*/g,'');if(!t)return;speakAll(t)};
 A.mic=()=>{const R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R)return toast('កម្មវិធីរុករកនេះមិនគាំទ្រការបញ្ចូលសំឡេងទេ');const r=new R();r.lang=sd(view).lang=='en'?'en-US':'km-KH';r.onresult=e=>{const i=$('#ci');if(i)i.value=e.results[0][0].transcript};r.onerror=()=>toast('ស្តាប់មិនឮទេ');r.start();toast('🎤 កំពុងស្តាប់…')};
 
 // ---------- PLAN, BADGES, BACKUP ----------
@@ -1172,52 +1174,6 @@ async function importBackup(file){
   }catch(e){toast('ឯកសារ Backup មិនត្រឹមត្រូវ')}
 }
 document.addEventListener('change',e=>{if(e.target&&e.target.id=='bk-in'&&e.target.files[0]){importBackup(e.target.files[0]);e.target.value=''}});
-// ---------- GOOGLE DRIVE SYNC (scope drive.file: the app only sees the backup file it creates) ----------
-let GTOK=null,GTOKT=0,GAUTO=localStorage.getItem('gauto')=='1';
-const gLive=()=>GTOK&&Date.now()-GTOKT<50*60*1000;
-async function gToken(force){
-  if(gLive()&&!force)return GTOK;
-  const prov=new GoogleAuthProvider();prov.addScope('https://www.googleapis.com/auth/drive.file');prov.setCustomParameters({prompt:'select_account'});
-  const u=auth.currentUser;let res;
-  try{res=await linkWithPopup(u,prov)}catch(e){
-    if(['auth/provider-already-linked','auth/credential-already-in-use','auth/email-already-in-use'].includes(e.code))res=await reauthenticateWithPopup(u,prov);else throw e;
-  }
-  GTOK=GoogleAuthProvider.credentialFromResult(res).accessToken;GTOKT=Date.now();return GTOK;
-}
-async function gfetch(url,opt,retry=true){
-  const t=await gToken();opt=opt||{};
-  const r=await fetch(url,{...opt,headers:{...(opt.headers||{}),Authorization:'Bearer '+t}});
-  if(r.status==401&&retry){GTOK=null;await gToken(true);return gfetch(url,opt,false)}
-  if(!r.ok)throw new Error('drive '+r.status+' '+(await r.text()).slice(0,200));
-  return r;
-}
-const gFind=async()=>((await (await gfetch('https://www.googleapis.com/drive/v3/files?q='+encodeURIComponent("name='NGS-HUB-backup.json' and trashed=false")+'&fields=files(id,modifiedTime)&orderBy=modifiedTime%20desc')).json()).files||[])[0]||null;
-async function gSave(){
-  const body=JSON.stringify({exported:new Date().toISOString(),profile:{...ME.profile,avatar:undefined},subjects:D}),f=await gFind();
-  if(f)await gfetch('https://www.googleapis.com/upload/drive/v3/files/'+f.id+'?uploadType=media',{method:'PATCH',headers:{'Content-Type':'application/json'},body});
-  else{const bd='ngsb'+Date.now();await gfetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart',{method:'POST',headers:{'Content-Type':'multipart/related; boundary='+bd},body:'--'+bd+'\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n'+JSON.stringify({name:'NGS-HUB-backup.json',mimeType:'application/json'})+'\r\n--'+bd+'\r\nContent-Type: application/json\r\n\r\n'+body+'\r\n--'+bd+'--'})}
-  localStorage.setItem('glast',new Date().toISOString());
-}
-async function gRestore(){const f=await gFind();if(!f)throw new Error('មិនទាន់មាន Backup ក្នុង Drive');await importBackup(new File([await (await gfetch('https://www.googleapis.com/drive/v3/files/'+f.id+'?alt=media')).text()],'b.json'))}
-const gErr=e=>{const c=e&&e.code||'',m=String(e&&e.message||e);
-  if(c=='auth/operation-not-allowed')return 'សូមបើក «Google» ក្នុង Firebase → Authentication → Sign-in method';
-  if(c=='auth/unauthorized-domain')return 'សូមបន្ថែម sazukiyokie.github.io ក្នុង Firebase → Authentication → Settings → Authorized domains';
-  if(c=='auth/popup-blocked')return 'សូមអនុញ្ញាតឱ្យបើកផ្ទាំង pop-up រួចព្យាយាមម្តងទៀត';
-  if(c=='auth/popup-closed-by-user'||c=='auth/cancelled-popup-request')return 'បានបោះបង់';
-  if(c=='auth/user-mismatch'||c=='auth/credential-already-in-use')return 'គណនី Google នេះត្រូវបានភ្ជាប់ជាមួយគណនី NGS-HUB ផ្សេងរួចហើយ';
-  if(/accessNotConfigured|has not been used|disabled/i.test(m))return 'សូមបើក «Google Drive API» ក្នុង Google Cloud (APIs & Services → Library)';
-  return 'កំហុស៖ '+(c||m).slice(0,140)};
-const gStatus=()=>(gLive()?'🟢 ភ្ជាប់ហើយ':'⚪ មិនទាន់ភ្ជាប់')+' · Backup ចុងក្រោយ៖ '+(localStorage.getItem('glast')?new Date(localStorage.getItem('glast')).toLocaleString():'—');
-const gUI=()=>{const e=$('#gst');if(e)e.textContent=gStatus()};
-A.gsync=async(_,b)=>{if(b)b.disabled=true;try{prog('កំពុងភ្ជាប់ Google Drive…');await gToken(true);prog('កំពុងរក្សាទុកក្នុង Drive…');await gSave();toast('បានរក្សាទុកក្នុង Google Drive ✓')}catch(e){toast(gErr(e))}if(b)b.disabled=false;gUI()};
-A.grestore=async(_,b)=>{if(!confirm('ស្ដារទិន្នន័យពី Google Drive?\n(បញ្ចូលចូលជាមួយទិន្នន័យបច្ចុប្បន្ន មិនលុបអ្វីទេ)'))return;if(b)b.disabled=true;try{prog('កំពុងភ្ជាប់ Google Drive…');await gToken(true);prog('កំពុងទាញទិន្នន័យ…');await gRestore()}catch(e){toast(gErr(e))}if(b)b.disabled=false;gUI()};
-A.gauto=(_,el)=>{GAUTO=!!(el&&el.checked);localStorage.setItem('gauto',GAUTO?'1':'0');toast(GAUTO?'នឹងរក្សាទុកស្វ័យប្រវត្តិរៀងរាល់ ៥ នាទី ពេលភ្ជាប់':'បិទការរក្សាទុកស្វ័យប្រវត្តិ')};
-setInterval(()=>{if(GAUTO&&gLive()&&typeof D!='undefined')gSave().then(gUI).catch(()=>{})},5*60*1000);
-A.gdrive=async()=>{
-  const o={exported:new Date().toISOString(),profile:{...ME.profile,avatar:undefined},subjects:D},f=new File([JSON.stringify(o)],'NGS-HUB-backup.txt',{type:'text/plain'});
-  try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:'NGS-HUB backup'});toast('ជ្រើស «Drive» ក្នុងបញ្ជី ដើម្បីរក្សាទុក ✓');return}}catch(e){if(e&&e.name=='AbortError')return}
-  A.export();toast('បានទាញយកឯកសារ — បន្ទាប់មកផ្ទុកឡើង drive.google.com ដោយដៃ');
-};
 A.import=()=>{$('#bk-in')?.click()};
 A.export=()=>{const o={exported:new Date().toISOString(),profile:{...ME.profile,avatar:undefined},subjects:D},a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(o,null,1)],{type:'application/json'}));a.download='ngs-hub-backup.json';a.click()};
 
@@ -1280,6 +1236,7 @@ function profile(){
         <label class="text-xs text-blue-300 cursor-pointer hover:underline">ប្តូររូបថតប្រវត្តិរូប<input id="pph" type="file" accept="image/*" class="hide"></label>
       </div>
       <label class="block text-xs text-slate-400">ឈ្មោះរបស់អ្នក<input id="pn" class="inp mt-1" maxlength="30" placeholder="ឧ. សារ៉ែន សិរីបុញ្ញវឌ្ឍក៍" value="${esc(p.name||'')}"></label>
+      <label class="block text-xs text-slate-400">ថ្នាក់រៀន<input id="pcls" class="inp mt-1" maxlength="20" placeholder="ឧ. 12NGS-B" value="${esc(p.cls||'')}" autocapitalize="characters" autocomplete="off"></label>
       ${isAdmin?aiAdmin():`<p class="text-xs text-slate-400"><i class="fa-solid fa-wand-magic-sparkles text-emerald-400 mr-1"></i>គ្រូ AI ត្រូវបានរៀបចំដោយអ្នកគ្រប់គ្រងថ្នាក់ — អ្នកមិនបាច់ដាក់កូនសោទេ។</p>`}
       <button data-a="psave" class="btn w-full"><i class="fa-solid fa-floppy-disk"></i>រក្សាទុកការកំណត់</button>
       <div class="pt-2 border-t border-slate-800 space-y-2">
@@ -1295,15 +1252,16 @@ function profile(){
       </div>
     </div>
     <div class="glass p-5 space-y-3">${statsHTML()}</div>
-    <div class="glass p-4 space-y-2"><p class="font-bold text-sm">☁️ Google Drive</p><p class="text-xs text-slate-400" id="gst">${gStatus()}</p><div class="flex flex-wrap gap-2"><button data-a="gsync" class="btn text-xs">🔗 ភ្ជាប់ & រក្សាទុកឥឡូវ</button><button data-a="grestore" class="btn btn-sec text-xs">⬇ ស្ដារពី Drive</button></div><label class="flex items-center gap-2 text-xs text-slate-300"><input type="checkbox" data-a="gauto" ${GAUTO?'checked':''}> រក្សាទុកស្វ័យប្រវត្តិរៀងរាល់ ៥ នាទី (ពេលភ្ជាប់ហើយ)</label><p class="text-[11px] text-slate-500">ឯកសារ NGS-HUB-backup.json ក្នុង Drive របស់អ្នក — កម្មវិធីមើលបានតែឯកសារដែលវាបង្កើតប៉ុណ្ណោះ។</p></div>
-    <div class="glass p-5 text-center"><img src="logo.png" alt="" class="mx-auto w-16 h-16 object-contain mb-2"><p class="text-xs text-slate-400">NGS-HUB · 12NGS-B</p><p class="text-sm font-semibold mt-1">បង្កើតដោយ សារ៉ែន សិរីបុញ្ញវឌ្ឍក៍</p><div class="flex items-center justify-center gap-1.5 mt-3 text-[11px] text-slate-500">ទំហំអក្សរ <button data-a="fsm" class="px-2 py-0.5 rounded bg-slate-800/80 text-slate-300">A−</button><button data-a="fsp" class="px-2 py-0.5 rounded bg-slate-800/80 text-slate-300">A+</button></div></div>
+    <div class="glass p-5 text-center"><img src="logo.png" alt="" class="mx-auto w-16 h-16 object-contain mb-2"><p class="text-xs text-slate-400">NGS-HUB · ថ្នាក់រៀន</p><p class="text-sm font-semibold mt-1">បង្កើតដោយ សារ៉ែន សិរីបុញ្ញវឌ្ឍក៍</p><div class="flex items-center justify-center gap-1.5 mt-3 text-[11px] text-slate-500">ទំហំអក្សរ <button data-a="fsm" class="px-2 py-0.5 rounded bg-slate-800/80 text-slate-300">A−</button><button data-a="fsp" class="px-2 py-0.5 rounded bg-slate-800/80 text-slate-300">A+</button></div></div>
   </div>`;
   $('#pph').onchange=async e=>{const f=e.target.files[0];if(!f)return;PAV=await shrink(f,256);$('#pav').innerHTML=avatar(84,{avatar:PAV})};
 }
 
 A.psave=async()=>{
-  const pf={name:$('#pn').value.trim(),grade:CLASS,avatar:PAV};
-  ME.profile=pf;
+  const cl=$('#pcls').value.trim();
+  if(!cl)return toast('សូមបញ្ចូលថ្នាក់រៀនរបស់អ្នក');
+  const pf={name:$('#pn').value.trim(),cls:cl,avatar:PAV};
+  ME.profile=pf;applyClass();
   await setDoc(doc(db,'users',U.uid),{profile:pf},{merge:true}).catch(e=>toast('រក្សាទុកមិនបាន៖ '+e.code));
   syncPub();pbtn();toast('បានរក្សាទុកការកំណត់ ✓');
 };
@@ -1325,7 +1283,7 @@ setInterval(()=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden)flushT()});addEventListener('pagehide',flushT);
 
 // ---------- BACII COUNTDOWN ----------
-const BAC={name:'BacII',date:'2027-08-01'};
+const BAC={name:'BacII',date:'2027-08-09'};
 function examCard(){
   const left=Math.ceil((new Date(BAC.date+'T00:00')-new Date(today()+'T00:00'))/864e5);
   return `<div class="glass p-4">
