@@ -79,6 +79,13 @@ input[type=date].inp{-webkit-appearance:auto!important;appearance:auto!important
 .sgrid{display:grid;grid-template-columns:42px repeat(5,minmax(0,1fr));grid-template-rows:auto repeat(6,minmax(58px,auto));gap:4px}.sh{text-align:center;font-size:11px;font-weight:700;padding:6px 0;border-radius:8px;background:#1e293b99;color:#cbd5e1}.sh.on{background:#2563eb;color:#fff}.st{font-size:9px;color:#93c5fd;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.3;font-weight:600}.sc{border:1px solid;border-radius:10px;padding:4px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:3px;min-width:0;overflow:hidden}.sc b{font-size:10.5px;line-height:1.3}.sc span{font-size:9.5px;color:#e2e8f0;background:#0f172a99;padding:1px 5px;border-radius:6px}
 .md .katex-display,#qz .katex-display,#cs .katex-display,#xo .katex-display{overflow-x:auto;overflow-y:hidden;max-width:100%;padding:2px 0}.katex{font-size:1.05em}
 .navon{color:#fff}
+.ovbg{background:#060916}
+.pt{border-radius:.4rem;padding:3px 0;text-align:center;line-height:1.1;min-height:38px;border:1px solid rgba(148,163,184,.25);color:inherit}
+.pt i{display:block;font-style:normal;font-size:8px;opacity:.7}.pt b{font-size:12px}
+.pt.sel{outline:2px solid #3b82f6;outline-offset:1px}
+.pc-alk{background:rgba(239,68,68,.3)}.pc-ae{background:rgba(249,115,22,.3)}.pc-tm{background:rgba(234,179,8,.28)}.pc-pt{background:rgba(34,197,94,.25)}.pc-md{background:rgba(20,184,166,.3)}.pc-nm{background:rgba(59,130,246,.28)}.pc-hl{background:rgba(168,85,247,.28)}.pc-ng{background:rgba(236,72,153,.28)}.pc-la{background:rgba(6,182,212,.28)}.pc-ac{background:rgba(132,204,22,.28)}
+html.light .ovbg{background:#eef2f7}
+.sym{padding:.2rem .6rem;font-size:.95rem;flex-shrink:0;line-height:1.3}
 .offb{background:#f59e0b;color:#1c1917;font-size:11.5px;font-weight:700;text-align:center;padding:4px 10px;line-height:1.45;flex-shrink:0}
 .seg{padding:.42rem .5rem;border-radius:.75rem;font-size:.78rem;font-weight:600;border:1px solid rgba(148,163,184,.25);background:rgba(51,65,85,.5);color:#cbd5e1;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:.35rem}
 .seg.on{background:linear-gradient(135deg,#2563eb,#4f46e5);color:#fff;border-color:transparent}
@@ -207,7 +214,7 @@ html.light ::selection{background:rgba(59,130,246,.25)}
       <button data-k="sched" class="flex flex-col items-center py-1 text-[11px] text-slate-300"><i class="fa-solid fa-calendar-days text-sm mb-0.5 text-sky-400"></i>កាលវិភាគ</button>
       <button data-k="report" class="flex flex-col items-center py-1 text-[11px] text-slate-300"><i class="fa-solid fa-chart-simple text-sm mb-0.5 text-pink-400"></i>របាយការណ៍</button>
       <button data-k="friends" class="flex flex-col items-center py-1 text-[11px] text-slate-300"><i class="fa-solid fa-users text-sm mb-0.5 text-emerald-400"></i>ថ្នាក់យើង</button>
-      <button data-k="profile" class="flex flex-col items-center py-1 text-[11px] text-slate-300"><i class="fa-solid fa-user-gear text-sm mb-0.5 text-purple-400"></i>ប្រវត្តិរូប</button>
+      <button data-k="tools" class="flex flex-col items-center py-1 text-[11px] text-slate-300"><i class="fa-solid fa-toolbox text-sm mb-0.5 text-amber-400"></i>ឧបករណ៍</button>
     </nav>
   </main>
 </div>
@@ -303,7 +310,7 @@ const FORMULAS={
 const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today=()=>new Date().toLocaleDateString('en-CA');
-const toast=m=>{const t=$('#toast');t.textContent=m;t.classList.remove('hide');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.add('hide'),2700)};
+const toast=m=>{const t=$('#toast');toast.p=0;t.textContent=m;t.classList.remove('hide');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.add('hide'),2700)};
 const subj=k=>S.find(x=>x[0]==k);
 let U,D={},view='dash',tab='files',chat={},Q,streakN=1,ME={},TM=null,IMG=null,X=null,RAIN=null;
 // ---------- CLASS (ថ្នាក់រៀន): matching ignores case and any spaces, e.g. "12ngs-b " == "12NGS-B" ----------
@@ -353,6 +360,7 @@ function nav(){
     ['allhw','កិច្ចការ','fa-list-check','#fb923c'],
     ['sched','កាលវិភាគ','fa-calendar-days','#38bdf8'],
     ['srch','ស្វែងរក','fa-magnifying-glass','#22d3ee'],
+    ['tools','ឧបករណ៍','fa-toolbox','#fbbf24'],
     ['report','របាយការណ៍','fa-chart-simple','#f472b6'],
     ['friends','ថ្នាក់រៀន','fa-users','#34d399'],
     ...S.map(s=>[s[0],s[1],s[3],s[4]])
@@ -443,6 +451,7 @@ function render(){
   if(view=='sched')return sched();
   if(view=='srch')return srch();
   if(view=='friends')return friends();
+  if(view=='tools')return tools();
   const s=subj(view);$('#ttl').textContent=s[1];
   $('#main').innerHTML=`<div class="max-w-3xl mx-auto space-y-4" style="--c:${s[4]}">
     <div class="flex items-center justify-between gap-3">
@@ -574,11 +583,12 @@ function files(){
     <select id="tag" class="inp">${ftsOf(view).map(([v,l])=>`<option value="${v}" ${v==FT?'selected':''}>${l} · ${d.files.filter(f=>f.tag==v).length}</option>`).join('')}</select>
     <label class="btn cursor-pointer whitespace-nowrap"><i class="fa-solid fa-upload"></i>ផ្ទុកឡើង<input id="up" type="file" multiple accept=".pdf,.docx,.txt,.md,image/*" class="hide"></label>
   </div>
-  <div class="space-y-2">${list.map(f=>`<div class="flex items-center gap-2.5 glass-soft p-3"><i class="fa-solid ${f.n?'fa-file-lines text-blue-400':'fa-image text-purple-400'} text-lg w-6 text-center"></i><div class="min-w-0 flex-1"><p class="text-sm font-medium truncate">${esc(f.name)}</p><p class="text-xs text-slate-400">${f.d}${f.pend?' · <span class="text-sky-300">⏳ AI នឹងអានពេលប្រើ</span>':f.n?` · AI អានបាន ${f.n} តួអក្សរ`:' · <span class="text-amber-300">AI មិនទាន់អាន</span>'}</p></div>${f.n&&!f.pend?'':`<button data-a="reread" data-v="${f.id}" class="text-amber-300 px-2 py-1 hover:bg-slate-800 rounded-lg" title="ឱ្យ AI អានម្តងទៀត"><i class="fa-solid fa-rotate"></i></button>`}<button data-a="open" data-v="${f.id}" class="text-blue-300 px-2 py-1 hover:bg-slate-800 rounded-lg" title="បើកមើល"><i class="fa-solid fa-eye"></i></button><button data-a="delf" data-v="${f.id}" class="text-red-400 px-2 py-1 hover:bg-slate-800 rounded-lg" title="លុប"><i class="fa-solid fa-trash"></i></button></div>`).join('')||`<p class="text-sm text-slate-400 py-4 text-center">មិនទាន់មាន ${FT} ទេ។ ជ្រើសប្រភេទខាងលើ រួចចុច «ផ្ទុកឡើង»។</p>`}</div>
-  <p class="text-xs text-slate-500 mt-3">ទីនេះគ្រាន់តែផ្ទុកឯកសារប៉ុណ្ណោះ — គ្រូ AI នឹងអានពេលអ្នកប្រើវាក្នុងគ្រូ AI សំណួរ ប័ណ្ណចងចាំ ឬរូបមន្ត។ ផ្ទុកពី Google Drive បាន៖ ចុច «ផ្ទុកឡើង» ហើយជ្រើស Drive ក្នុងបញ្ជីប្រភពឯកសារ។</p>`;
-  $('#up').onchange=upload;$('#tag').onchange=e=>{FT=e.target.value;files()};
+  <div class="space-y-2">${list.map(f=>`<div class="flex items-center gap-2.5 glass-soft p-3"><i class="fa-solid ${f.n?'fa-file-lines text-blue-400':'fa-image text-purple-400'} text-lg w-6 text-center"></i><div class="min-w-0 flex-1"><p class="text-sm font-medium truncate">${esc(f.name)}</p><p class="text-xs text-slate-400">${f.d}${f.cl>0?' · <span title="មើលបានគ្រប់ឧបករណ៍">☁️</span>':f.cl===-1?' · <span title="ធំជាង 2.5MB — មានតែលើឧបករណ៍នេះ">📱</span>':''}${f.pend?' · <span class="text-sky-300">⏳ AI នឹងអានពេលប្រើ</span>':f.n?` · AI អានបាន ${f.n} តួអក្សរ`:' · <span class="text-amber-300">AI មិនទាន់អាន</span>'}</p></div>${f.n&&!f.pend?'':`<button data-a="reread" data-v="${f.id}" class="text-amber-300 px-2 py-1 hover:bg-slate-800 rounded-lg" title="ឱ្យ AI អានម្តងទៀត"><i class="fa-solid fa-rotate"></i></button>`}<button data-a="open" data-v="${f.id}" class="text-blue-300 px-2 py-1 hover:bg-slate-800 rounded-lg" title="បើកមើល"><i class="fa-solid fa-eye"></i></button><button data-a="delf" data-v="${f.id}" class="text-red-400 px-2 py-1 hover:bg-slate-800 rounded-lg" title="លុប"><i class="fa-solid fa-trash"></i></button></div>`).join('')||`<p class="text-sm text-slate-400 py-4 text-center">មិនទាន់មាន ${FT} ទេ។ ជ្រើសប្រភេទខាងលើ រួចចុច «ផ្ទុកឡើង»។</p>`}</div>
+  <p class="text-xs text-slate-500 mt-3">☁️ = មើលបានគ្រប់ឧបករណ៍ · 📱 = ធំជាង 2.5MB មានតែលើឧបករណ៍នេះ។ គ្រូ AI នឹងអានឯកសារពេលអ្នកប្រើវា។</p>`;
+  $('#up').onchange=upload;$('#tag').onchange=e=>{FT=e.target.value;files()};backfillFiles(view);
 }
-const sleep=ms=>new Promise(r=>setTimeout(r,ms)),prog=m=>{toast(m);clearTimeout(toast.t)};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms)),prog=m=>{toast(m);clearTimeout(toast.t);toast.p=1;toast.t=setTimeout(()=>{$('#toast').classList.add('hide');toast.p=0},30000)},
+  endProg=()=>{if(toast.p){toast.p=0;clearTimeout(toast.t);$('#toast').classList.add('hide')}}; // a progress message must disappear when its job ends
 const garbled=t=>{if(t.length<30)return false;const w=t.split(/\s+/).length,bad=(t.match(/(^|\s)[\u17B6-\u17D3]/g)||[]).length,odd=(t.match(/[^\u0020-\u007E\u1780-\u17FF\u200B-\u200D\u2000-\u206F\s]/g)||[]).length;return bad/w>.08||odd/t.length>.25};
 let SCANX=false;
 const khc=t=>(String(t).match(/[\u1780-\u17FF]/g)||[]).length;
@@ -638,7 +648,7 @@ async function extract(f){
   return '';
 }
 async function saveDoc(k,f,t,tag='មេរៀន'){
-  try{const id=Date.now().toString(36)+Math.random().toString(36).slice(2,5),d=sd(k);await idbPut(id,f);await setDoc(txtRef(k,id),{t:t.slice(0,200000)});d.files.push({id,name:f.name,tag,d:today(),n:t.length});await save(k);if(view==k&&tab=='files')pane();return id}catch(e){return ''}
+  try{const id=Date.now().toString(36)+Math.random().toString(36).slice(2,5),d=sd(k);await idbPut(id,f);await setDoc(txtRef(k,id),{t:t.slice(0,200000)});d.files.push({id,name:f.name,tag,d:today(),n:t.length});await save(k);syncFile(k,id);if(view==k&&tab=='files')pane();return id}catch(e){return ''}
 }
 async function saveShot(k,img){
   try{
@@ -646,33 +656,105 @@ async function saveShot(k,img){
     if(t.length<20)return;
     const id=Date.now().toString(36)+Math.random().toString(36).slice(2,5),d=sd(k);
     await idbPut(id,f);await setDoc(txtRef(k,id),{t:t.slice(0,200000)});
-    d.files.push({id,name:f.name,tag:'មេរៀន',d:today(),n:t.length});await save(k);
+    d.files.push({id,name:f.name,tag:'មេរៀន',d:today(),n:t.length});await save(k);syncFile(k,id);
     if(view==k&&tab=='files')pane();toast('AI បានរៀន និងចងចាំរូបថតនេះក្នុងមុខវិជ្ជា ✓');
   }catch(e){}
 }
+// ---------- FILE COPIES IN THE CLOUD (a file can be previewed and read on every device) ----------
+// Originals up to 2.5 MB are also stored (in pieces) in the student's own private Firestore area; photos are compressed first.
+// Bigger files stay on the uploading device only, but the text the AI read from them is available everywhere.
+const BLOBMAX=2.5*1024*1024,CHUNK=700000,SYNCING={},BF={};
+const blobRef=(k,id,n)=>doc(db,'users',U.uid,'subjects',k,'blobs',id+'_'+n);
+const b64=b=>new Promise((ok,no)=>{const r=new FileReader();r.onload=()=>ok(String(r.result).split(',')[1]||'');r.onerror=no;r.readAsDataURL(b)});
+const unb64=(s,type,name)=>{const bin=atob(s),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new File([u],name||'file',{type})};
+async function cloudCopy(k,f){
+  if(f.cl>0||f.cl===-1||OFFLINE())return f.cl||0;
+  let b=await idbGet(f.id);if(!b)return 0;
+  if(/^image\//.test(b.type||'')&&(b.size>450000||!/jpe?g/.test(b.type))){try{b=await (await fetch(await shrink(b,1600))).blob()}catch(e){}}
+  if(b.size>BLOBMAX){f.cl=-1;return 0}
+  const s=await b64(b),n=Math.max(1,Math.ceil(s.length/CHUNK));
+  for(let i=0;i<n;i++)await fsSetDoc(blobRef(k,f.id,i),{d:s.slice(i*CHUNK,(i+1)*CHUNK)});
+  f.cl=n;f.ct=b.type||f.ct||'';return n;
+}
+function syncFile(k,id){
+  const f=sd(k).files.find(x=>x.id==id);if(!f||f.cl||SYNCING[id])return Promise.resolve();
+  SYNCING[id]=1;
+  return cloudCopy(k,f).then(()=>{if(f.cl)return save(k)}).catch(()=>{}).finally(()=>{delete SYNCING[id]});
+}
+async function backfillFiles(k){ // files uploaded before this feature: copy them up the first time this device opens the list
+  if(BF[k]||OFFLINE())return;BF[k]=1;let ch=false;
+  for(const f of [...sd(k).files]){if(!f.cl){await syncFile(k,f.id);if(f.cl)ch=true;await sleep(250)}}
+  if(ch&&view==k&&tab=='files')files();
+}
+async function getFileBlob(k,f){
+  const l=await idbGet(f.id);if(l)return l;
+  if(!(f.cl>0))return null;
+  try{
+    const ps=await Promise.all(Array.from({length:f.cl},(_,i)=>getDoc(blobRef(k,f.id,i))));
+    if(ps.some(x=>!x.exists()))return null;
+    const b=unb64(ps.map(x=>x.data().d).join(''),f.ct||'application/octet-stream',f.name);
+    idbPut(f.id,b).catch(()=>{});return b;
+  }catch(e){return null}
+}
+// ---------- IN-APP FILE VIEWER ----------
+let FVT=0,FVB=null,FVU=[];
+function fvClose(){FVT++;FVU.forEach(u=>URL.revokeObjectURL(u));FVU=[];FVB=null;$('#fv')?.remove()}
+function fvOpen(title,h,dl){
+  let o=$('#fv');
+  if(!o){o=document.createElement('div');o.id='fv';o.className='fixed inset-0 z-50 overflow-y-auto ovbg';document.body.appendChild(o);
+    o.onclick=e=>{const a=e.target.closest('[data-fv]');if(!a)return;if(a.dataset.fv=='x')fvClose();else if(a.dataset.fv=='dl'&&FVB){const l=document.createElement('a');l.href=URL.createObjectURL(FVB);l.download=FVB.name||'file';l.click();setTimeout(()=>URL.revokeObjectURL(l.href),4000)}}}
+  o.innerHTML=`<div class="sticky top-0 z-10 ovbg border-b border-slate-700/40"><div class="max-w-3xl mx-auto flex items-center gap-2 px-4 py-2.5"><b class="text-sm truncate flex-1">${esc(title)}</b>${dl?'<button data-fv="dl" class="text-blue-300 px-2 py-1" title="ទាញយក"><i class="fa-solid fa-download"></i></button>':''}<button data-fv="x" class="btn btn-sec px-3 py-1.5" aria-label="បិទ"><i class="fa-solid fa-xmark"></i></button></div></div><div id="fvb" class="max-w-3xl mx-auto px-4 py-4">${h}</div>`;
+}
+addEventListener('keydown',e=>{if(e.key=='Escape'&&$('#fv'))fvClose()});
+async function fvPdf(b,box,tk){
+  const pdf=await pdfjsLib.getDocument({data:await b.arrayBuffer()}).promise,N=pdf.numPages,W=Math.min(box.clientWidth||700,900),dpr=Math.min(devicePixelRatio||1,2);
+  for(let i=1;i<=Math.min(N,60);i++){
+    if(FVT!==tk)return;
+    const pg=await pdf.getPage(i),v0=pg.getViewport({scale:1}),v=pg.getViewport({scale:W/v0.width*dpr}),c=document.createElement('canvas');
+    c.width=v.width;c.height=v.height;c.style.width='100%';c.style.maxWidth=W+'px';c.className='rounded-lg bg-white mx-auto block shadow';box.appendChild(c);
+    await pg.render({canvasContext:c.getContext('2d'),viewport:v}).promise;
+  }
+  if(N>60&&FVT===tk)box.insertAdjacentHTML('beforeend','<p class="text-xs text-slate-400 text-center py-2">បង្ហាញ ៦០ ទំព័រដំបូង (សរុប '+N+' ទំព័រ)</p>');
+}
+A.open=async id=>{
+  const k=view,f=sd(k).files.find(x=>x.id==id);if(!f)return;
+  const tk=++FVT;fvOpen(f.name,'<p class="text-sm text-slate-400 py-12 text-center animate-pulse">កំពុងបើក…</p>',false);
+  const b=await getFileBlob(k,f);if(tk!==FVT)return;FVB=b||null;
+  const type=(b&&b.type)||f.ct||'',nm=f.name.toLowerCase(),isPdf=/pdf/.test(type)||nm.endsWith('.pdf'),isImg=/^image\//.test(type)||/\.(jpe?g|png|webp|gif)$/.test(nm);
+  if(b&&isImg){const u=URL.createObjectURL(b);FVU.push(u);fvOpen(f.name,`<img src="${u}" alt="" class="w-full rounded-xl">`,true);return}
+  if(b&&isPdf){
+    fvOpen(f.name,'<div id="fvp" class="space-y-3"></div><p id="fvs" class="text-xs text-slate-400 text-center py-2 animate-pulse">កំពុងគូរទំព័រ…</p>',true);
+    try{await fvPdf(b,$('#fvp'),tk);$('#fvs')?.remove()}catch(e){if(tk===FVT&&$('#fvb'))$('#fvb').innerHTML='<p class="text-sm text-amber-300 py-8 text-center">មិនអាចបង្ហាញ PDF នេះបានទេ។ សូមទាញយកដើម្បីបើកក្នុងកម្មវិធីផ្សេង។</p>'}
+    return;
+  }
+  let t='';const r=await getDoc(txtRef(k,id)).catch(()=>null);if(r&&r.exists())t=r.data().t||'';
+  if(!t&&b){try{t=(await extract(b)).trim()}catch(e){}}
+  if(tk!==FVT)return;
+  const warn=b?'':`<div class="rounded-xl p-3 text-xs bg-amber-500/10 border border-amber-500/30 text-amber-300 mb-3">${f.cl===-1?'ឯកសារនេះធំជាង 2.5MB ដូច្នេះរក្សាទុកតែលើឧបករណ៍ដែលបានផ្ទុកឡើង។':'ឯកសារដើមមិនទាន់មាននៅលើឧបករណ៍នេះ។'} នេះជាអត្ថបទដែល AI បានអាន។</div>`;
+  fvOpen(f.name,warn+(t?`<div class="glass-soft p-4 text-sm leading-relaxed whitespace-pre-wrap break-words">${esc(t.slice(0,80000))}</div>`:'<p class="text-sm text-slate-400 py-10 text-center">គ្មានអត្ថបទសម្រាប់បង្ហាញ — AI មិនទាន់អានឯកសារនេះទេ។</p>'),!!b);
+};
 async function upload(e){
-  const k=view,d=sd(k),tag=$('#tag').value;let n=0;
+  const k=view,d=sd(k),tag=$('#tag').value,ids=[];let n=0;
   for(const f of e.target.files){try{
     const id=Date.now().toString(36)+Math.random().toString(36).slice(2,5);
-    await idbPut(id,f);d.files.push({id,name:f.name,tag,d:today(),n:1,pend:true});n++;
+    await idbPut(id,f);d.files.push({id,name:f.name,tag,d:today(),n:1,pend:true});ids.push(id);n++;
   }catch(x){toast('មិនអាចផ្ទុក '+f.name)}}
-  await save(k);if(view==k&&tab=='files')pane();toast('បានផ្ទុកឡើង '+n+' ឯកសារ ✓ — AI នឹងអានពេលអ្នកប្រើក្នុងគ្រូ AI');
+  await save(k);(async()=>{for(const id of ids)await syncFile(k,id);if(view==k&&tab=='files')files()})();if(view==k&&tab=='files')pane();toast('បានផ្ទុកឡើង '+n+' ឯកសារ ✓ — AI នឹងអានពេលអ្នកប្រើក្នុងគ្រូ AI');
   e.target.value='';
 }
 const PENDP={},rd=f=>f.n||f.pend;
 async function readPending(k,only){
   const d=sd(k),todo=d.files.filter(f=>f.pend&&(!only||f.id==only));let ch=false;
   for(const f of todo){
-    const b=await idbGet(f.id);
+    const b=await getFileBlob(k,f);
     if(!b){toast('ឯកសារ «'+f.name+'» ត្រូវអានលើឧបករណ៍ដែលបានផ្ទុកឡើង');continue}
     if(!PENDP[f.id])PENDP[f.id]=(async()=>{prog('AI កំពុងអានឯកសារ៖ '+f.name+'…');let t='';try{t=(await extract(b)).trim().slice(0,200000)}catch(e){}f.pend=false;if(t){await setDoc(txtRef(k,f.id),{t});f.n=t.length;delete TXT[f.id]}else f.n=0;ch=true})();
     await PENDP[f.id];delete PENDP[f.id];
   }
-  if(ch){await save(k);if(view==k&&tab=='files')files()}
+  endProg();if(ch){await save(k);if(view==k&&tab=='files')files()}
 }
-A.open=async id=>{const b=await idbGet(id);if(!b)return toast('ឯកសារដើមនៅលើឧបករណ៍ផ្សេង ប៉ុន្តែអត្ថបទរបស់វានៅតែរក្សាទុកសម្រាប់ AI។');const a=document.createElement('a');a.href=URL.createObjectURL(b);a.target='_blank';a.click()};
-A.reread=async id=>{delete TXT[id];const k=view,f=sd(k).files.find(x=>x.id==id),b=await idbGet(id);if(!b)return toast('សូមផ្ទុកឯកសារនេះឡើងម្តងទៀត');toast('កំពុងអានម្តងទៀត…');const t=(await extract(b)).trim().slice(0,200000);if(!t)return toast('AI នៅតែអានមិនបាន សូមពិនិត្យរូបភាពឱ្យច្បាស់ ឬប្រាប់ Admin ពិនិត្យ AI');await setDoc(txtRef(k,id),{t});f.n=t.length;f.pend=false;await save(k);files();toast('AI អានបានហើយ ✓')};
-A.delf=async id=>{delete TXT[id];if(!confirm('លុបឯកសារនេះឬ?'))return;const k=view;sd(k).files=sd(k).files.filter(f=>f.id!=id);idbDel(id);deleteDoc(txtRef(k,id)).catch(()=>{});await save(k);pane()};
+A.reread=async id=>{delete TXT[id];const k=view,f=sd(k).files.find(x=>x.id==id),b=await getFileBlob(k,f);if(!b)return toast('សូមផ្ទុកឯកសារនេះឡើងម្តងទៀត');toast('កំពុងអានម្តងទៀត…');const t=(await extract(b)).trim().slice(0,200000);if(!t)return toast('AI នៅតែអានមិនបាន សូមពិនិត្យរូបភាពឱ្យច្បាស់ ឬប្រាប់ Admin ពិនិត្យ AI');await setDoc(txtRef(k,id),{t});f.n=t.length;f.pend=false;await save(k);files();toast('AI អានបានហើយ ✓')};
+A.delf=async id=>{delete TXT[id];if(!confirm('លុបឯកសារនេះឬ?'))return;const k=view,old=sd(k).files.find(f=>f.id==id);for(let i=0;i<(old?.cl>0?old.cl:0);i++)deleteDoc(blobRef(k,id,i)).catch(()=>{});sd(k).files=sd(k).files.filter(f=>f.id!=id);idbDel(id);deleteDoc(txtRef(k,id)).catch(()=>{});await save(k);pane()};
 
 // ---------- NOTES ----------
 let NV=true,STRICT=false,STY=0,ATT=null,VERIFY=true;
@@ -684,7 +766,7 @@ function nlist(){
   // AI answers saved earlier in a subject that has no formulas tab were stuck in the hidden formulas list: move them into notes.
   if(!SCI.has(k)){const st=(d.forms||[]).filter(x=>String(x.t||'').startsWith('💬 '));if(st.length){d.nl=d.nl||[];st.forEach((x,j)=>d.nl.push({id:'m'+Date.now().toString(36)+j,t:x.t,b:x.b,md:1,d:today(),ts:Date.now()+j,pin:0}));d.forms=d.forms.filter(x=>!st.includes(x));save(k)}}
   const nl=(d.nl||[]).slice().sort((a,b)=>(b.pin||0)-(a.pin||0)||(b.ts||0)-(a.ts||0));
-  $('#pane').innerHTML=`<div class="space-y-2 mb-4"><input id="nt" class="inp" placeholder="ចំណងជើង (មិនបង្ខំ)"><textarea id="nb" class="inp" rows="5" placeholder="សរសេរកំណត់ត្រារបស់អ្នកនៅទីនេះ…"></textarea><div class="flex gap-2"><button data-a="nsave" class="btn flex-1"><i class="fa-solid fa-paper-plane"></i>ចុះផ្សាយ</button><button data-a="nclr" class="btn btn-sec">សម្អាត</button>${nl.length?'<button data-a="nprint" class="btn btn-sec" title="បោះពុម្ព / PDF"><i class="fa-solid fa-print"></i></button>':''}</div></div><p class="text-xs text-slate-400 mb-2">កំណត់ត្រារបស់ខ្ញុំ ${nl.length}</p>`+(nl.length?nl.map(n=>`<div class="glass-soft p-3.5 mb-2.5"><div class="flex items-start justify-between gap-2"><p class="font-semibold text-sm">${n.pin?'📌 ':''}${esc(n.t||'កំណត់ត្រា')}</p><span class="text-[10px] text-slate-500 whitespace-nowrap">${n.d||''}</span></div>${n.md?`<div class="md text-sm text-slate-200 mt-1.5 break-words">${md(n.b||'')}</div>`:`<p class="text-sm text-slate-200 mt-1.5 whitespace-pre-wrap break-words">${esc(n.b||'')}</p>`}<div class="flex flex-wrap gap-3 text-xs mt-2.5"><button data-a="nedit" data-v="${n.id}" class="text-blue-300 hover:underline">កែសម្រួល</button><button data-a="npin" data-v="${n.id}" class="text-amber-300 hover:underline">${n.pin?'ដកខ្ទាស់':'ខ្ទាស់'}</button><button data-a="ncopy" data-v="${n.id}" class="text-slate-300 hover:underline">ចម្លង</button><button data-a="ndel" data-v="${n.id}" class="text-red-400 hover:underline">លុប</button></div></div>`).join(''):'<p class="text-sm text-slate-400 text-center py-6">មិនទាន់មានកំណត់ត្រាទេ។ សរសេរខាងលើ ហើយចុច «ចុះផ្សាយ»។</p>');rm($('#pane'));
+  $('#pane').innerHTML=`<div class="space-y-2 mb-4"><input id="nt" class="inp" placeholder="ចំណងជើង (មិនបង្ខំ)">${SCI.has(k)?symRow():''}<textarea id="nb" class="inp" rows="5" placeholder="សរសេរកំណត់ត្រារបស់អ្នកនៅទីនេះ…"></textarea><div class="flex gap-2"><button data-a="nsave" class="btn flex-1"><i class="fa-solid fa-paper-plane"></i>ចុះផ្សាយ</button><button data-a="nclr" class="btn btn-sec">សម្អាត</button>${nl.length?'<button data-a="nprint" class="btn btn-sec" title="បោះពុម្ព / PDF"><i class="fa-solid fa-print"></i></button>':''}</div></div><p class="text-xs text-slate-400 mb-2">កំណត់ត្រារបស់ខ្ញុំ ${nl.length}</p>`+(nl.length?nl.map(n=>`<div class="glass-soft p-3.5 mb-2.5"><div class="flex items-start justify-between gap-2"><p class="font-semibold text-sm">${n.pin?'📌 ':''}${esc(n.t||'កំណត់ត្រា')}</p><span class="text-[10px] text-slate-500 whitespace-nowrap">${n.d||''}</span></div>${n.md?`<div class="md text-sm text-slate-200 mt-1.5 break-words">${md(n.b||'')}</div>`:`<p class="text-sm text-slate-200 mt-1.5 whitespace-pre-wrap break-words">${esc(n.b||'')}</p>`}<div class="flex flex-wrap gap-3 text-xs mt-2.5"><button data-a="nedit" data-v="${n.id}" class="text-blue-300 hover:underline">កែសម្រួល</button><button data-a="npin" data-v="${n.id}" class="text-amber-300 hover:underline">${n.pin?'ដកខ្ទាស់':'ខ្ទាស់'}</button><button data-a="ncopy" data-v="${n.id}" class="text-slate-300 hover:underline">ចម្លង</button><button data-a="ndel" data-v="${n.id}" class="text-red-400 hover:underline">លុប</button></div></div>`).join(''):'<p class="text-sm text-slate-400 text-center py-6">មិនទាន់មានកំណត់ត្រាទេ។ សរសេរខាងលើ ហើយចុច «ចុះផ្សាយ»។</p>');rm($('#pane'));
 }
 A.nsave=async()=>{const k=view,t=$('#nt').value.trim(),b=$('#nb').value.trim();if(!b&&!t)return toast('សូមសរសេរអ្វីមួយសិន');const d=sd(k);d.nl=d.nl||[];if(NEDIT){const n=d.nl.find(x=>x.id==NEDIT);if(n){n.t=t;n.b=b;n.d=today()}NEDIT=null}else d.nl.push({id:Date.now().toString(36),t,b,d:today(),ts:Date.now(),pin:0});await save(k);toast('បានចុះផ្សាយ ✓');nlist()};
 A.nedit=id=>{const n=(sd(view).nl||[]).find(x=>x.id==id);if(!n)return;NEDIT=id;$('#nt').value=n.t||'';$('#nb').value=n.b||'';$('#nb').focus();window.scrollTo({top:0,behavior:'smooth'});toast('កំពុងកែសម្រួល — ចុច «ចុះផ្សាយ» ដើម្បីរក្សាទុក')};
@@ -692,7 +774,7 @@ A.npin=async id=>{const n=(sd(view).nl||[]).find(x=>x.id==id);if(n){n.pin=n.pin?
 A.ncopy=id=>{const n=(sd(view).nl||[]).find(x=>x.id==id);if(n)navigator.clipboard?.writeText((n.t?n.t+'\n':'')+(n.b||'')).then(()=>toast('បានចម្លង ✓'))};
 A.ndel=async id=>{if(!confirm('លុបកំណត់ត្រានេះឬ?'))return;const d=sd(view);d.nl=(d.nl||[]).filter(x=>x.id!=id);await save(view);nlist()};
 A.nclr=()=>{$('#nt').value='';$('#nb').value='';NEDIT=null};
-A.nprint=()=>printDoc(subj(view)[1]+' · កំណត់ត្រា',(sd(view).nl||[]).map(n=>'<h3>'+esc(n.t||'កំណត់ត្រា')+'</h3><p style="white-space:pre-wrap">'+esc(n.b||'')+'</p>').join(''));
+A.nprint=()=>printDoc(subj(view)[1]+' · កំណត់ត្រា',(sd(view).nl||[]).map(n=>'<h3>'+esc(String(n.t||'កំណត់ត្រា').replace(/^💬\s*/,''))+'</h3>'+(n.md?'<div class="md">'+md(n.b||'')+'</div>':'<p style="white-space:pre-wrap">'+esc(n.b||'')+'</p>')).join(''));
 function mist(){
   const k=view,m=(sd(k).mist||[]).slice().reverse(),anyTp=m.some(x=>x.tp),NG='មិនទាន់ដាក់ក្រុម';
   const card=x=>`<div class="glass-soft p-3.5 mb-2.5"><p class="text-sm font-medium mb-2">${esc(x.q)}</p><div class="text-xs space-y-1 mb-2"><p class="text-red-300">✗ ចម្លើយរបស់ខ្ញុំ៖ ${esc((x.o||[])[x.m]??'—')}</p><p class="text-emerald-300">✓ ចម្លើយត្រឹមត្រូវ៖ ${esc((x.o||[])[x.a]??'')}</p></div><div class="flex gap-3 text-xs"><button data-a="mask" data-v="${x.i}" class="text-blue-300 hover:underline"><i class="fa-solid fa-wand-magic-sparkles mr-1"></i>ពន្យល់ពីហេតុផល</button><button data-a="mdel" data-v="${x.i}" class="text-slate-400 hover:text-red-400">លុប</button></div></div>`;
@@ -944,7 +1026,7 @@ const LQ=k=>k=='eng'?'Write the questions and options in English and the explana
 const srcSel=(k,all)=>`<select id="src" class="inp">${all?'<option value="all">📚 ឯកសារទាំងអស់ (AI ស្វែងរកក្នុងឯកសារទាំងអស់)</option>':''}<option value="">🧠 ចំណេះដឹងទូទៅ (មិនប្រើឯកសារ)</option>${ftsOf(view).map(([t])=>{const fs=sd(k).files.filter(f=>rd(f)&&f.tag==t);return fs.length?`<optgroup label="${t}">${fs.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join('')}</optgroup>`:''}).join('')}</select>`;
 function printDoc(title,html){
   const w=window.open('','_blank');if(!w)return toast('សូមអនុញ្ញាតឱ្យបើកទំព័រថ្មី (pop-up)');
-  w.document.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+'</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css"><style>body{font-family:"Noto Sans Khmer",system-ui,sans-serif;max-width:760px;margin:18px auto;padding:0 14px;color:#111;line-height:1.75}h1{font-size:20px}h3{margin:16px 0 4px;color:#1d4ed8}</style></head><body><h1>'+esc(title)+' · NGS-HUB</h1>'+html+'<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"><\/script><script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"><\/script><script>addEventListener("load",function(){try{renderMathInElement(document.body,{delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false}],throwOnError:false})}catch(e){}setTimeout(function(){print()},800)})<\/script></body></html>');
+  w.document.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+'</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css"><style>body{font-family:"Noto Sans Khmer",system-ui,sans-serif;max-width:760px;margin:18px auto;padding:0 14px;color:#111;line-height:1.75}h1{font-size:20px}h3{margin:18px 0 4px;color:#1d4ed8;font-size:17px;border-bottom:1px solid #dbeafe;padding-bottom:2px}.md p{margin:6px 0}.md h1,.md h2,.md h3,.md h4{margin:14px 0 4px;color:#111;font-size:15px;border:0}.md table{border-collapse:collapse;width:100%;margin:8px 0;font-size:13px}.md th,.md td{border:1px solid #9ca3af;padding:4px 8px;vertical-align:top}.md th{background:#eff6ff}.md blockquote{margin:8px 0;padding:2px 12px;border-left:3px solid #93c5fd;background:#f0f7ff}.md ul,.md ol{padding-left:22px;margin:6px 0}.md code{background:#f3f4f6;padding:0 4px;border-radius:4px}.md hr{border:0;border-top:1px solid #e5e7eb;margin:10px 0}@media print{h3{break-after:avoid}.md table,.md blockquote{break-inside:avoid}}</style></head><body><h1>'+esc(title)+' · NGS-HUB</h1>'+html+'<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"><\/script><script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"><\/script><script>addEventListener("load",function(){try{renderMathInElement(document.body,{delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false}],throwOnError:false})}catch(e){}setTimeout(function(){print()},800)})<\/script></body></html>');
   w.document.close();
 }
 A.prf=()=>printDoc(subj(view)[1]+' · រូបមន្ត',fL(view).filter(x=>(x.src||'')==fsel(view)).map(({t,b})=>'<h3>'+esc(t)+'</h3>'+md(b)).join(''));
@@ -1008,12 +1090,9 @@ const CH=[
   ['ពន្យល់ងាយៗ','សូមពន្យល់មេរៀននេះមួយជំហានម្តងៗ ឱ្យងាយយល់បំផុត ព្រមទាំងឧទាហរណ៍ជាក់ស្តែង។'],
   ['បង្កើតសន្លឹករូបមន្ត','សូមបង្កើតសន្លឹករូបមន្ត និងចំណុចគន្លឹះសង្ខេប សម្រាប់ត្រៀមប្រឡងបាក់ឌុប។'],
   ['លំហាត់គំរូ + ចម្លើយ','សូមផ្តល់លំហាត់គំរូបាក់ឌុប ២ ព្រមទាំងចម្លើយលម្អិតមួយជំហានម្តងៗ។'],
-  ['ពិនិត្យចម្លើយខ្ញុំ','ខ្ញុំបានដោះស្រាយលំហាត់នេះរួចហើយ សូមពិនិត្យថាត្រូវឬខុស ចង្អុលកន្លែងខុសមួយជំហានម្តងៗ ហើយផ្តល់ពិន្ទុប្រហាក់ប្រហែលតាមស្តង់ដារបាក់ឌុប។',true],
-  ['ជំនួយបន្តិចម្តងៗ','សូមកុំប្រាប់ចម្លើយភ្លាម។ ផ្តល់តម្រុយទី ១ តែមួយប៉ុណ្ណោះ ហើយរង់ចាំខ្ញុំសាកល្បងមុន។ បើខ្ញុំនៅជាប់ ខ្ញុំនឹងសុំតម្រុយបន្ទាប់។'],
   ['សួរខ្ញុំ ៥ សំណួរ','សូមសួរខ្ញុំ ៥ សំណួរខ្លីៗ ម្តងមួយ លើមេរៀននេះតាមស្តង់ដារបាក់ឌុប ហើយកែចម្លើយរបស់ខ្ញុំរាល់ពេល។'],
-  ['បង្រៀនខ្ញុំរហូតយល់','សូមបង្រៀនខ្ញុំមេរៀននេះម្តងមួយចំណុចតូចៗ៖ ពន្យល់ចំណុចមួយ សួរខ្ញុំ ១ សំណួរដើម្បីពិនិត្យការយល់ដឹង រង់ចាំចម្លើយរបស់ខ្ញុំ ហើយទើបបន្តទៅចំណុចបន្ទាប់។ បើខ្ញុំឆ្លើយខុស សូមពន្យល់ម្តងទៀតតាមរបៀបងាយជាងមុន។']
 ];
-const CHP={},DRAFT={},PEND={};let AIK=''; // unsent text and "answer on its way" flags per chat, so they survive leaving the tab
+const CHP={},DRAFT={},PEND={};let AIK='',AOPT=false; // unsent text and "answer on its way" flags per chat, so they survive leaving the tab
 const SRC={},srcOf=k=>SRC[k]===undefined?'all':SRC[k],FM=k=>{const v=srcOf(k);return !!v&&v!='all'};
 const ck=k=>{const v=srcOf(k);return v=='all'?k:k+'|'+(v||'g')},cdoc=c=>{const q=c.split('|');return q[1]?'_chat_'+q[1]:'_chat'};
 const loadChat=c=>chat[c]?Promise.resolve():(CHP[c]=CHP[c]||getDoc(txtRef(c.split('|')[0],cdoc(c))).then(r=>{if(!chat[c])chat[c]=r.exists()?JSON.parse(r.data().t||'[]'):[]}).catch(()=>{if(!chat[c])chat[c]=[]}).finally(()=>{delete CHP[c]}));
@@ -1039,13 +1118,12 @@ async function learnAll(k,max,quiet){
 function autoLearn(k){const d=sd(k);if(LRN[k]||!d.files.some(f=>f.n&&!f.pend&&!(d.know||{})[f.id])||LRN['t'+k]>Date.now()-6e5)return;LRN[k]=1;LRN['t'+k]=Date.now();learnAll(k,2,true).finally(()=>{LRN[k]=0})}
 function ai(){
   const k=view,cc=ck(k),c=chat[cc]||[];if(AIK!==k){IMG=null;ATT=null;AIK=k}
-  $('#pane').innerHTML=`<div class="flex gap-2 mb-2">${srcSel(k,true)}${c.length?`<button data-a="clrai" class="btn btn-sec px-3" title="សម្អាតការសន្ទនា"><i class="fa-solid fa-broom"></i></button>`:''}</div>
-  <p class="text-[11px] text-emerald-300 mb-1.5">${FM(k)?`🔒 AI ឆ្លើយតាមឯកសារនេះតែមួយ មិនលាយឡំឯកសារផ្សេង · ប្រវត្តិសន្ទនាដាច់ដោយឡែក · <button data-a="peek" class="underline">👁 មើលអត្ថបទដែល AI អាន</button>`:srcOf(k)=='all'?'📚 AI ស្វែងរកក្នុងឯកសារទាំងអស់ · បើរកមិនឃើញ ប្រើចំណេះដឹងទូទៅ':'🧠 AI ប្រើចំណេះដឹងទូទៅ (មិនអានឯកសារ)'}</p>
-  <p class="text-[11px] text-slate-500 mb-2"><i class="fa-solid fa-brain text-purple-300 mr-1"></i>គ្រូ AI ${subj(k)[1]} ឆ្លើយតែមុខវិជ្ជានេះ · អានឯកសារ និងរូបភាព · រៀន និងចងចាំមេរៀនពីឯកសាររបស់អ្នក</p>
-  <div class="flex flex-wrap items-center justify-between gap-2 mb-2 text-[11px] text-slate-400"><span>📚 AI នេះស្គាល់៖ ${ftsOf(view).map(([t])=>t+' '+sd(k).files.filter(f=>f.tag==t).length).join(' · ')} · 🧠 រៀនរួច ${Object.keys(sd(k).know||{}).filter(i=>sd(k).files.some(f=>f.id==i)).length}/${sd(k).files.filter(rd).length}</span><button data-a="sty" class="text-amber-300 underline whitespace-nowrap">✍️ ចម្លើយ៖ ${STYS[STY][0]}</button><button data-a="strict" class="text-emerald-300 underline whitespace-nowrap">${STRICT?'🔒 តាមឯកសារតែប៉ុណ្ណោះ៖ បើក':'🔓 តាមឯកសារតែប៉ុណ្ណោះ៖ បិទ'}</button>${SCI.has(k)?`<button data-a="vfy" class="text-rose-300 underline whitespace-nowrap">${VERIFY?'🔍 ពិនិត្យចម្លើយ២ដង៖ បើក':'🔍 ពិនិត្យចម្លើយ២ដង៖ បិទ'}</button>`:''}<button data-a="learn" class="text-sky-300 underline whitespace-nowrap">🎓 ឲ្យ AI រៀនឯកសារទាំងអស់</button></div>
-  <div id="cl" class="space-y-3 mb-3 min-h-[32vh] max-h-[54vh] overflow-y-auto pr-1"><p class="text-sm text-slate-400 text-center py-6">សួរមេរៀន ឬលំហាត់អ្វីក៏បាន! គ្រូ AI បានអានឯកសារ និងកំណត់ត្រារបស់អ្នករួចហើយ។ ចុចរូបកាមេរ៉ាដើម្បីថតលំហាត់ឱ្យ AI ដោះស្រាយ។</p></div>
+  $('#pane').innerHTML=`<div class="flex gap-2 mb-2">${srcSel(k,true)}<button data-a="aopt" class="btn btn-sec px-3" title="ជម្រើស" aria-label="ជម្រើស"><i class="fa-solid fa-sliders"></i></button>${c.length?`<button data-a="clrai" class="btn btn-sec px-3" title="សម្អាតការសន្ទនា"><i class="fa-solid fa-broom"></i></button>`:''}</div>
+  <div id="aopt" class="${AOPT?'':'hide '}glass-soft p-2.5 mb-2 flex flex-wrap gap-2 text-xs"><button data-a="sty" class="chip">✍️ ចម្លើយ៖ ${STYS[STY][0]}</button><button data-a="strict" class="chip">${STRICT?'🔒 តាមឯកសារតែប៉ុណ្ណោះ៖ បើក':'🔓 តាមឯកសារតែប៉ុណ្ណោះ៖ បិទ'}</button>${SCI.has(k)?`<button data-a="vfy" class="chip">${VERIFY?'🔍 ពិនិត្យចម្លើយ២ដង៖ បើក':'🔍 ពិនិត្យចម្លើយ២ដង៖ បិទ'}</button>`:''}</div>
+  <div id="cl" class="space-y-3 mb-3 min-h-[32vh] max-h-[54vh] overflow-y-auto pr-1"><p class="text-sm text-slate-400 text-center py-6">សួរមេរៀន ឬលំហាត់អ្វីក៏បាន — ឬចុច ✅ ដើម្បីឱ្យ AI ពិនិត្យការងាររបស់អ្នក។</p></div>
   <div id="ckw" class="mb-2.5"></div>
-  <div class="flex flex-wrap gap-1.5 mb-2.5">${CH.map(([kh],i)=>i==2&&!SCI.has(view)?'':`<button data-a="chip" data-v="${i}" class="chip">${kh}</button>`).join("")}</div>
+  <div class="flex flex-wrap gap-1.5 mb-2.5"><button data-a="cktoggle" class="chip text-emerald-300 border-emerald-500/40 font-semibold">✅ ពិនិត្យការងារខ្ញុំ</button>${CH.map(([kh],i)=>i==2&&!SCI.has(view)?'':`<button data-a="chip" data-v="${i}" class="chip">${kh}</button>`).join("")}${SCI.has(view)?'<button data-a="symt" class="chip" title="និមិត្តសញ្ញា">Σ √</button>':''}</div>
+  ${SCI.has(view)?symRow('hide mb-1.5" id="symr'):''}
   <p id="pa" class="hide text-xs text-emerald-300 mb-2">📎 <span id="pan"></span> · <button data-a="rmat" class="underline">ដកចេញ</button></p>
   <p id="pc" class="hide text-xs text-emerald-300 mb-2">📷 បានភ្ជាប់រូបថត · <button data-a="rmph" class="underline">ដកចេញ</button></p>
   <div class="flex gap-2">
@@ -1065,16 +1143,15 @@ function ai(){
   $('#at').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;if(f.type.startsWith('image/')){IMG=await shrink(f);$('#pc').classList.remove('hide');return}toast('កំពុងអាន '+f.name+'…');const t=(await extract(f)).trim();if(t.length<10)return toast('មិនអាចអានឯកសារនេះបានទេ');ATT={name:f.name,t:t.slice(0,12000)};$('#pan').textContent=f.name;$('#pa').classList.remove('hide');const id=await saveDoc(view,f,t);if(id){prog('AI កំពុងសិក្សាឯកសារនេះឱ្យយល់…');await learnFile(view,{id,name:f.name})}toast('AI បានសិក្សាឯកសារនេះរួច ✓ — សួរសំណួរបាន')};
 }
 A.rmat=()=>{ATT=null;$('#pa').classList.add('hide')};
-A.learn=async(_,b)=>{if(b)b.disabled=true;await learnAll(view);if(b)b.disabled=false};
+A.aopt=()=>{AOPT=!AOPT;$('#aopt')?.classList.toggle('hide',!AOPT)};
 A.vfy=()=>{VERIFY=!VERIFY;toast(VERIFY?'AI នឹងពិនិត្យចម្លើយម្តងទៀតមុនបង្ហាញ (យឺតជាង តែត្រឹមត្រូវជាង)':'បិទការពិនិត្យពីរដង');ai()};
-A.peek=async()=>{const r=await getDoc(txtRef(view,srcOf(view))).catch(()=>null),t=r&&r.exists()?r.data().t:'';alert(t?t.slice(0,900)+(t.length>900?'…':''):'(គ្មានអត្ថបទ)')};
 A.sty=()=>{STY=(STY+1)%STYS.length;ai()};
 A.strict=()=>{STRICT=!STRICT;toast(STRICT?'AI នឹងឆ្លើយតាមតែឯកសារ និងរូបថតរបស់អ្នក':'AI ប្រើឯកសារជាមុន ហើយបំពេញដោយចំណេះដឹងរបស់វា');ai()};
 A.memv=()=>{const d=sd(view),m=(d.mem||'')+((d.recent||[]).length?'\n\nសំណួរថ្មីៗ៖\n• '+d.recent.slice(-5).join('\n• '):'');if(!m.trim())return toast('AI មិនទាន់ចងចាំអ្វីទេ — សួរសំណួរមួយសិន');if(confirm('AI '+subj(view)[1]+' ចងចាំ៖\n\n'+m+'\n\nលុបការចងចាំនេះ?')){d.mem='';d.recent=[];save(view);toast('បានលុបការចងចាំ ✓')}};
 A.clrai=()=>{const c=ck(view);chat[c]=[];saveChat(c);ai()};
 A.rmph=()=>{IMG=null;$('#pc').classList.add('hide')};
 A.cpmsg=i=>{const t=cleanAI(chat[ck(view)]?.[i]?.content||'');navigator.clipboard?.writeText(t).then(()=>toast('បានចម្លងចម្លើយ ✓'))};
-A.svnote=async i=>{const t=cleanAI(chat[ck(view)]?.[i]?.content||'');if(!t)return;const d=sd(view);d.nl=d.nl||[];d.nl.push({id:Date.now().toString(36),t:'💬 '+t.replace(/[#*$\\]/g,'').trim().split('\n')[0].slice(0,40),b:t,md:1,d:today(),ts:Date.now(),pin:0});await save(view);toast('បានរក្សាទុកក្នុងកំណត់ត្រា ✓')};
+A.svnote=async i=>{const t=cleanAI(chat[ck(view)]?.[i]?.content||'');if(!t)return;const d=sd(view);d.nl=d.nl||[];d.nl.push({id:Date.now().toString(36),t:'💬 '+(h=>h.length>60?h.slice(0,60)+'…':h)(t.replace(/[#*$\\>`_|]/g,'').split('\n').map(x=>x.replace(/^[-\s]+/,'').trim()).find(x=>x.length>2)||'ចម្លើយ AI'),b:t,md:1,d:today(),ts:Date.now(),pin:0});await save(view);toast('បានរក្សាទុកក្នុងកំណត់ត្រា ✓')};
 A.svmsg=async i=>{if(!SCI.has(view))return A.svnote(i);const t=cleanAI(chat[ck(view)]?.[i]?.content||'');if(!t)return;fL(view).push({t:'💬 '+t.replace(/[#*$\\]/g,'').trim().split('\n')[0].slice(0,40),b:t});FSEL[view]='';await save(view);toast('បានរក្សាទុកក្នុងរូបមន្ត ✓ (ផ្នែក «ទូទៅ»)')};
 A.send=async()=>{
   const k=view,i=$('#ci'),q=i.value.trim();if(!q&&!IMG&&!ATT)return;if(needNet())return;
@@ -1092,11 +1169,275 @@ A.send=async()=>{
     if(v){if(!/^\s*OK[.!]?\s*$/i.test(v.trim())&&v.trim().length>20)r=v.trim();WHO+=' · ✓ពិនិត្យ'}
   }
   c.push({role:'assistant',by:r?WHO:'',content:(r?cleanAI(r,false)+(srcs.length?'\n\n'+FOOT+' '+[...new Set(srcs)].slice(0,4).join(' · '):''):null)||'⚠ '+(img?'AI មិនអាចអានរូបភាពបានទេឥឡូវនេះ។ សូមព្យាយាមម្តងទៀត ឬវាយលំហាត់ជាអក្សរ។':'AI កំពុងរវល់ សូមព្យាយាមម្តងទៀតបន្តិចក្រោយ។')+(ERR?` (${ERR})`:'')});
-  PEND[cc]=0;saveChat(cc);if(r)updMem(k);
+  PEND[cc]=0;endProg();saveChat(cc);if(r)updMem(k);
   if(r&&img)saveShot(k,img);
   if(view==k&&tab=='ai'&&ck(k)==cc)draw($('#cl'),c);
 };
-A.chip=i=>{if(i==4){A.ckopen();$('#ckw')?.scrollIntoView({block:'nearest'});return}const c=CH[i];$('#ci').value=c[1]+' (មុខវិជ្ជា '+subj(view)[1]+')';if(c[2]){toast('ថតរូបលំហាត់ និងចម្លើយរបស់អ្នក រួចចុចផ្ញើ');$('#ph').click();return}A.send()};
+A.chip=i=>{const c=CH[i];$('#ci').value=c[1]+' (មុខវិជ្ជា '+subj(view)[1]+')';if(c[2]){toast('ថតរូបលំហាត់ និងចម្លើយរបស់អ្នក រួចចុចផ្ញើ');$('#ph').click();return}A.send()};
+
+// ---------- TOOLBOX (ឧបករណ៍): works offline, exact, no AI ----------
+// <TOOLBOX-LOGIC>
+const EL_RAW='H,Hydrogen,1.008;He,Helium,4.0026;Li,Lithium,6.94;Be,Beryllium,9.0122;B,Boron,10.81;C,Carbon,12.011;N,Nitrogen,14.007;O,Oxygen,15.999;F,Fluorine,18.998;Ne,Neon,20.18;Na,Sodium,22.99;Mg,Magnesium,24.305;Al,Aluminium,26.982;Si,Silicon,28.085;P,Phosphorus,30.974;S,Sulfur,32.06;Cl,Chlorine,35.45;Ar,Argon,39.948;K,Potassium,39.098;Ca,Calcium,40.078;Sc,Scandium,44.956;Ti,Titanium,47.867;V,Vanadium,50.942;Cr,Chromium,51.996;Mn,Manganese,54.938;Fe,Iron,55.845;Co,Cobalt,58.933;Ni,Nickel,58.693;Cu,Copper,63.546;Zn,Zinc,65.38;Ga,Gallium,69.723;Ge,Germanium,72.63;As,Arsenic,74.922;Se,Selenium,78.971;Br,Bromine,79.904;Kr,Krypton,83.798;Rb,Rubidium,85.468;Sr,Strontium,87.62;Y,Yttrium,88.906;Zr,Zirconium,91.224;Nb,Niobium,92.906;Mo,Molybdenum,95.95;Tc,Technetium,98;Ru,Ruthenium,101.07;Rh,Rhodium,102.91;Pd,Palladium,106.42;Ag,Silver,107.87;Cd,Cadmium,112.41;In,Indium,114.82;Sn,Tin,118.71;Sb,Antimony,121.76;Te,Tellurium,127.6;I,Iodine,126.9;Xe,Xenon,131.29;Cs,Caesium,132.91;Ba,Barium,137.33;La,Lanthanum,138.91;Ce,Cerium,140.12;Pr,Praseodymium,140.91;Nd,Neodymium,144.24;Pm,Promethium,145;Sm,Samarium,150.36;Eu,Europium,151.96;Gd,Gadolinium,157.25;Tb,Terbium,158.93;Dy,Dysprosium,162.5;Ho,Holmium,164.93;Er,Erbium,167.26;Tm,Thulium,168.93;Yb,Ytterbium,173.05;Lu,Lutetium,174.97;Hf,Hafnium,178.49;Ta,Tantalum,180.95;W,Tungsten,183.84;Re,Rhenium,186.21;Os,Osmium,190.23;Ir,Iridium,192.22;Pt,Platinum,195.08;Au,Gold,196.97;Hg,Mercury,200.59;Tl,Thallium,204.38;Pb,Lead,207.2;Bi,Bismuth,208.98;Po,Polonium,209;At,Astatine,210;Rn,Radon,222;Fr,Francium,223;Ra,Radium,226;Ac,Actinium,227;Th,Thorium,232.04;Pa,Protactinium,231.04;U,Uranium,238.03;Np,Neptunium,237;Pu,Plutonium,244;Am,Americium,243;Cm,Curium,247;Bk,Berkelium,247;Cf,Californium,251;Es,Einsteinium,252;Fm,Fermium,257;Md,Mendelevium,258;No,Nobelium,259;Lr,Lawrencium,266;Rf,Rutherfordium,267;Db,Dubnium,268;Sg,Seaborgium,269;Bh,Bohrium,270;Hs,Hassium,277;Mt,Meitnerium,278;Ds,Darmstadtium,281;Rg,Roentgenium,282;Cn,Copernicium,285;Nh,Nihonium,286;Fl,Flerovium,289;Mc,Moscovium,290;Lv,Livermorium,293;Ts,Tennessine,294;Og,Oganesson,294';
+const EL=EL_RAW.split(';').map((x,i)=>{const[s,n,m]=x.split(',');return{z:i+1,s,n,m:+m}});
+const ELS=Object.fromEntries(EL.map(e=>[e.s,e]));
+// 'r' = rounded values as used in school exercises (H=1, C=12, O=16, Cl=35.5 …); 'p' = precise IUPAC values
+const massOf=(e,mode)=>mode=='p'?e.m:(e.s=='Cl'?35.5:Math.round(e.m));
+const ELPOS=z=>z==1?[1,1]:z==2?[1,18]:z<=4?[2,z-2]:z<=10?[2,z+8]:z<=12?[3,z-10]:z<=18?[3,z]:z<=36?[4,z-18]:z<=54?[5,z-36]:z<=56?[6,z-54]:z<=71?[9,z-54]:z<=86?[6,z-68]:z<=88?[7,z-86]:z<=103?[10,z-86]:[7,z-100];
+const ELCAT=z=>[3,11,19,37,55,87].includes(z)?'alk':[4,12,20,38,56,88].includes(z)?'ae':(z>=21&&z<=30)||(z>=39&&z<=48)||(z>=72&&z<=80)||(z>=104&&z<=112)?'tm':[13,31,49,50,81,82,83,84,113,114,115,116].includes(z)?'pt':[5,14,32,33,51,52].includes(z)?'md':[1,6,7,8,15,16,34].includes(z)?'nm':[9,17,35,53,85,117].includes(z)?'hl':[2,10,18,36,54,86,118].includes(z)?'ng':z>=57&&z<=71?'la':'ac';
+const normFormula=f=>String(f).replace(/[₀-₉]/g,c=>String(c.charCodeAt(0)-8320)).replace(/\^[0-9]*[+-]?$/,'').replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻]+$/,'').replace(/\s+/g,'').replace(/\[/g,'(').replace(/\]/g,')');
+function parseGroup(body){
+  let i=0;
+  const num=()=>{const j=i;while(i<body.length&&/\d/.test(body[i]))i++;return i>j?+body.slice(j,i):1};
+  const seq=()=>{const out={};
+    while(i<body.length&&body[i]!=')'){
+      if(body[i]=='('){i++;const inner=seq();if(body[i]!=')')throw new Error('វង់ក្រចកមិនគ្រប់គូ');i++;const n=num();for(const k in inner)out[k]=(out[k]||0)+inner[k]*n}
+      else if(/[A-Z]/.test(body[i])){let s=body[i++];if(i<body.length&&/[a-z]/.test(body[i]))s+=body[i++];if(!ELS[s])throw new Error('មិនស្គាល់ធាតុ «'+s+'»');out[s]=(out[s]||0)+num()}
+      else throw new Error('តួអក្សរមិនត្រឹមត្រូវ «'+body[i]+'»');
+    }
+    return out};
+  const r=seq();if(i<body.length)throw new Error('វង់ក្រចកមិនគ្រប់គូ');return r;
+}
+function parseFormula(str){
+  const f=normFormula(str);if(!f)throw new Error('សូមបញ្ចូលរូបមន្ត');
+  const total={};
+  for(const part of f.split(/[·.*•]/).filter(Boolean)){
+    const m=part.match(/^(\d+)(.+)$/),mult=m?+m[1]:1,cnt=parseGroup(m?m[2]:part);
+    for(const k in cnt)total[k]=(total[k]||0)+cnt[k]*mult;
+  }
+  return total;
+}
+function molar(str,mode){
+  const counts=parseFormula(str);let M=0;
+  const rows=Object.entries(counts).map(([s,n])=>{const a=massOf(ELS[s],mode),sub=a*n;M+=sub;return{s,n,a,sub}});
+  return{M:+M.toFixed(4),rows,counts};
+}
+const gcdB=(a,b)=>{a=a<0n?-a:a;b=b<0n?-b:b;while(b){[a,b]=[b,a%b]}return a};
+function parseEq(str){
+  const t=String(str).replace(/[→⟶⇒⟹⇌]|==>|=>|-->|->|=/g,'→').replace(/\s+/g,' ').trim(),sd=t.split('→');
+  if(sd.length!=2||!sd[0].trim()||!sd[1].trim())throw new Error('សូមសរសេរក្នុងទម្រង់៖ A + B → C + D');
+  const side=x=>x.split('+').map(y=>y.trim().replace(/^\d+\s*/,'')).filter(Boolean);
+  return[side(sd[0]),side(sd[1])];
+}
+function balance(str){
+  const[L,R]=parseEq(str),comps=[...L,...R],cn=comps.map(parseFormula),els=[...new Set(cn.flatMap(c=>Object.keys(c)))];
+  for(const e of els){if(!L.some((_,i)=>cn[i][e])||!R.some((_,i)=>cn[L.length+i][e]))throw new Error('ធាតុ '+e+' ត្រូវមានទាំងសងខាងនៃសមីការ')}
+  const rows=els.map(e=>cn.map((c,j)=>BigInt((c[e]||0)*(j<L.length?1:-1)))),nc=comps.length,piv=[];let r0=0;
+  for(let c=0;c<nc&&r0<rows.length;c++){
+    let p=-1;for(let i=r0;i<rows.length;i++)if(rows[i][c]!==0n){p=i;break}
+    if(p<0)continue;[rows[r0],rows[p]]=[rows[p],rows[r0]];
+    for(let i=0;i<rows.length;i++){
+      if(i==r0||rows[i][c]===0n)continue;
+      const a=rows[r0][c],b=rows[i][c];rows[i]=rows[i].map((v,j)=>v*a-rows[r0][j]*b);
+      const g=rows[i].reduce((x,y)=>gcdB(x,y),0n);if(g>1n)rows[i]=rows[i].map(v=>v/g);
+    }
+    piv.push(c);r0++;
+  }
+  const free=[...Array(nc).keys()].filter(c=>!piv.includes(c));
+  if(!free.length)throw new Error('មិនអាចតុល្យសមីការនេះបានទេ — សូមពិនិត្យរូបមន្ត');
+  if(free.length>1)throw new Error('សមីការនេះមានចម្លើយច្រើន — សូមបន្ថែមសារធាតុ ឬពិនិត្យម្តងទៀត');
+  const f=free[0];let D=1n;
+  const fr=piv.map((c,r)=>{const p=rows[r][c],a=rows[r][f],g=gcdB(p,a)||1n;let n=-a/g,d=p/g;if(d<0n){n=-n;d=-d}return[n,d]});
+  fr.forEach(([,d])=>{D=D*d/gcdB(D,d)});
+  const x=Array(nc).fill(0n);x[f]=D;piv.forEach((c,r)=>{x[c]=fr[r][0]*D/fr[r][1]});
+  const g=x.reduce((a,b)=>gcdB(a,b),0n);let co=x.map(v=>v/g);
+  if(co.every(v=>v<0n))co=co.map(v=>-v);
+  if(co.some(v=>v<=0n))throw new Error('មិនអាចតុល្យសមីការនេះបានទេ — សូមពិនិត្យរូបមន្ត');
+  const nums=co.map(Number),fmt=(a,off)=>a.map((c,i)=>(nums[off+i]>1?nums[off+i]+' ':'')+c).join(' + ');
+  return{L,R,co:nums,text:fmt(L,0)+' → '+fmt(R,L.length)};
+}
+function calc(input,deg=true,ans=0){
+  const src=String(input).replace(/×/g,'*').replace(/÷/g,'/').replace(/[−–]/g,'-').replace(/π/g,'pi').replace(/√/g,'sqrt').replace(/∛/g,'cbrt').replace(/⁻¹/g,'^(-1)').replace(/²/g,'^2').replace(/³/g,'^3').replace(/,/g,'.').replace(/\s+/g,'').toLowerCase();
+  const toks=src.match(/\d+\.?\d*(?:e[+-]?\d+)?|\.\d+|[a-z]+|[-+*/^()!%]/g)||[];
+  if(toks.join('')!==src)throw new Error('មានតួអក្សរមិនត្រឹមត្រូវ');
+  if(!toks.length)throw new Error('ទទេ');
+  let p=0;const peek=()=>toks[p],isNum=t=>t&&/^[\d.]/.test(t),isId=t=>t&&/^[a-z]/.test(t);
+  const rad=x=>deg?x*Math.PI/180:x,back=x=>deg?x*180/Math.PI:x;
+  const F={sin:x=>Math.sin(rad(x)),cos:x=>Math.cos(rad(x)),tan:x=>Math.tan(rad(x)),asin:x=>back(Math.asin(x)),acos:x=>back(Math.acos(x)),atan:x=>back(Math.atan(x)),sqrt:Math.sqrt,cbrt:Math.cbrt,ln:Math.log,log:Math.log10,exp:Math.exp,abs:Math.abs};
+  const K={pi:Math.PI,e:Math.E,ans};
+  const fact=n=>{if(n<0||n!==Math.floor(n)||n>170)throw new Error('n! ត្រូវការចំនួនគត់ 0–170');let r=1;for(let i=2;i<=n;i++)r*=i;return r};
+  function expr(){let v=term();while(peek()=='+'||peek()=='-'){const o=toks[p++],r=term();v=o=='+'?v+r:v-r}return v}
+  function term(){let v=unary();for(;;){const t=peek();if(t=='*'||t=='/'){p++;const r=unary();v=t=='*'?v*r:v/r}else if(t=='('||isId(t)){v*=unary()}else break}return v}
+  function unary(){if(peek()=='-'){p++;return-unary()}if(peek()=='+'){p++;return unary()}return pow()}
+  function pow(){let b=post();if(peek()=='^'){p++;return Math.pow(b,unary())}return b}
+  function post(){let v=prim();for(;;){if(peek()=='!'){p++;v=fact(v)}else if(peek()=='%'){p++;v/=100}else break}return v}
+  function prim(){
+    const t=toks[p++];
+    if(t===undefined)throw new Error('កន្សោមមិនពេញ');
+    if(isNum(t)){const n=+t;if(isNaN(n))throw new Error('ចំនួនមិនត្រឹមត្រូវ');return n}
+    if(t=='('){const v=expr();if(toks[p++]!=')')throw new Error('វង់ក្រចកមិនគ្រប់គូ');return v}
+    if(isId(t)){if(t in K)return K[t];if(t in F){let a;if(peek()=='('){p++;a=expr();if(toks[p++]!=')')throw new Error('វង់ក្រចកមិនគ្រប់គូ')}else a=pow();return F[t](a)}throw new Error('មិនស្គាល់ «'+t+'»')}
+    throw new Error('សញ្ញាមិនត្រឹមត្រូវ «'+t+'»');
+  }
+  const r=expr();if(p<toks.length)throw new Error('សញ្ញាមិនត្រឹមត្រូវ «'+toks[p]+'»');
+  if(!isFinite(r))throw new Error('លទ្ធផលគ្មានន័យ (÷0 ឬធំពេក)');
+  return Math.abs(r)<1e-12?0:r;
+}
+function fmtNum(x){
+  if(x===0)return '0';
+  const a=Math.abs(x);
+  if(a>=1e12||a<1e-6){const[m,e]=x.toExponential(8).split('e');return m.replace(/\.?0+$/,'')+'×10^'+(+e)}
+  return String(+x.toPrecision(12));
+}
+function quad(a,b,c){
+  if(a===0){if(b===0)throw new Error('a និង b មិនអាចស្មើ 0 ទាំងពីរ');return{lin:true,x:-c/b}}
+  const D=b*b-4*a*c,S=-b/a,P=c/a,vx=-b/(2*a),vy=a*vx*vx+b*vx+c;
+  if(D>0){const s=Math.sqrt(D);return{D,S,P,vx,vy,kind:'real2',x1:(-b+s)/(2*a),x2:(-b-s)/(2*a)}}
+  if(D===0)return{D,S,P,vx,vy,kind:'real1',x1:-b/(2*a)};
+  const im=Math.sqrt(-D)/(2*Math.abs(a));return{D,S,P,vx,vy,kind:'cplx',re:-b/(2*a),im};
+}
+function cparse(str){
+  const s=String(str).replace(/\s+/g,'').replace(/[−–]/g,'-').replace(/[jJ]/g,'i').replace(/I/g,'i');
+  if(!s)throw new Error('សូមបញ្ចូលចំនួនកុំផ្លិច ឧ. 3+4i');
+  const re=/([+-]?)(\d*\.?\d*)(i?)/y;let a=0,b=0,pos=0;
+  while(pos<s.length){
+    re.lastIndex=pos;const m=re.exec(s);if(!m||m[0]==='')throw new Error('ទម្រង់មិនត្រឹមត្រូវ ឧ. 3+4i');
+    const sg=m[1]=='-'?-1:1;
+    if(m[3])b+=sg*(m[2]===''?1:+m[2]);else{if(m[2]==='')throw new Error('ទម្រង់មិនត្រឹមត្រូវ ឧ. 3+4i');a+=sg*+m[2]}
+    pos+=m[0].length;
+  }
+  return{re:a,im:b};
+}
+function cfmt(z){
+  const r=+z.re.toFixed(10),i=+z.im.toFixed(10);
+  if(i===0)return fmtNum(r);
+  const is=Math.abs(i)===1?'i':fmtNum(Math.abs(i))+'i';
+  return r===0?(i<0?'-':'')+is:fmtNum(r)+(i<0?' - ':' + ')+is;
+}
+const cops={
+  add:(a,b)=>({re:a.re+b.re,im:a.im+b.im}),sub:(a,b)=>({re:a.re-b.re,im:a.im-b.im}),
+  mul:(a,b)=>({re:a.re*b.re-a.im*b.im,im:a.re*b.im+a.im*b.re}),
+  div:(a,b)=>{const d=b.re*b.re+b.im*b.im;if(d===0)throw new Error('មិនអាចចែកនឹង 0');return{re:(a.re*b.re+a.im*b.im)/d,im:(a.im*b.re-a.re*b.im)/d}},
+  mod:a=>Math.hypot(a.re,a.im),arg:a=>Math.atan2(a.im,a.re),conj:a=>({re:a.re,im:-a.im})
+};
+function comb(n,r,kind){
+  n=Math.floor(n);r=Math.floor(r);
+  if(!(n>=0&&n<=400)||(kind!='fact'&&!(r>=0&&r<=n)))throw new Error('សូមបញ្ចូល 0 ≤ r ≤ n ≤ 400');
+  let f=1n;for(let i=2n;i<=BigInt(n);i++)f*=i;
+  if(kind=='fact')return f;
+  let p=1n;for(let i=BigInt(n-r+1);i<=BigInt(n);i++)p*=i;
+  if(kind=='P')return p;
+  let rf=1n;for(let i=2n;i<=BigInt(r);i++)rf*=i;return p/rf;
+}
+const UNITS={
+  'ប្រវែង':{m:1,km:1e3,cm:1e-2,mm:1e-3,'µm':1e-6,nm:1e-9,'Å':1e-10,inch:.0254,ft:.3048,mile:1609.344},
+  'ម៉ាស':{kg:1,g:1e-3,mg:1e-6,t:1e3,u:1.66054e-27,lb:.45359237},
+  'ពេលវេលា':{s:1,ms:1e-3,'µs':1e-6,min:60,h:3600,'ថ្ងៃ':86400},
+  'សីតុណ្ហភាព':{'°C':1,K:1,'°F':1},
+  'សម្ពាធ':{Pa:1,kPa:1e3,atm:101325,mmHg:101325/760,Torr:101325/760,bar:1e5,mbar:100},
+  'ថាមពល':{J:1,kJ:1e3,cal:4.184,kcal:4184,eV:1.602176634e-19,kWh:3.6e6},
+  'មាឌ':{L:1,mL:1e-3,'dm³':1,'cm³':1e-3,'m³':1e3},
+  'ល្បឿន':{'m/s':1,'km/h':1/3.6,'cm/s':.01},
+  'ម៉ូដុលមុំ':{'°':1,rad:180/Math.PI,grad:.9},
+  'កម្លាំង':{N:1,kN:1e3,dyn:1e-5},
+  'ថាមពលក្នុងមួយវិនាទី':{W:1,kW:1e3,hp:745.7}
+};
+function uconv(cat,v,from,to){
+  if(cat=='សីតុណ្ហភាព'){const k=from=='°C'?v+273.15:from=='°F'?(v-32)*5/9+273.15:v;return to=='°C'?k-273.15:to=='°F'?(k-273.15)*9/5+32:k}
+  const t=UNITS[cat];return v*t[from]/t[to];
+}
+// </TOOLBOX-LOGIC>
+
+const TLS=[['calc','🧮','ម៉ាស៊ីនគិត'],['math','📐','គណិត'],['mol','⚗️','ម៉ាសម៉ូល'],['bal','⚖️','តុល្យសមីការ'],['pt','🧪','តារាងខួប'],['cst','🔢','ថេរ'],['unit','🔄','ឯកតា']];
+let TLT='calc',TMODE=(()=>{try{return localStorage.getItem('ngs-tm')||'r'}catch(e){return 'r'}})(),CALC={deg:true,ans:0,hist:[]},PTSEL=1;
+const sub=f=>esc(f).replace(/([A-Za-z)\]])(\d+)/g,'$1<sub>$2</sub>');
+const tlBox=h=>{$('#tl').innerHTML=h;rm($('#tl'))};
+function tools(){
+  $('#ttl').textContent='ឧបករណ៍';
+  $('#main').innerHTML=`<div class="max-w-3xl mx-auto"><h2 class="font-extrabold text-xl mb-0.5">🧰 ឧបករណ៍</h2><p class="text-xs text-slate-400 mb-3">ដំណើរការបានគ្មានអ៊ីនធឺណិត · គណនាច្បាស់លាស់ មិនប្រើ AI</p><div class="flex gap-1.5 overflow-x-auto pb-2 mb-2">${TLS.map(([k,i,n])=>`<button data-a="tlt" data-v="${k}" class="seg shrink-0 whitespace-nowrap ${TLT==k?'on':''}" style="padding-left:.8rem;padding-right:.8rem">${i} ${n}</button>`).join('')}</div><div id="tl"></div></div>`;
+  TLF[TLT]();
+}
+A.tlt=v=>{TLT=v;tools()};
+const tIns=(el,v)=>{const a=el.selectionStart??el.value.length,b=el.selectionEnd??a;el.value=el.value.slice(0,a)+v+el.value.slice(b);el.focus();try{el.setSelectionRange(a+v.length,a+v.length)}catch(e){}el.dispatchEvent(new Event('input',{bubbles:true}))};
+const modeBar=()=>`<div class="flex items-center gap-2 text-[11px] text-slate-400 mb-2"><span>តម្លៃម៉ាស៖</span><button data-a="tmode" data-v="r" class="seg !py-1 ${TMODE=='r'?'on':''}">បង្គត់ (H=1, C=12, Cl=35.5)</button><button data-a="tmode" data-v="p" class="seg !py-1 ${TMODE=='p'?'on':''}">ជាក់លាក់</button></div>`;
+A.tmode=v=>{TMODE=v;try{localStorage.setItem('ngs-tm',v)}catch(e){}TLF[TLT]()};
+const TLF={
+  calc(){
+    const keys=[['sin','sin('],['cos','cos('],['tan','tan('],['ln','ln('],['log','log('],['⌫','<'],['√','√('],['x²','^2'],['^','^'],['(','('],[')',')'],['C','C'],['7','7'],['8','8'],['9','9'],['÷','÷'],['π','π'],['!','!'],['4','4'],['5','5'],['6','6'],['×','×'],['e','e'],['%','%'],['1','1'],['2','2'],['3','3'],['−','−'],['ANS','ans'],['x⁻¹','^(-1)'],['0','0'],['.','.'],['+','+'],['=','=']];
+    tlBox(`<div class="glass p-3"><div class="flex items-center justify-between mb-2 text-[11px] text-slate-400"><span>មុំ៖ <button data-a="cdeg" class="chip !py-0.5">${CALC.deg?'DEG (°)':'RAD'}</button></span><span>វាយ ឬចុចគ្រាប់ចុច</span></div><input id="cin" class="inp text-lg" placeholder="ឧ. 2π×(3+4)² ឬ sin(30)" autocomplete="off" autocapitalize="off" spellcheck="false"><div id="cout" class="text-2xl font-bold mt-2 min-h-[2.25rem] break-all"></div><div class="grid grid-cols-6 gap-1.5 mt-3">${keys.map(([l,v])=>`<button data-a="ckey" data-v="${esc(v)}" class="chip !px-0 !py-2.5 text-center ${l=='='?'col-span-3 !bg-blue-600 !text-white font-bold':''}">${l}</button>`).join('')}</div><div id="chist" class="mt-3 text-xs space-y-1"></div></div>`);
+    const i=$('#cin'),o=$('#cout');
+    const prev=()=>{try{o.className='text-2xl font-bold mt-2 min-h-[2.25rem] break-all';o.textContent=i.value.trim()?'= '+fmtNum(calc(i.value,CALC.deg,CALC.ans)):''}catch(e){o.className='text-sm mt-2 min-h-[2.25rem] text-slate-500';o.textContent=''}};
+    i.oninput=prev;i.onkeydown=e=>{if(e.key=='Enter')A.ckey('=')};
+    $('#chist').innerHTML=CALC.hist.slice(-6).reverse().map(h=>`<div class="text-slate-400"><span>${esc(h[0])}</span> = <b class="text-inherit">${esc(h[1])}</b></div>`).join('');
+  },
+  math(){
+    tlBox(`<div class="space-y-3">
+      <div class="glass p-3"><b class="text-sm">សមីការដឺក្រេទី២ ax² + bx + c = 0</b><div class="grid grid-cols-3 gap-2 mt-2"><input id="qa" class="inp" inputmode="decimal" placeholder="a" value="1"><input id="qb" class="inp" inputmode="decimal" placeholder="b" value="2"><input id="qc" class="inp" inputmode="decimal" placeholder="c" value="5"></div><div id="qo" class="mt-2 text-sm space-y-0.5"></div></div>
+      <div class="glass p-3"><b class="text-sm">ចំនួនកុំផ្លិច</b><div class="grid grid-cols-2 gap-2 mt-2"><input id="z1" class="inp" placeholder="z₁ = 3+4i" value="3+4i"><input id="z2" class="inp" placeholder="z₂ = 1-2i" value="1-2i"></div><div id="zo" class="mt-2 text-sm space-y-0.5"></div></div>
+      <div class="glass p-3"><b class="text-sm">កត្តាគុណ · ចំនួនលំដាប់ P(n,r) · បន្សំ C(n,r)</b><div class="grid grid-cols-2 gap-2 mt-2"><input id="cn" class="inp" inputmode="numeric" placeholder="n" value="10"><input id="cr" class="inp" inputmode="numeric" placeholder="r" value="3"></div><div id="co2" class="mt-2 text-sm space-y-0.5 break-all"></div></div></div>`);
+    const q=()=>{const a=+$('#qa').value,b=+$('#qb').value,c=+$('#qc').value,o=$('#qo');try{const r=quad(a,b,c);if(r.lin)return o.innerHTML='សមីការដឺក្រេទី១៖ x = <b>'+fmtNum(r.x)+'</b>';
+      const rt=r.kind=='real2'?`x₁ = <b>${fmtNum(r.x1)}</b> · x₂ = <b>${fmtNum(r.x2)}</b>`:r.kind=='real1'?`x₁ = x₂ = <b>${fmtNum(r.x1)}</b> (ឫសឌុប)`:`z₁ = <b>${cfmt({re:r.re,im:r.im})}</b> · z₂ = <b>${cfmt({re:r.re,im:-r.im})}</b>`;
+      o.innerHTML=`Δ = b² − 4ac = <b>${fmtNum(r.D)}</b> (${r.D>0?'ឫសពីរផ្សេងគ្នា':r.D==0?'ឫសឌុប':'ឫសកុំផ្លិចឆ្លាស់'})<br>${rt}<br><span class="text-slate-400">S = ${fmtNum(r.S)} · P = ${fmtNum(r.P)} · កំពូល (${fmtNum(r.vx)}, ${fmtNum(r.vy)})</span>`}catch(e){o.innerHTML='<span class="text-amber-300">'+esc(e.message)+'</span>'}};
+    const z=()=>{const o=$('#zo');try{const A1=cparse($('#z1').value),B1=cparse($('#z2').value),c=cops;o.innerHTML=`z₁ + z₂ = <b>${cfmt(c.add(A1,B1))}</b><br>z₁ − z₂ = <b>${cfmt(c.sub(A1,B1))}</b><br>z₁ × z₂ = <b>${cfmt(c.mul(A1,B1))}</b><br>z₁ ÷ z₂ = <b>${cfmt(c.div(A1,B1))}</b><br><span class="text-slate-400">|z₁| = ${fmtNum(c.mod(A1))} · arg z₁ = ${fmtNum(c.arg(A1)*180/Math.PI)}° (${fmtNum(c.arg(A1))} rad) · z̄₁ = ${cfmt(c.conj(A1))}</span>`}catch(e){o.innerHTML='<span class="text-amber-300">'+esc(e.message)+'</span>'}};
+    const k=()=>{const n=+$('#cn').value,r=+$('#cr').value,o=$('#co2');try{const s=x=>{const t=x.toString();return t.length>40?t[0]+'.'+t.slice(1,6)+'×10^'+(t.length-1)+' ('+t.length+' ខ្ទង់)':t};o.innerHTML=`n! = <b>${s(comb(n,r,'fact'))}</b><br>P(n,r) = <b>${s(comb(n,r,'P'))}</b><br>C(n,r) = <b>${s(comb(n,r,'C'))}</b>`}catch(e){o.innerHTML='<span class="text-amber-300">'+esc(e.message)+'</span>'}};
+    ['qa','qb','qc'].forEach(x=>$('#'+x).oninput=q);['z1','z2'].forEach(x=>$('#'+x).oninput=z);['cn','cr'].forEach(x=>$('#'+x).oninput=k);q();z();k();
+  },
+  mol(){
+    tlBox(`<div class="glass p-3">${modeBar()}<input id="mf" class="inp text-lg" placeholder="រូបមន្ត ឧ. Ca(OH)2 ឬ CuSO4·5H2O" value="H2SO4" autocomplete="off" autocapitalize="off" spellcheck="false"><div class="flex flex-wrap gap-1.5 mt-2">${['H2O','CO2','NaOH','H2SO4','Ca(OH)2','Al2(SO4)3','CuSO4·5H2O','C6H12O6'].map(x=>`<button data-a="mfex" data-v="${x}" class="chip !py-0.5">${sub(x)}</button>`).join('')}</div><div id="mo" class="mt-3 text-sm"></div>
+      <div class="grid grid-cols-2 gap-2 mt-3"><label class="text-[11px] text-slate-400">ម៉ាស m (g)<input id="mg" class="inp mt-1" inputmode="decimal" placeholder="g"></label><label class="text-[11px] text-slate-400">ចំនួនម៉ូល n (mol)<input id="mn" class="inp mt-1" inputmode="decimal" placeholder="mol"></label></div><div id="mc" class="mt-2 text-sm"></div></div>`);
+    const f=$('#mf'),g=$('#mg'),n=$('#mn');let M=0,last='';
+    const run=()=>{const o=$('#mo');try{const r=molar(f.value,TMODE);M=r.M;
+      o.innerHTML=`<div class="text-lg">M(${sub(f.value.trim())}) = <b>${fmtNum(r.M)}</b> g/mol</div><div class="mt-2 overflow-x-auto"><table class="w-full text-xs"><thead><tr class="text-slate-400 text-left"><th class="py-1">ធាតុ</th><th>ចំនួន</th><th>ម៉ាសអាតូម</th><th>សរុប</th><th>% ម៉ាស</th></tr></thead><tbody>${r.rows.map(x=>`<tr class="border-t border-slate-700/40"><td class="py-1 font-semibold">${x.s}</td><td>${x.n}</td><td>${fmtNum(x.a)}</td><td>${fmtNum(+x.sub.toFixed(4))}</td><td>${(x.sub/r.M*100).toFixed(2)}%</td></tr>`).join('')}</tbody></table></div>`;conv()}catch(e){M=0;o.innerHTML='<span class="text-amber-300">'+esc(e.message)+'</span>';$('#mc').textContent=''}};
+    const conv=()=>{const c=$('#mc');if(!M){c.textContent='';return}if(last=='g'&&g.value!==''){const v=+g.value/M;n.value=fmtNum(+v.toFixed(6));c.innerHTML=`n = m ÷ M = ${esc(g.value)} ÷ ${fmtNum(M)} = <b>${fmtNum(v)}</b> mol`}else if(last=='n'&&n.value!==''){const v=+n.value*M;g.value=fmtNum(+v.toFixed(6));c.innerHTML=`m = n × M = ${esc(n.value)} × ${fmtNum(M)} = <b>${fmtNum(v)}</b> g`}else c.textContent=''};
+    f.oninput=run;g.oninput=()=>{last='g';conv()};n.oninput=()=>{last='n';conv()};run();
+  },
+  bal(){
+    tlBox(`<div class="glass p-3"><textarea id="bq" rows="2" class="inp text-base" placeholder="ឧ. Fe + O2 -> Fe2O3" autocapitalize="off" spellcheck="false">C3H8 + O2 -> CO2 + H2O</textarea><div class="flex flex-wrap gap-1.5 mt-2">${['Fe + O2 -> Fe2O3','C3H8 + O2 -> CO2 + H2O','Al + HCl -> AlCl3 + H2','KMnO4 + HCl -> KCl + MnCl2 + Cl2 + H2O','Ca(OH)2 + H3PO4 -> Ca3(PO4)2 + H2O'].map(x=>`<button data-a="bqex" data-v="${esc(x)}" class="chip !py-0.5 text-xs">${sub(x)}</button>`).join('')}</div><button data-a="bgo" class="btn w-full mt-3"><i class="fa-solid fa-scale-balanced"></i>តុល្យសមីការ</button><div id="bo" class="mt-3 text-base"></div><p class="text-[11px] text-slate-500 mt-2">ប្រើសញ្ញា -> ឬ → រវាងសារធាតុចូល និងផលិតផល។ ប្រើបានសម្រាប់សមីការម៉ូលេគុលធម្មតា (មិនទាន់គាំទ្រអ៊ីយ៉ុង/បន្ទុក)។</p></div>`);
+    $('#bq').oninput=()=>A.bgo();A.bgo();
+  },
+  pt(){
+    const cat={alk:'លោហៈអាល់កាឡាំង',ae:'លោហៈអាល់កាឡាំងទែរ',tm:'លោហៈឆ្លង',pt:'លោហៈក្រោយឆ្លង',md:'ពាក់កណ្តាលលោហៈ',nm:'អលោហៈ',hl:'ហាឡូសែន',ng:'ឧស្ម័នកម្រ',la:'ឡង់តានីត',ac:'អាក់ទីនីត'};
+    tlBox(`<div class="glass p-3"><input id="ps" class="inp mb-2" placeholder="ស្វែងរក៖ H, Fe, Sodium, 26…" autocomplete="off">${modeBar()}<div class="overflow-x-auto pb-2"><div id="pg" style="display:grid;grid-template-columns:repeat(18,minmax(34px,1fr));grid-template-rows:repeat(7,auto) 8px auto auto;gap:3px;min-width:650px">${EL.map(e=>{const[r,c]=ELPOS(e.z);return`<button data-a="ptsel" data-v="${e.z}" class="pt pc-${ELCAT(e.z)}" data-z="${e.z}" style="grid-column:${c};grid-row:${r>=9?r:r}"><i>${e.z}</i><b>${e.s}</b></button>`}).join('')}<div class="pt pc-la" style="grid-column:3;grid-row:6;opacity:.55;pointer-events:none"><i>57–71</i><b>*</b></div><div class="pt pc-ac" style="grid-column:3;grid-row:7;opacity:.55;pointer-events:none"><i>89–103</i><b>**</b></div></div></div><div id="pd" class="mt-2"></div><div class="flex flex-wrap gap-x-3 gap-y-1 text-[10px] mt-2">${Object.entries(cat).map(([k,v])=>`<span><span class="pt pc-${k}" style="display:inline-block;width:12px;height:12px;min-height:0;padding:0;vertical-align:-2px"></span> ${v}</span>`).join('')}</div></div>`);
+    $('#ps').oninput=e=>{const q=e.target.value.trim().toLowerCase();document.querySelectorAll('#pg .pt[data-z]').forEach(b=>{const el=EL[b.dataset.z-1],hit=!q||el.s.toLowerCase()==q||el.n.toLowerCase().includes(q)||String(el.z)==q;b.style.opacity=hit?'':'.18'})};
+    A.ptsel(PTSEL);
+  },
+  cst(){
+    const R=[['លឿនពន្លឺក្នុងសុញ្ញកាស','c','3×10⁸ m/s','(2,998×10⁸)'],['ថេរផ្លង់','h','6,63×10⁻³⁴ J·s',''],['បន្ទុកអេឡិចត្រុង (បន្ទុកគោល)','e','1,6×10⁻¹⁹ C',''],['ម៉ាស់អេឡិចត្រុង','mₑ','9,11×10⁻³¹ kg',''],['ម៉ាស់ប្រូតុង','mₚ','1,673×10⁻²⁷ kg',''],['ម៉ាស់នឺត្រុង','mₙ','1,675×10⁻²⁷ kg',''],['ឯកតាម៉ាស់អាតូម','1 u','1,66×10⁻²⁷ kg','= 931,5 MeV/c²'],['ចំនួនអាវ៉ូហ្គាដ្រូ','N_A','6,02×10²³ mol⁻¹',''],['ថេរឧស្ម័នបរិសុទ្ធ','R','8,31 J·mol⁻¹·K⁻¹','= 0,082 L·atm·mol⁻¹·K⁻¹'],['ថេរបូលស្ម៉ង់','k_B','1,38×10⁻²³ J/K',''],['ថេរហ្វារ៉ាដេ','F','96 500 C/mol',''],['សំទុះទំនាញផែនដី','g','9,8 m/s²','(ប្រើ 10 បើលំហាត់ឱ្យ)'],['ថេរទំនាញសកល','G','6,67×10⁻¹¹ N·m²/kg²',''],['ថេរគូឡុង','k','9×10⁹ N·m²/C²','= 1/(4πε₀)'],['ភាពអនុញ្ញាតអគ្គិសនីក្នុងសុញ្ញកាស','ε₀','8,85×10⁻¹² F/m',''],['ភាពជ្រាបម៉ាញេទិកក្នុងសុញ្ញកាស','μ₀','4π×10⁻⁷ H/m',''],['មាឌម៉ូលឧស្ម័ន (STP: 0°C, 1 atm)','V_m','22,4 L/mol',''],['មាឌម៉ូលឧស្ម័ន (25°C, 1 atm)','V_m','24 L/mol',''],['សម្ពាធ 1 atm','','101 325 Pa','= 760 mmHg = 1,013 bar'],['សីតុណ្ហភាពដាច់ខាត','T','T(K) = t(°C) + 273',''],['កម្ដៅដោយឡែកនៃទឹក','c','4,18 J·g⁻¹·K⁻¹','= 4180 J·kg⁻¹·K⁻¹ (ឬ 4200)'],['ដង់ស៊ីតេទឹក','ρ','1 g/cm³','= 1000 kg/m³'],['1 អេឡិចត្រុងវ៉ុល','1 eV','1,6×10⁻¹⁹ J',''],['ថាមពលអ៊ីយ៉ូដ H (n=1)','E₁','−13,6 eV','']];
+    const CEN={c:'speed of light',h:'planck',e:'elementary charge electron',N_A:'avogadro mole',R:'gas constant',k_B:'boltzmann','1 u':'atomic mass unit amu',F:'faraday',g:'gravity gravitational acceleration',G:'gravitational constant newton',k:'coulomb electrostatic','ε₀':'permittivity','μ₀':'permeability',V_m:'molar volume stp','ρ':'density water','E₁':'hydrogen ionization bohr','mₑ':'electron mass','mₚ':'proton mass','mₙ':'neutron mass','1 eV':'electronvolt'};
+    tlBox(`<div class="glass p-3"><p class="text-[11px] text-amber-300 mb-2">⚠ តម្លៃទូទៅ។ ក្នុងការប្រឡង សូមប្រើតម្លៃដែលលំហាត់ ឬសៀវភៅក្រសួងឱ្យជានិច្ច ព្រោះអាចមានការបង្គត់ខុសគ្នា។</p><input id="cs" class="inp mb-2" placeholder="ស្វែងរក…" autocomplete="off"><div id="cl2" class="divide-y divide-slate-700/30">${R.map(r=>`<div class="py-2 flex items-start gap-3 cst-row" data-t="${esc(r.join(' ')+' '+(CEN[r[1]]||'')).toLowerCase()}"><div class="w-12 shrink-0 text-center font-bold text-blue-300">${esc(r[1]||'—')}</div><div class="min-w-0"><div class="text-sm">${esc(r[0])}</div><div class="text-sm font-semibold">${esc(r[2])} <span class="text-xs font-normal text-slate-400">${esc(r[3])}</span></div></div></div>`).join('')}</div></div>`);
+    $('#cs').oninput=e=>{const q=e.target.value.trim().toLowerCase();document.querySelectorAll('.cst-row').forEach(x=>x.style.display=!q||x.dataset.t.includes(q)?'':'none')};
+  },
+  unit(){
+    const cats=Object.keys(UNITS);
+    tlBox(`<div class="glass p-3"><div class="grid grid-cols-1 gap-2"><select id="uc" class="inp">${cats.map(c=>`<option>${c}</option>`).join('')}</select><div class="grid grid-cols-5 gap-2 items-center"><input id="uv" class="inp col-span-2" inputmode="decimal" value="1"><select id="uf" class="inp col-span-1 !px-1"></select><span class="text-center">→</span><select id="ut" class="inp col-span-1 !px-1"></select></div></div><div id="uo" class="text-2xl font-bold mt-3 break-all"></div><div id="ua" class="text-xs text-slate-400 mt-2"></div></div>`);
+    const fill=()=>{const u=Object.keys(UNITS[$('#uc').value]);$('#uf').innerHTML=u.map(x=>`<option>${x}</option>`).join('');$('#ut').innerHTML=u.map(x=>`<option>${x}</option>`).join('');$('#ut').selectedIndex=Math.min(1,u.length-1);run()};
+    const run=()=>{try{const v=+$('#uv').value.replace(',','.');if($('#uv').value.trim()===''||isNaN(v))return $('#uo').textContent='';const r=uconv($('#uc').value,v,$('#uf').value,$('#ut').value);$('#uo').textContent='= '+fmtNum(r)+' '+$('#ut').value;$('#ua').textContent=fmtNum(v)+' '+$('#uf').value+' = '+fmtNum(r)+' '+$('#ut').value}catch(e){$('#uo').textContent=''}};
+    $('#uc').onchange=fill;['uv','uf','ut'].forEach(x=>{$('#'+x).oninput=run;$('#'+x).onchange=run});fill();
+  }
+};
+A.cdeg=()=>{CALC.deg=!CALC.deg;TLF.calc()};
+A.ckey=v=>{
+  const i=$('#cin');if(!i)return;
+  if(v=='C'){i.value='';i.dispatchEvent(new Event('input'));i.focus();return}
+  if(v=='<'){const a=i.selectionStart??i.value.length,b=i.selectionEnd??a;if(a!==b)i.value=i.value.slice(0,a)+i.value.slice(b);else if(a>0){i.value=i.value.slice(0,a-1)+i.value.slice(a);try{i.setSelectionRange(a-1,a-1)}catch(e){}}i.dispatchEvent(new Event('input'));i.focus();return}
+  if(v=='='){try{const r=calc(i.value,CALC.deg,CALC.ans),t=fmtNum(r);CALC.hist.push([i.value,t]);CALC.ans=r;$('#cout').className='text-2xl font-bold mt-2 min-h-[2.25rem] break-all';$('#cout').textContent='= '+t;$('#chist').innerHTML=CALC.hist.slice(-6).reverse().map(h=>`<div class="text-slate-400"><span>${esc(h[0])}</span> = <b class="text-inherit">${esc(h[1])}</b></div>`).join('')}catch(e){$('#cout').className='text-sm mt-2 min-h-[2.25rem] text-amber-300';$('#cout').textContent=e.message}return}
+  tIns(i,v);
+};
+A.mfex=v=>{$('#mf').value=v;$('#mf').dispatchEvent(new Event('input'))};
+A.bqex=v=>{$('#bq').value=v;A.bgo()};
+A.bgo=()=>{const o=$('#bo');if(!o)return;try{const r=balance($('#bq').value);o.innerHTML='<div class="rounded-xl p-3 bg-emerald-500/10 border border-emerald-500/30 font-semibold break-words">'+r.text.replace(/(\d+ )?([A-Za-z0-9()·.]+)/g,(m,c,f)=>(c?'<span class="text-emerald-300">'+c+'</span>':'')+sub(f))+'</div>'}catch(e){o.innerHTML='<span class="text-sm text-amber-300">'+esc(e.message)+'</span>'}};
+A.ptsel=z=>{
+  z=+z||1;PTSEL=z;const e=EL[z-1],[r,c]=ELPOS(z);document.querySelectorAll('#pg .pt[data-z]').forEach(b=>b.classList.toggle('sel',+b.dataset.z==z));
+  const d=$('#pd');if(d)d.innerHTML=`<div class="rounded-xl p-3 bg-black/10 flex items-center gap-4"><div class="pt pc-${ELCAT(z)}" style="width:64px;height:64px;display:flex;flex-direction:column;justify-content:center"><i style="font-size:11px">${e.z}</i><b style="font-size:24px">${e.s}</b></div><div class="text-sm"><div class="font-bold text-base">${e.n}</div><div>ម៉ាសអាតូម៖ <b>${fmtNum(massOf(e,'r'))}</b> (បង្គត់) · <b>${fmtNum(e.m)}</b> (ជាក់លាក់)</div><div class="text-xs text-slate-400">${r>=9?'ក្រុម f-block':'ខួបទី '+r+' · ក្រុមទី '+c}</div></div></div>`;
+};
+
+// ---------- PHOTO CLEAN-UP + SYMBOL KEYBOARD ----------
+// grey + auto-levels + gentle S-curve: pen on paper stays dark, shaded paper turns white, so handwriting reads much better in a dim photo
+function cleanPhoto(u){return new Promise(ok=>{const i=new Image();i.onerror=()=>ok(u);i.onload=()=>{
+  try{const c=document.createElement('canvas');c.width=i.width;c.height=i.height;const x=c.getContext('2d');x.drawImage(i,0,0);
+  const im=x.getImageData(0,0,c.width,c.height),d=im.data,n=c.width*c.height,h=new Uint32Array(256);
+  for(let p=0;p<d.length;p+=4){const g=(d[p]*.299+d[p+1]*.587+d[p+2]*.114)|0;d[p]=g;h[g]++}
+  let lo=0,hi=255,a=0;for(let v=0;v<256;v++){a+=h[v];if(a>=n*.01){lo=v;break}}a=0;for(let v=0;v<256;v++){a+=h[v];if(a>=n*.7){hi=v;break}}
+  if(hi-lo<30){hi=Math.min(255,lo+30)}
+  const lut=new Uint8Array(256);for(let v=0;v<256;v++){let t=Math.min(1,Math.max(0,(v-lo)/(hi-lo)));t=t*t*(3-2*t);lut[v]=Math.round(t*255)}
+  for(let p=0;p<d.length;p+=4){const g=lut[d[p]];d[p]=d[p+1]=d[p+2]=g}
+  x.putImageData(im,0,0);ok(c.toDataURL('image/jpeg',.85))}catch(e){ok(u)}};i.src=u})}
+const SYMS='² ³ ⁿ ⁻¹ √ ∛ π ∫ Σ Δ ∞ ± × ÷ ≤ ≥ ≠ ≈ → ⇌ ° ½ α β θ λ μ ω Ω ε ρ ₀ ₁ ₂ ₃ ₄ ⁺ ⁻'.split(' ');
+const symRow=(x='')=>`<div class="symrow flex gap-1 overflow-x-auto pb-1 ${x}" role="toolbar" aria-label="និមិត្តសញ្ញា">${SYMS.map(s=>`<button type="button" data-a="symi" data-v="${s}" class="chip sym">${s}</button>`).join('')}</div>`;
+let SYMT=null;
+document.addEventListener('focusin',e=>{if(e.target.matches&&e.target.matches('textarea,input:not([type=file]):not([type=checkbox]):not([type=radio]):not([type=date])'))SYMT=e.target});
+document.addEventListener('mousedown',e=>{if(e.target.closest&&e.target.closest('.symrow'))e.preventDefault()});
+A.symi=v=>{const el=SYMT&&document.contains(SYMT)?SYMT:$('#ci');if(!el)return;const a=el.selectionStart??el.value.length,b=el.selectionEnd??a;el.value=el.value.slice(0,a)+v+el.value.slice(b);el.focus();try{el.setSelectionRange(a+v.length,a+v.length)}catch(e){}el.dispatchEvent(new Event('input',{bubbles:true}))};
+A.symt=()=>{const r=$('#symr');if(r)r.classList.toggle('hide')};
 
 // ---------- CHECK MY WORK (ពិនិត្យការងារខ្ញុំ) ----------
 // The student photographs (or types) their own solution. Stage 1: a vision model only TRANSCRIBES it (so the student can see what was read);
@@ -1117,19 +1458,19 @@ function ckUI(){
   const z=$('#ckw');if(!z)return;
   const k=view,S0=CKS[k]||(CKS[k]={imgs:[],q:'',a:'',open:false});
   if(CKBUSY[k]){z.innerHTML='<div class="rounded-2xl p-3 border border-emerald-500/30 bg-emerald-500/10 text-xs text-emerald-300 animate-pulse"><i class="fa-solid fa-magnifying-glass-chart mr-1"></i>កំពុងពិនិត្យការងាររបស់អ្នក… អ្នកអាចទៅផ្ទាំងផ្សេងបាន ចម្លើយនឹងរង់ចាំអ្នកក្នុងការសន្ទនា</div>';return}
-  if(!S0.open){
-    z.innerHTML='<button data-a="ckopen" class="w-full text-left rounded-2xl p-3 border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/15 transition flex items-center gap-3"><span class="text-2xl">✅</span><span class="min-w-0"><b class="block text-sm">ពិនិត្យការងារខ្ញុំ</b><span class="text-[11px] text-slate-400">ថតចម្លើយសរសេរដៃ ឬវាយជាអក្សរ — AI ពិនិត្យម្តងមួយជំហាន ចង្អុលកំហុសដំបូង ហើយផ្តល់ពិន្ទុ</span></span></button>';return}
+  if(!S0.open){z.innerHTML='';return}
   z.innerHTML=`<div class="glass-soft p-3 space-y-2.5 border border-emerald-500/30">
     <div class="flex items-center justify-between"><b class="text-sm">✅ ពិនិត្យការងារខ្ញុំ</b><button data-a="ckclose" class="text-xs text-slate-400 hover:text-red-400" title="បិទ"><i class="fa-solid fa-xmark"></i></button></div>
     <label class="block text-[11px] text-slate-400">លំហាត់ / សំណួរ (ជម្រើស — បើមិនមាននៅក្នុងរូប)<textarea id="ckq" rows="2" class="inp mt-1" placeholder="ឧ. ដោះស្រាយសមីការ z² + 2z + 5 = 0"></textarea></label>
     <div class="flex flex-wrap items-center gap-2"><label class="btn btn-sec cursor-pointer"><i class="fa-solid fa-camera"></i>ថតចម្លើយ / ជ្រើសរូប<input id="ckf" type="file" accept="image/*" multiple class="hide"></label>${S0.imgs.length?`<span class="text-xs text-emerald-300">📷 ${S0.imgs.length}/3</span>`:'<span class="text-[11px] text-slate-500">អតិបរមា ៣ រូប</span>'}</div>
     ${S0.imgs.length?`<div class="flex flex-wrap gap-2">${S0.imgs.map((u,i)=>`<div class="relative"><img src="${u}" alt="" class="h-16 w-16 object-cover rounded-lg border border-slate-600/40"><button data-a="ckrm" data-v="${i}" class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-600 text-white text-[10px] leading-none flex items-center justify-center" aria-label="ដកចេញ">✕</button></div>`).join('')}</div>`:''}
-    <label class="block text-[11px] text-slate-400">ឬវាយចម្លើយរបស់អ្នកជាអក្សរ<textarea id="cka" rows="4" class="inp mt-1" placeholder="សរសេរជំហានដោះស្រាយរបស់អ្នកនៅទីនេះ…"></textarea></label>
+    ${SCI.has(k)?symRow():''}<label class="block text-[11px] text-slate-400">ឬវាយចម្លើយរបស់អ្នកជាអក្សរ<textarea id="cka" rows="4" class="inp mt-1" placeholder="សរសេរជំហានដោះស្រាយរបស់អ្នកនៅទីនេះ…"></textarea></label>
     <button data-a="ckgo" class="btn w-full"><i class="fa-solid fa-magnifying-glass-chart"></i>ពិនិត្យឥឡូវនេះ</button>
     <p class="text-[11px] text-slate-500">💡 ថតឱ្យភ្លឺ ត្រង់ និងអក្សរច្បាស់។ AI នឹងបង្ហាញអ្វីដែលវាអាន — បើអានខុស សូមថតម្តងទៀត។</p></div>`;
   const q=$('#ckq'),a=$('#cka');q.value=S0.q||'';a.value=S0.a||'';q.oninput=()=>{S0.q=q.value};a.oninput=()=>{S0.a=a.value};
-  $('#ckf').onchange=async e=>{const fs=[...e.target.files];e.target.value='';for(const f of fs){if(S0.imgs.length>=3){toast('អតិបរមា ៣ រូប');break}try{S0.imgs.push(await shrink(f,1400))}catch(_){toast('មិនអាចអានរូបភាពនេះបានទេ')}}if(view==k&&tab=='ai')ckUI()};
+  $('#ckf').onchange=async e=>{const fs=[...e.target.files];e.target.value='';for(const f of fs){if(S0.imgs.length>=3){toast('អតិបរមា ៣ រូប');break}try{S0.imgs.push(await cleanPhoto(await shrink(f,1400)))}catch(_){toast('មិនអាចអានរូបភាពនេះបានទេ')}}if(view==k&&tab=='ai')ckUI()};
 }
+A.cktoggle=()=>{const S0=CKS[view]||(CKS[view]={imgs:[],q:'',a:''});S0.open=!S0.open;ckUI();if(S0.open){$('#ckw')?.scrollIntoView({block:'nearest'});$('#ckq')?.focus()}};
 A.ckopen=()=>{(CKS[view]||(CKS[view]={imgs:[],q:'',a:''})).open=true;ckUI();$('#ckq')?.focus()};
 A.ckclose=()=>{if(CKS[view])CKS[view].open=false;ckUI()};
 A.ckrm=i=>{CKS[view]?.imgs.splice(+i,1);ckUI()};
@@ -1173,7 +1514,7 @@ A.ckgo=async()=>{
     }
   }catch(e){msg='⚠ មានបញ្ហា៖ '+String(e.message||e).slice(0,120)}
   if(msg)c.push({role:'assistant',by:'',content:msg});
-  CKBUSY[k]=0;PEND[cc]=0;saveChat(cc);
+  CKBUSY[k]=0;PEND[cc]=0;endProg();saveChat(cc);
   if(view==k&&tab=='ai'){ckUI();if(ck(k)==cc)draw($('#cl'),c)}
 };
 
@@ -1207,7 +1548,7 @@ async function genMany0(total,label,mk,key){
     if(!fresh.length){fail++;continue}
     fail=0;out.push(...fresh);
   }
-  return out.slice(0,total);
+  endProg();return out.slice(0,total);
 }
 A.mkc=async(_,b)=>{
   const k=view;if(needNet())return;if(GENC[k]&&Date.now()-GENC[k]<6e5)return toast('កំពុងបង្កើតប័ណ្ណ… សូមរង់ចាំបន្តិច');
@@ -1239,7 +1580,7 @@ A.fixcards=async()=>{
   let fixed=0;SPEED=1;
   try{for(let a=0;a<idx.length;a+=8){const part=idx.slice(a,a+8);prog('កំពុងកែ format '+Math.min(a+8,idx.length)+'/'+idx.length+'…');
     const r=await ask([{role:'system',content:sys(k)+' Rewrite each flashcard below. Keep the meaning and wording, but write ALL math in LaTeX inside $...$ (for example $\\frac{z_1}{z_2}$, $|z|^{2}$, $\\sqrt{a^{2}+b^{2}}$, $\\overline{z}$). Output the SAME number of cards in the same order, in this exact format, separated by a line containing only ---:\nF: <front>\nB: <back>'},{role:'user',content:part.map(i=>'F: '+d.cards[i].f+'\nB: '+d.cards[i].b).join('\n---\n')}],false,false,t=>parseCards(t).length==part.length);
-    const out=r?parseCards(r):[];if(out.length==part.length){out.forEach((c,j)=>{d.cards[part[j]].f=c.f;d.cards[part[j]].b=c.b});fixed+=part.length}}}finally{SPEED=0}
+    const out=r?parseCards(r):[];if(out.length==part.length){out.forEach((c,j)=>{d.cards[part[j]].f=c.f;d.cards[part[j]].b=c.b});fixed+=part.length}}}finally{SPEED=0;endProg()}
   await save(k);toast(fixed?'បានកែ format '+fixed+' ប័ណ្ណ ✓':'AI មិនអាចកែបាន៖ '+(ERR||''));if(view==k&&tab=='cards')cards();
 };
 A.cclear=()=>{if(confirm('លុបប័ណ្ណទាំងអស់ឬ?')){sd(view).cards=[];CQ=[];CQK='';save(view);cards()}};
@@ -1264,7 +1605,7 @@ const mockCard=()=>{
     ${l.length?`<p class="text-xs text-slate-400 mt-2">ពិន្ទុថ្មីៗ៖ ${l.map(m=>`${m.s}/${m.n} (${m.d})`).join(' · ')}</p>`:''}
   </div>`;
 };
-function ov(h){let o=$('#xo');if(!o){o=document.createElement('div');o.id='xo';o.className='fixed inset-0 z-50 overflow-y-auto p-4';o.style.background='#060916';document.body.appendChild(o)}o.innerHTML=`<div class="max-w-2xl mx-auto py-4">${h}</div>`;rm(o)}
+function ov(h){let o=$('#xo');if(!o){o=document.createElement('div');o.id='xo';o.className='fixed inset-0 z-50 overflow-y-auto p-4 ovbg';document.body.appendChild(o)}o.innerHTML=`<div class="max-w-2xl mx-auto py-4">${h}</div>`;rm(o)}
 A.mock=async(_,b)=>{
   const N=Math.max(1,Math.floor(+$('#mn').value||10)),z=$('#mx');if(N>60&&!confirm('វិញ្ញាសា '+N+' សំណួរត្រូវប្រើពេលយូរ។ បន្តឬ?'))return;b.disabled=true;z.innerHTML='<p class="text-sm text-slate-400">កំពុងរៀបចំវិញ្ញាសាប្រឡង…</p>';
   const pool=S.filter(s=>sd(s[0]).files.some(f=>f.n)||sd(s[0]).notes.length>80);
