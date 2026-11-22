@@ -79,6 +79,7 @@ input[type=date].inp{-webkit-appearance:auto!important;appearance:auto!important
 .sgrid{display:grid;grid-template-columns:42px repeat(5,minmax(0,1fr));grid-template-rows:auto repeat(6,minmax(58px,auto));gap:4px}.sh{text-align:center;font-size:11px;font-weight:700;padding:6px 0;border-radius:8px;background:#1e293b99;color:#cbd5e1}.sh.on{background:#2563eb;color:#fff}.st{font-size:9px;color:#93c5fd;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.3;font-weight:600}.sc{border:1px solid;border-radius:10px;padding:4px 3px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:3px;min-width:0;overflow:hidden}.sc b{font-size:10.5px;line-height:1.3}.sc span{font-size:9.5px;color:#e2e8f0;background:#0f172a99;padding:1px 5px;border-radius:6px}
 .md .katex-display,#qz .katex-display,#cs .katex-display,#xo .katex-display{overflow-x:auto;overflow-y:hidden;max-width:100%;padding:2px 0}.katex{font-size:1.05em}
 .navon{color:#fff}
+.offb{background:#f59e0b;color:#1c1917;font-size:11.5px;font-weight:700;text-align:center;padding:4px 10px;line-height:1.45;flex-shrink:0}
 .seg{padding:.42rem .5rem;border-radius:.75rem;font-size:.78rem;font-weight:600;border:1px solid rgba(148,163,184,.25);background:rgba(51,65,85,.5);color:#cbd5e1;transition:all .15s;display:flex;align-items:center;justify-content:center;gap:.35rem}
 .seg.on{background:linear-gradient(135deg,#2563eb,#4f46e5);color:#fff;border-color:transparent}
 .thm{width:2.25rem;height:2.25rem;border-radius:.75rem;display:inline-flex;align-items:center;justify-content:center;background:rgba(30,41,59,.8);color:#fbbf24;flex-shrink:0}
@@ -183,6 +184,7 @@ html.light ::selection{background:rgba(59,130,246,.25)}
   </aside>
 
   <main class="flex-1 min-w-0 flex flex-col h-full overflow-hidden">
+    <div id="offb" class="hide offb" role="status">📴 គ្មានអ៊ីនធឺណិត — កំណត់ត្រា ប័ណ្ណ សំណួរ រូបមន្ត នៅតែប្រើបាន · AI ត្រូវការអ៊ីនធឺណិត</div>
     <header class="glass md:hidden flex items-center justify-between px-3.5 py-2.5 rounded-none border-x-0 border-t-0">
       <div class="flex items-center gap-3">
         <button id="burger" class="w-9 h-9 rounded-xl bg-slate-800/80 flex items-center justify-center" aria-label="ម៉ឺនុយ"><i class="fa-solid fa-bars"></i></button>
@@ -214,7 +216,7 @@ html.light ::selection{background:rgba(59,130,246,.25)}
 <script type="module">
 import {initializeApp} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
 import {getAuth,signInWithEmailAndPassword as si,createUserWithEmailAndPassword as su,sendPasswordResetEmail as fp,onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-import {initializeFirestore,persistentLocalCache,persistentMultipleTabManager,doc,setDoc,getDoc,getDocs,deleteDoc,collection,query,orderBy,where,limit} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+import {initializeFirestore,persistentLocalCache,persistentMultipleTabManager,doc,setDoc as fsSetDoc,getDoc as fsGetDoc,getDocs as fsGetDocs,getDocFromCache,getDocsFromCache,deleteDoc,collection,query,orderBy,where,limit} from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
 
 const firebaseConfig={
   apiKey:"AIzaSyDK4s6dw-Rm_pK1zEABEbSbTz7_5gPk_4k",
@@ -227,7 +229,21 @@ const firebaseConfig={
 };
 const ADMIN_UID='awJRagh6wWhjEkpfyu6qbedWEUG3';
 let KEYS={};
-const app=initializeApp(firebaseConfig),auth=getAuth(app),db=initializeFirestore(app,{localCache:persistentLocalCache({tabManager:persistentMultipleTabManager()})});
+const app=initializeApp(firebaseConfig),auth=getAuth(app),db=initializeFirestore(app,{localCache:persistentLocalCache({cacheSizeBytes:300*1024*1024,tabManager:persistentMultipleTabManager()})});
+// ---------- OFFLINE-AWARE FIRESTORE ----------
+// Firestore keeps a local copy of everything already read. When the phone has no connection we answer from that copy straight away
+// (the SDK itself waits ~10 s to notice it is offline), and writes never block the screen: they are saved locally at once and
+// synced when the connection is back.
+const OFFLINE=()=>navigator.onLine===false;
+const SLOWMS=8000,SLOW={};
+const fsRead=(live,cache)=>{
+  if(OFFLINE())return cache();
+  const p=live();
+  return Promise.race([p,new Promise(r=>setTimeout(()=>r(SLOW),SLOWMS))]).then(r=>r!==SLOW?r:cache().then(c=>((c.exists?c.exists():!c.empty)?c:p),()=>p));
+};
+const getDoc=r=>fsRead(()=>fsGetDoc(r),()=>getDocFromCache(r));
+const getDocs=q=>fsRead(()=>fsGetDocs(q),()=>getDocsFromCache(q));
+const setDoc=(...a)=>{const p=fsSetDoc(...a);return OFFLINE()?(p.catch(()=>{}),Promise.resolve()):Promise.race([p,new Promise(r=>setTimeout(r,3000))])};
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 const S=[
@@ -462,7 +478,21 @@ applyTheme();
 
 let FS=+(localStorage.getItem('fs')||16);document.documentElement.style.fontSize=FS+'px';
 const setFS=v=>{FS=Math.min(22,Math.max(13,v));localStorage.setItem('fs',FS);document.documentElement.style.fontSize=FS+'px'};
-addEventListener('offline',()=>toast('គ្មានអ៊ីនធឺណិត — AI នឹងមិនដំណើរការ'));addEventListener('online',()=>toast('ត្រឡប់មកអនឡាញវិញ ✓'));
+// ---------- OFFLINE UX ----------
+const netUI=()=>$('#offb').classList.toggle('hide',!OFFLINE());
+const needNet=()=>{if(OFFLINE()){toast('📴 គ្មានអ៊ីនធឺណិត — មុខងារ AI ត្រូវការអ៊ីនធឺណិត');return true}return false};
+// ask the service worker to keep everything this page loaded from CDNs (styles, fonts, libraries) so the app also opens with no connection
+const LIBH=/^(cdn\.tailwindcss\.com|cdnjs\.cloudflare\.com|cdn\.jsdelivr\.net|fonts\.googleapis\.com|fonts\.gstatic\.com|www\.gstatic\.com|tessdata\.projectnaptha\.com)$/;
+function warmSW(){
+  if(!('serviceWorker' in navigator)||OFFLINE())return;
+  navigator.serviceWorker.ready.then(reg=>{
+    const urls=[...new Set(performance.getEntriesByType('resource').map(e=>e.name))].filter(u=>{try{const x=new URL(u);return LIBH.test(x.hostname)&&(x.hostname!='www.gstatic.com'||x.pathname.startsWith('/firebasejs/'))}catch(e){return false}});
+    (navigator.serviceWorker.controller||reg.active)?.postMessage({t:'warm',urls});
+  }).catch(()=>{});
+}
+addEventListener('offline',()=>{netUI();toast('📴 គ្មានអ៊ីនធឺណិត — កំណត់ត្រា ប័ណ្ណ សំណួរ នៅតែមើលបាន')});
+addEventListener('online',()=>{netUI();toast('✅ ត្រឡប់មកអនឡាញវិញ — កំពុងធ្វើសមកាលកម្ម');warmSW()});
+netUI();
 const A={};
 A.theme=v=>{if(THEMES.includes(v))setTheme(v)};
 A.npost=async()=>{const i=$('#nti'),t=(i&&i.value||'').trim(),cl=normCls($('#ntc')?.value)||CLS();if(!t)return;if(!cl)return toast('សូមបញ្ចូលថ្នាក់រៀន');await loadNotices(true);const items=[{id:Date.now().toString(36),t,d:today(),ts:Date.now(),cls:cl},...(NOTES||[])].slice(0,30);try{await setDoc(doc(db,'config','notices'),{items});NOTES=items;NOTESTS=Date.now();toast('បានផ្សាយប្រកាស ✓');loadNotices()}catch(e){toast('មិនអាចផ្សាយបាន៖ '+e.message)}};
@@ -851,6 +881,7 @@ async function ask(messages,json,vision,check){
   messages=messages.map(m=>({role:m.role,content:m.content}));
   // answer checkers must see the whole answer, so they are never shortened
   let msgs=messages,lvl=0;const canShrink=!vision&&!/^You are a strict /.test(typeof messages[0]?.content=='string'?messages[0].content:'');
+  if(OFFLINE()){ERR='គ្មានអ៊ីនធឺណិត — AI ត្រូវការអ៊ីនធឺណិត';return null}
   ERR='';const t0=Date.now(),EM={},dead=new Set(),L=[],gKeys=kl('groq');
   if(gKeys.length){
     const av=await avail();let models;
@@ -1013,6 +1044,7 @@ function ai(){
   <p class="text-[11px] text-slate-500 mb-2"><i class="fa-solid fa-brain text-purple-300 mr-1"></i>គ្រូ AI ${subj(k)[1]} ឆ្លើយតែមុខវិជ្ជានេះ · អានឯកសារ និងរូបភាព · រៀន និងចងចាំមេរៀនពីឯកសាររបស់អ្នក</p>
   <div class="flex flex-wrap items-center justify-between gap-2 mb-2 text-[11px] text-slate-400"><span>📚 AI នេះស្គាល់៖ ${ftsOf(view).map(([t])=>t+' '+sd(k).files.filter(f=>f.tag==t).length).join(' · ')} · 🧠 រៀនរួច ${Object.keys(sd(k).know||{}).filter(i=>sd(k).files.some(f=>f.id==i)).length}/${sd(k).files.filter(rd).length}</span><button data-a="sty" class="text-amber-300 underline whitespace-nowrap">✍️ ចម្លើយ៖ ${STYS[STY][0]}</button><button data-a="strict" class="text-emerald-300 underline whitespace-nowrap">${STRICT?'🔒 តាមឯកសារតែប៉ុណ្ណោះ៖ បើក':'🔓 តាមឯកសារតែប៉ុណ្ណោះ៖ បិទ'}</button>${SCI.has(k)?`<button data-a="vfy" class="text-rose-300 underline whitespace-nowrap">${VERIFY?'🔍 ពិនិត្យចម្លើយ២ដង៖ បើក':'🔍 ពិនិត្យចម្លើយ២ដង៖ បិទ'}</button>`:''}<button data-a="learn" class="text-sky-300 underline whitespace-nowrap">🎓 ឲ្យ AI រៀនឯកសារទាំងអស់</button></div>
   <div id="cl" class="space-y-3 mb-3 min-h-[32vh] max-h-[54vh] overflow-y-auto pr-1"><p class="text-sm text-slate-400 text-center py-6">សួរមេរៀន ឬលំហាត់អ្វីក៏បាន! គ្រូ AI បានអានឯកសារ និងកំណត់ត្រារបស់អ្នករួចហើយ។ ចុចរូបកាមេរ៉ាដើម្បីថតលំហាត់ឱ្យ AI ដោះស្រាយ។</p></div>
+  <div id="ckw" class="mb-2.5"></div>
   <div class="flex flex-wrap gap-1.5 mb-2.5">${CH.map(([kh],i)=>i==2&&!SCI.has(view)?'':`<button data-a="chip" data-v="${i}" class="chip">${kh}</button>`).join("")}</div>
   <p id="pa" class="hide text-xs text-emerald-300 mb-2">📎 <span id="pan"></span> · <button data-a="rmat" class="underline">ដកចេញ</button></p>
   <p id="pc" class="hide text-xs text-emerald-300 mb-2">📷 បានភ្ជាប់រូបថត · <button data-a="rmph" class="underline">ដកចេញ</button></p>
@@ -1026,6 +1058,7 @@ function ai(){
   if(c.length)draw($('#cl'),c,!!PEND[cc]&&Date.now()-PEND[cc]<3e5);
   else if(!chat[cc])loadChat(cc).then(()=>{if(view==k&&tab=='ai')ai()});
   $('#src').value=srcOf(k);$('#src').onchange=e=>{SRC[k]=e.target.value;ai()};autoLearn(k);
+  ckUI();
   const ci=$('#ci');ci.value=DRAFT[cc]||'';ci.oninput=()=>{DRAFT[cc]=ci.value};if(IMG)$('#pc').classList.remove('hide');if(ATT){$('#pa').classList.remove('hide');$('#pan').textContent=ATT.name}
   $('#ci').onkeydown=e=>{if(e.key=='Enter')A.send()};
   $('#ph').onchange=async e=>{const f=e.target.files[0];if(!f)return;IMG=await shrink(f);$('#pc').classList.remove('hide')};
@@ -1044,7 +1077,7 @@ A.cpmsg=i=>{const t=cleanAI(chat[ck(view)]?.[i]?.content||'');navigator.clipboar
 A.svnote=async i=>{const t=cleanAI(chat[ck(view)]?.[i]?.content||'');if(!t)return;const d=sd(view);d.nl=d.nl||[];d.nl.push({id:Date.now().toString(36),t:'💬 '+t.replace(/[#*$\\]/g,'').trim().split('\n')[0].slice(0,40),b:t,md:1,d:today(),ts:Date.now(),pin:0});await save(view);toast('បានរក្សាទុកក្នុងកំណត់ត្រា ✓')};
 A.svmsg=async i=>{if(!SCI.has(view))return A.svnote(i);const t=cleanAI(chat[ck(view)]?.[i]?.content||'');if(!t)return;fL(view).push({t:'💬 '+t.replace(/[#*$\\]/g,'').trim().split('\n')[0].slice(0,40),b:t});FSEL[view]='';await save(view);toast('បានរក្សាទុកក្នុងរូបមន្ត ✓ (ផ្នែក «ទូទៅ»)')};
 A.send=async()=>{
-  const k=view,i=$('#ci'),q=i.value.trim();if(!q&&!IMG&&!ATT)return;
+  const k=view,i=$('#ci'),q=i.value.trim();if(!q&&!IMG&&!ATT)return;if(needNet())return;
   const cc=ck(k);await loadChat(cc);const c=chat[cc],ctx=await getSrc(k,srcOf(k),q),srcs=[...LASTSRC],img=IMG,att=ATT;IMG=null;ATT=null;$('#pa')?.classList.add('hide');$('#pc')?.classList.add('hide');
   c.push({role:'user',content:(img?'📷 ':'')+(att?'📎 '+att.name+' · ':'')+(q||(att?'សូមអានឯកសារនេះ':'ដោះស្រាយលំហាត់ក្នុងរូបនេះ'))});i.value='';DRAFT[cc]='';PEND[cc]=Date.now();draw($('#cl'),c,true);
   if(FM(k)&&ctx.trim().length<30){c.push({role:'assistant',content:'⚠ AI មិនអាចអានអត្ថបទពីឯកសារនេះបានទេ (អក្សរខ្មែរក្នុង PDF អាចខូច)។ ចុច «👁 មើលអត្ថបទដែល AI អាន» ដើម្បីពិនិត្យ ឬលុបឯកសារ រួចផ្ទុកឡើងម្តងទៀត — ប្រព័ន្ធនឹងស្កេនទំព័រដោយ AI។'});PEND[cc]=0;saveChat(cc);draw($('#cl'),c);return}
@@ -1063,7 +1096,86 @@ A.send=async()=>{
   if(r&&img)saveShot(k,img);
   if(view==k&&tab=='ai'&&ck(k)==cc)draw($('#cl'),c);
 };
-A.chip=i=>{const c=CH[i];$('#ci').value=c[1]+' (មុខវិជ្ជា '+subj(view)[1]+')';if(c[2]){toast('ថតរូបលំហាត់ និងចម្លើយរបស់អ្នក រួចចុចផ្ញើ');$('#ph').click();return}A.send()};
+A.chip=i=>{if(i==4){A.ckopen();$('#ckw')?.scrollIntoView({block:'nearest'});return}const c=CH[i];$('#ci').value=c[1]+' (មុខវិជ្ជា '+subj(view)[1]+')';if(c[2]){toast('ថតរូបលំហាត់ និងចម្លើយរបស់អ្នក រួចចុចផ្ញើ');$('#ph').click();return}A.send()};
+
+// ---------- CHECK MY WORK (ពិនិត្យការងារខ្ញុំ) ----------
+// The student photographs (or types) their own solution. Stage 1: a vision model only TRANSCRIBES it (so the student can see what was read);
+// stage 2: a text model solves the problem itself and marks the transcription step by step; stage 3 (sciences): an independent re-check.
+const CKS={},CKBUSY={};
+const CK_TRANSCRIBE='You are a careful OCR transcriber for a Cambodian Grade 12 student\'s handwritten work. Transcribe EXACTLY what the student wrote, line by line, and KEEP their mistakes as written - never solve, correct, judge or add anything. Output format: first line "PROBLEM: <the problem statement if it is visible on the page, otherwise (not shown)>", second line "WORK:", then the student\'s lines (one step per line). Write maths in LaTeX inside $...$. Keep Khmer text as written. Use [?] for any part you cannot read.';
+const CK_RULES=k=>' MODE: CHECK-MY-WORK. You are marking the student\'s OWN work, not teaching a new lesson. '+
+ (SCI.has(k)
+  ?'First solve the problem yourself, completely and independently, and verify your result (substitution, units, plausibility) BEFORE judging the student\'s result. Then compare the student\'s work line by line. Never call a step wrong unless you have verified that it is wrong; if a line is unreadable or ambiguous write "មិនច្បាស់" instead of marking it wrong. If the student reaches a correct answer by a different valid method, mark it correct. A later step that is correct given an earlier mistake is marked ✅ (តាមលទ្ធផលមុន).'
+  :'Judge the student\'s answer for factual accuracy against the Cambodian MoEYS Grade 12 textbook, completeness and structure (and, for English, grammar and vocabulary). Quote the exact parts that are wrong or missing. Never invent facts; if you are unsure say so.')+
+ ' Reply ONLY in Khmer with exactly these four sections (markdown headings as written):\n'+
+ '### 🎯 លទ្ធផល\n<one line verdict: ត្រូវទាំងស្រុង / ត្រូវមួយផ្នែក / ខុស> · ពិន្ទុប្រហាក់ប្រហែល៖ X/10 (short reason: method marks and final answer)\n'+
+ '### 🔎 ពិនិត្យម្តងមួយជំហាន\n<numbered list, one line per student step: the step in short - ✅ ត្រូវ or ❌ ខុស plus the reason. Put "⚠️ កំហុសដំបូង" on the first wrong step.>\n'+
+ '### 🛠 កែឱ្យត្រូវ\n<the correct solution from the first wrong step to the final answer'+(SCI.has(k)?', maths in LaTeX, final answer in $\\boxed{...}$':'')+'; if everything is correct write "គ្មានកំហុស 🎉" and one way to make the answer shorter or stronger>\n'+
+ '### 💡 ដំបូន្មាន\n<the type of mistake (គណនា / រូបមន្ត / ឯកតា / ខ្វះជំហាន / យល់ខុសសំណួរ …) and one concrete tip to avoid it next time, at most 2 lines>\n'+
+ 'Be kind but exact. Do not repeat the transcription.';
+function ckUI(){
+  const z=$('#ckw');if(!z)return;
+  const k=view,S0=CKS[k]||(CKS[k]={imgs:[],q:'',a:'',open:false});
+  if(CKBUSY[k]){z.innerHTML='<div class="rounded-2xl p-3 border border-emerald-500/30 bg-emerald-500/10 text-xs text-emerald-300 animate-pulse"><i class="fa-solid fa-magnifying-glass-chart mr-1"></i>កំពុងពិនិត្យការងាររបស់អ្នក… អ្នកអាចទៅផ្ទាំងផ្សេងបាន ចម្លើយនឹងរង់ចាំអ្នកក្នុងការសន្ទនា</div>';return}
+  if(!S0.open){
+    z.innerHTML='<button data-a="ckopen" class="w-full text-left rounded-2xl p-3 border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/15 transition flex items-center gap-3"><span class="text-2xl">✅</span><span class="min-w-0"><b class="block text-sm">ពិនិត្យការងារខ្ញុំ</b><span class="text-[11px] text-slate-400">ថតចម្លើយសរសេរដៃ ឬវាយជាអក្សរ — AI ពិនិត្យម្តងមួយជំហាន ចង្អុលកំហុសដំបូង ហើយផ្តល់ពិន្ទុ</span></span></button>';return}
+  z.innerHTML=`<div class="glass-soft p-3 space-y-2.5 border border-emerald-500/30">
+    <div class="flex items-center justify-between"><b class="text-sm">✅ ពិនិត្យការងារខ្ញុំ</b><button data-a="ckclose" class="text-xs text-slate-400 hover:text-red-400" title="បិទ"><i class="fa-solid fa-xmark"></i></button></div>
+    <label class="block text-[11px] text-slate-400">លំហាត់ / សំណួរ (ជម្រើស — បើមិនមាននៅក្នុងរូប)<textarea id="ckq" rows="2" class="inp mt-1" placeholder="ឧ. ដោះស្រាយសមីការ z² + 2z + 5 = 0"></textarea></label>
+    <div class="flex flex-wrap items-center gap-2"><label class="btn btn-sec cursor-pointer"><i class="fa-solid fa-camera"></i>ថតចម្លើយ / ជ្រើសរូប<input id="ckf" type="file" accept="image/*" multiple class="hide"></label>${S0.imgs.length?`<span class="text-xs text-emerald-300">📷 ${S0.imgs.length}/3</span>`:'<span class="text-[11px] text-slate-500">អតិបរមា ៣ រូប</span>'}</div>
+    ${S0.imgs.length?`<div class="flex flex-wrap gap-2">${S0.imgs.map((u,i)=>`<div class="relative"><img src="${u}" alt="" class="h-16 w-16 object-cover rounded-lg border border-slate-600/40"><button data-a="ckrm" data-v="${i}" class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-600 text-white text-[10px] leading-none flex items-center justify-center" aria-label="ដកចេញ">✕</button></div>`).join('')}</div>`:''}
+    <label class="block text-[11px] text-slate-400">ឬវាយចម្លើយរបស់អ្នកជាអក្សរ<textarea id="cka" rows="4" class="inp mt-1" placeholder="សរសេរជំហានដោះស្រាយរបស់អ្នកនៅទីនេះ…"></textarea></label>
+    <button data-a="ckgo" class="btn w-full"><i class="fa-solid fa-magnifying-glass-chart"></i>ពិនិត្យឥឡូវនេះ</button>
+    <p class="text-[11px] text-slate-500">💡 ថតឱ្យភ្លឺ ត្រង់ និងអក្សរច្បាស់។ AI នឹងបង្ហាញអ្វីដែលវាអាន — បើអានខុស សូមថតម្តងទៀត។</p></div>`;
+  const q=$('#ckq'),a=$('#cka');q.value=S0.q||'';a.value=S0.a||'';q.oninput=()=>{S0.q=q.value};a.oninput=()=>{S0.a=a.value};
+  $('#ckf').onchange=async e=>{const fs=[...e.target.files];e.target.value='';for(const f of fs){if(S0.imgs.length>=3){toast('អតិបរមា ៣ រូប');break}try{S0.imgs.push(await shrink(f,1400))}catch(_){toast('មិនអាចអានរូបភាពនេះបានទេ')}}if(view==k&&tab=='ai')ckUI()};
+}
+A.ckopen=()=>{(CKS[view]||(CKS[view]={imgs:[],q:'',a:''})).open=true;ckUI();$('#ckq')?.focus()};
+A.ckclose=()=>{if(CKS[view])CKS[view].open=false;ckUI()};
+A.ckrm=i=>{CKS[view]?.imgs.splice(+i,1);ckUI()};
+A.ckgo=async()=>{
+  const k=view,S0=CKS[k];if(!S0)return;
+  if(needNet())return;if(CKBUSY[k])return toast('កំពុងពិនិត្យ… សូមរង់ចាំបន្តិច');
+  const q=(S0.q||'').trim(),a=(S0.a||'').trim();let imgs=[...S0.imgs];
+  if(!imgs.length&&a.length<3)return toast('សូមថតរូបចម្លើយរបស់អ្នក ឬវាយចម្លើយជាអក្សរ');
+  const cc=ck(k);await loadChat(cc);const c=chat[cc];
+  CKBUSY[k]=1;CKS[k]={imgs:[],q:'',a:'',open:false};
+  c.push({role:'user',content:'✅ ពិនិត្យការងារ'+(imgs.length?' · 📷 '+imgs.length+' រូប':'')+(q?'\n'+q:'')+(a?'\n'+a.slice(0,500):'')});
+  PEND[cc]=Date.now();saveChat(cc);
+  if(view==k&&tab=='ai'){ckUI();draw($('#cl'),c,true)}
+  let msg='',work=a,how=imgs.length?'photo':'typed';
+  try{
+    if(imgs.length){
+      prog('📖 កំពុងអានការងាររបស់អ្នក…');
+      const tm=us=>ask([{role:'system',content:CK_TRANSCRIBE},{role:'user',content:[{type:'text',text:(q?'PROBLEM (typed by the student): '+q+'\n':'')+'Transcribe the student\'s handwritten work in the picture'+(us.length>1?'s (in order)':'')+'.'},...us.map(u=>({type:'image_url',image_url:{url:u}}))]}],false,true);
+      let tr=await tm(imgs);
+      if(!tr&&/413|too large|request/i.test(ERR||'')){imgs=await Promise.all(imgs.map(async u=>shrink(await (await fetch(u)).blob(),900)));tr=await tm(imgs)}
+      if(tr&&tr.trim().length>10)work=(a?'(typed) '+a+'\n':'')+tr.trim();
+      else{ // last resort: simple on-device OCR, which is poor on handwriting
+        prog('📖 កំពុងអានដោយឧបករណ៍សាមញ្ញ…');let ot='';for(const u of imgs)ot+=(await ocr(u))+'\n';ot=ot.trim();
+        if(ot.length>8){work=(a?a+'\n':'')+ot;how='ocr'}else if(!a){msg='⚠ AI មិនអាចអានរូបភាពបានទេឥឡូវនេះ។ សូមថតម្តងទៀតឱ្យភ្លឺ និងច្បាស់ ឬវាយចម្លើយជាអក្សរ'+(ERR?` (${ERR})`:'')}
+      }
+    }
+    if(!msg){
+      prog('🔎 កំពុងពិនិត្យម្តងមួយជំហាន…');
+      const ctx=await getSrc(k,srcOf(k),q||work.slice(0,300));
+      const user='PROBLEM:\n'+(q||'(not typed — it may be written at the top of the transcription)')+'\n\nSTUDENT WORK ('+(how=='ocr'?'read by basic OCR — may be badly garbled; if it is unreadable say so and ask for a clearer photo instead of marking steps wrong':how=='photo'?'transcribed from a handwritten photo — may contain reading errors':'typed by the student')+'):\n"""'+work.slice(0,6000)+'"""';
+      let r=await ask([{role:'system',content:sys(k)+CK_RULES(k)+(ctx?'\n\nREFERENCE — the student\'s lessons and notes:\n"""'+ctx.slice(0,6000)+'"""':'')},{role:'user',content:user}],false,false);
+      if(r&&SCI.has(k)){
+        prog('🔍 កំពុងពិនិត្យការកែម្តងទៀត…');
+        const v=await ask([{role:'system',content:'You are a strict '+subj(k)[2]+' answer checker for Grade 12 BacII. Below are a problem, a student\'s work and a teacher\'s marking of it. Solve the problem yourself independently, then check every verdict in the marking (a step wrongly marked wrong, or a real mistake that was missed, are both errors) and the corrected solution. If the marking is fully correct reply with exactly: OK . Otherwise reply with the COMPLETE corrected marking only, in the same Khmer language and the same four sections, maths in LaTeX, with no commentary about the checking.'},{role:'user',content:user+'\n\nTEACHER MARKING:\n'+r}]);
+        if(v){if(!/^\s*OK[.!]?\s*$/i.test(v.trim())&&v.trim().length>40)r=v.trim();WHO+=' · ✓ពិនិត្យ'}
+      }
+      if(r){
+        const tbl=how!='typed'?'**📝 AI អានការងាររបស់អ្នកបែបនេះ** _(បើអានខុស សូមថតម្តងទៀតឱ្យច្បាស់)_\n\n'+work.split('\n').filter(l=>l.trim()).map(l=>'> '+l.trim()).join('\n')+'\n\n---\n\n':'';
+        c.push({role:'assistant',by:WHO,content:tbl+cleanAI(r,false)});
+      }else msg='⚠ AI កំពុងរវល់ មិនអាចពិនិត្យបានទេ។ សូមព្យាយាមម្តងទៀតបន្តិចក្រោយ'+(ERR?` (${ERR})`:'');
+    }
+  }catch(e){msg='⚠ មានបញ្ហា៖ '+String(e.message||e).slice(0,120)}
+  if(msg)c.push({role:'assistant',by:'',content:msg});
+  CKBUSY[k]=0;PEND[cc]=0;saveChat(cc);
+  if(view==k&&tab=='ai'){ckUI();if(ck(k)==cc)draw($('#cl'),c)}
+};
 
 // ---------- FLASHCARDS ----------
 let CQ=[],CI=0,CF=false,CQK=''; // CQK = subject of the review session in progress, so it can be resumed
@@ -1098,7 +1210,7 @@ async function genMany0(total,label,mk,key){
   return out.slice(0,total);
 }
 A.mkc=async(_,b)=>{
-  const k=view;if(GENC[k]&&Date.now()-GENC[k]<6e5)return toast('កំពុងបង្កើតប័ណ្ណ… សូមរង់ចាំបន្តិច');
+  const k=view;if(needNet())return;if(GENC[k]&&Date.now()-GENC[k]<6e5)return toast('កំពុងបង្កើតប័ណ្ណ… សូមរង់ចាំបន្តិច');
   const N=Math.max(1,Math.floor(+$('#cn').value||10));if(N>60&&!confirm('ប័ណ្ណ '+N+' ត្រូវប្រើពេលយូរ។ បន្តឬ?'))return;
   GENC[k]=Date.now();b.disabled=true;$('#cs').innerHTML='<p class="text-sm text-slate-400">កំពុងបង្កើតប័ណ្ណចងចាំ… អ្នកអាចទៅផ្ទាំងផ្សេងបាន ប័ណ្ណនឹងរង់ចាំអ្នក</p>';
   const top=$('#qt').value.trim(),ctx=await getSrc(k,$('#src').value,top);
@@ -1133,7 +1245,7 @@ A.fixcards=async()=>{
 A.cclear=()=>{if(confirm('លុបប័ណ្ណទាំងអស់ឬ?')){sd(view).cards=[];CQ=[];CQK='';save(view);cards()}};
 
 // ---------- PWA ----------
-if('serviceWorker' in navigator)addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+if('serviceWorker' in navigator)addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(()=>{});setTimeout(warmSW,6000);setTimeout(warmSW,45000)});
 let IP=null;addEventListener('beforeinstallprompt',e=>{e.preventDefault();IP=e});
 A.inst=()=>IP?IP.prompt():toast('ចុចម៉ឺនុយ Chrome (⋮) → Add to Home screen');
 
@@ -1413,7 +1525,7 @@ function quiz(){
   else if(GENQ[k]&&Date.now()-GENQ[k]<6e5)$('#qz').innerHTML='<p class="text-sm text-slate-400">កំពុងបង្កើតសំណួរតេស្ត… អ្នកអាចទៅផ្ទាំងផ្សេងបាន សំណួរនឹងរង់ចាំអ្នក</p>';
 }
 A.mk=async(_,b)=>{
-  const k=view;if(GENQ[k]&&Date.now()-GENQ[k]<6e5)return toast('កំពុងបង្កើតសំណួរ… សូមរង់ចាំបន្តិច');
+  const k=view;if(needNet())return;if(GENQ[k]&&Date.now()-GENQ[k]<6e5)return toast('កំពុងបង្កើតសំណួរ… សូមរង់ចាំបន្តិច');
   const N=Math.max(1,Math.floor(+$('#qn').value||10)),LV=$('#ql').value;if(N>60&&!confirm('សំណួរ '+N+' ត្រូវប្រើពេលយូរ។ បន្តឬ?'))return;
   GENQ[k]=Date.now();QOPT[k]={t:$('#qt').value,n:$('#qn').value,l:LV};
   b.disabled=true;$('#qz').innerHTML='<p class="text-sm text-slate-400">កំពុងបង្កើតសំណួរតេស្ត… អ្នកអាចទៅផ្ទាំងផ្សេងបាន សំណួរនឹងរង់ចាំអ្នក</p>';
