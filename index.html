@@ -80,10 +80,6 @@ input[type=date].inp{-webkit-appearance:auto!important;appearance:auto!important
 .md .katex-display,#qz .katex-display,#cs .katex-display,#xo .katex-display{overflow-x:auto;overflow-y:hidden;max-width:100%;padding:2px 0}.katex{font-size:1.05em}
 .navon{color:#fff}
 .ovbg{background:#060916}
-.pt{border-radius:.4rem;padding:3px 0;text-align:center;line-height:1.1;min-height:38px;border:1px solid rgba(148,163,184,.25);color:inherit}
-.pt i{display:block;font-style:normal;font-size:8px;opacity:.7}.pt b{font-size:12px}
-.pt.sel{outline:2px solid #3b82f6;outline-offset:1px}
-.pc-alk{background:rgba(239,68,68,.3)}.pc-ae{background:rgba(249,115,22,.3)}.pc-tm{background:rgba(234,179,8,.28)}.pc-pt{background:rgba(34,197,94,.25)}.pc-md{background:rgba(20,184,166,.3)}.pc-nm{background:rgba(59,130,246,.28)}.pc-hl{background:rgba(168,85,247,.28)}.pc-ng{background:rgba(236,72,153,.28)}.pc-la{background:rgba(6,182,212,.28)}.pc-ac{background:rgba(132,204,22,.28)}
 html.light .ovbg{background:#eef2f7}
 .sym{padding:.2rem .6rem;font-size:.95rem;flex-shrink:0;line-height:1.3}
 .offb{background:#f59e0b;color:#1c1917;font-size:11.5px;font-weight:700;text-align:center;padding:4px 10px;line-height:1.45;flex-shrink:0}
@@ -214,7 +210,7 @@ html.light ::selection{background:rgba(59,130,246,.25)}
       <button data-k="sched" class="flex flex-col items-center py-1 text-[11px] text-slate-300"><i class="fa-solid fa-calendar-days text-sm mb-0.5 text-sky-400"></i>កាលវិភាគ</button>
       <button data-k="report" class="flex flex-col items-center py-1 text-[11px] text-slate-300"><i class="fa-solid fa-chart-simple text-sm mb-0.5 text-pink-400"></i>របាយការណ៍</button>
       <button data-k="friends" class="flex flex-col items-center py-1 text-[11px] text-slate-300"><i class="fa-solid fa-users text-sm mb-0.5 text-emerald-400"></i>ថ្នាក់យើង</button>
-      <button data-k="tools" class="flex flex-col items-center py-1 text-[11px] text-slate-300"><i class="fa-solid fa-toolbox text-sm mb-0.5 text-amber-400"></i>ឧបករណ៍</button>
+      <button data-k="profile" class="flex flex-col items-center py-1 text-[11px] text-slate-300"><i class="fa-solid fa-user-gear text-sm mb-0.5 text-purple-400"></i>ប្រវត្តិរូប</button>
     </nav>
   </main>
 </div>
@@ -360,7 +356,6 @@ function nav(){
     ['allhw','កិច្ចការ','fa-list-check','#fb923c'],
     ['sched','កាលវិភាគ','fa-calendar-days','#38bdf8'],
     ['srch','ស្វែងរក','fa-magnifying-glass','#22d3ee'],
-    ['tools','ឧបករណ៍','fa-toolbox','#fbbf24'],
     ['report','របាយការណ៍','fa-chart-simple','#f472b6'],
     ['friends','ថ្នាក់រៀន','fa-users','#34d399'],
     ...S.map(s=>[s[0],s[1],s[3],s[4]])
@@ -451,7 +446,6 @@ function render(){
   if(view=='sched')return sched();
   if(view=='srch')return srch();
   if(view=='friends')return friends();
-  if(view=='tools')return tools();
   const s=subj(view);$('#ttl').textContent=s[1];
   $('#main').innerHTML=`<div class="max-w-3xl mx-auto space-y-4" style="--c:${s[4]}">
     <div class="flex items-center justify-between gap-3">
@@ -1174,251 +1168,6 @@ A.send=async()=>{
   if(view==k&&tab=='ai'&&ck(k)==cc)draw($('#cl'),c);
 };
 A.chip=i=>{const c=CH[i];$('#ci').value=c[1]+' (មុខវិជ្ជា '+subj(view)[1]+')';if(c[2]){toast('ថតរូបលំហាត់ និងចម្លើយរបស់អ្នក រួចចុចផ្ញើ');$('#ph').click();return}A.send()};
-
-// ---------- TOOLBOX (ឧបករណ៍): works offline, exact, no AI ----------
-// <TOOLBOX-LOGIC>
-const EL_RAW='H,Hydrogen,1.008;He,Helium,4.0026;Li,Lithium,6.94;Be,Beryllium,9.0122;B,Boron,10.81;C,Carbon,12.011;N,Nitrogen,14.007;O,Oxygen,15.999;F,Fluorine,18.998;Ne,Neon,20.18;Na,Sodium,22.99;Mg,Magnesium,24.305;Al,Aluminium,26.982;Si,Silicon,28.085;P,Phosphorus,30.974;S,Sulfur,32.06;Cl,Chlorine,35.45;Ar,Argon,39.948;K,Potassium,39.098;Ca,Calcium,40.078;Sc,Scandium,44.956;Ti,Titanium,47.867;V,Vanadium,50.942;Cr,Chromium,51.996;Mn,Manganese,54.938;Fe,Iron,55.845;Co,Cobalt,58.933;Ni,Nickel,58.693;Cu,Copper,63.546;Zn,Zinc,65.38;Ga,Gallium,69.723;Ge,Germanium,72.63;As,Arsenic,74.922;Se,Selenium,78.971;Br,Bromine,79.904;Kr,Krypton,83.798;Rb,Rubidium,85.468;Sr,Strontium,87.62;Y,Yttrium,88.906;Zr,Zirconium,91.224;Nb,Niobium,92.906;Mo,Molybdenum,95.95;Tc,Technetium,98;Ru,Ruthenium,101.07;Rh,Rhodium,102.91;Pd,Palladium,106.42;Ag,Silver,107.87;Cd,Cadmium,112.41;In,Indium,114.82;Sn,Tin,118.71;Sb,Antimony,121.76;Te,Tellurium,127.6;I,Iodine,126.9;Xe,Xenon,131.29;Cs,Caesium,132.91;Ba,Barium,137.33;La,Lanthanum,138.91;Ce,Cerium,140.12;Pr,Praseodymium,140.91;Nd,Neodymium,144.24;Pm,Promethium,145;Sm,Samarium,150.36;Eu,Europium,151.96;Gd,Gadolinium,157.25;Tb,Terbium,158.93;Dy,Dysprosium,162.5;Ho,Holmium,164.93;Er,Erbium,167.26;Tm,Thulium,168.93;Yb,Ytterbium,173.05;Lu,Lutetium,174.97;Hf,Hafnium,178.49;Ta,Tantalum,180.95;W,Tungsten,183.84;Re,Rhenium,186.21;Os,Osmium,190.23;Ir,Iridium,192.22;Pt,Platinum,195.08;Au,Gold,196.97;Hg,Mercury,200.59;Tl,Thallium,204.38;Pb,Lead,207.2;Bi,Bismuth,208.98;Po,Polonium,209;At,Astatine,210;Rn,Radon,222;Fr,Francium,223;Ra,Radium,226;Ac,Actinium,227;Th,Thorium,232.04;Pa,Protactinium,231.04;U,Uranium,238.03;Np,Neptunium,237;Pu,Plutonium,244;Am,Americium,243;Cm,Curium,247;Bk,Berkelium,247;Cf,Californium,251;Es,Einsteinium,252;Fm,Fermium,257;Md,Mendelevium,258;No,Nobelium,259;Lr,Lawrencium,266;Rf,Rutherfordium,267;Db,Dubnium,268;Sg,Seaborgium,269;Bh,Bohrium,270;Hs,Hassium,277;Mt,Meitnerium,278;Ds,Darmstadtium,281;Rg,Roentgenium,282;Cn,Copernicium,285;Nh,Nihonium,286;Fl,Flerovium,289;Mc,Moscovium,290;Lv,Livermorium,293;Ts,Tennessine,294;Og,Oganesson,294';
-const EL=EL_RAW.split(';').map((x,i)=>{const[s,n,m]=x.split(',');return{z:i+1,s,n,m:+m}});
-const ELS=Object.fromEntries(EL.map(e=>[e.s,e]));
-// 'r' = rounded values as used in school exercises (H=1, C=12, O=16, Cl=35.5 …); 'p' = precise IUPAC values
-const massOf=(e,mode)=>mode=='p'?e.m:(e.s=='Cl'?35.5:Math.round(e.m));
-const ELPOS=z=>z==1?[1,1]:z==2?[1,18]:z<=4?[2,z-2]:z<=10?[2,z+8]:z<=12?[3,z-10]:z<=18?[3,z]:z<=36?[4,z-18]:z<=54?[5,z-36]:z<=56?[6,z-54]:z<=71?[9,z-54]:z<=86?[6,z-68]:z<=88?[7,z-86]:z<=103?[10,z-86]:[7,z-100];
-const ELCAT=z=>[3,11,19,37,55,87].includes(z)?'alk':[4,12,20,38,56,88].includes(z)?'ae':(z>=21&&z<=30)||(z>=39&&z<=48)||(z>=72&&z<=80)||(z>=104&&z<=112)?'tm':[13,31,49,50,81,82,83,84,113,114,115,116].includes(z)?'pt':[5,14,32,33,51,52].includes(z)?'md':[1,6,7,8,15,16,34].includes(z)?'nm':[9,17,35,53,85,117].includes(z)?'hl':[2,10,18,36,54,86,118].includes(z)?'ng':z>=57&&z<=71?'la':'ac';
-const normFormula=f=>String(f).replace(/[₀-₉]/g,c=>String(c.charCodeAt(0)-8320)).replace(/\^[0-9]*[+-]?$/,'').replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻]+$/,'').replace(/\s+/g,'').replace(/\[/g,'(').replace(/\]/g,')');
-function parseGroup(body){
-  let i=0;
-  const num=()=>{const j=i;while(i<body.length&&/\d/.test(body[i]))i++;return i>j?+body.slice(j,i):1};
-  const seq=()=>{const out={};
-    while(i<body.length&&body[i]!=')'){
-      if(body[i]=='('){i++;const inner=seq();if(body[i]!=')')throw new Error('វង់ក្រចកមិនគ្រប់គូ');i++;const n=num();for(const k in inner)out[k]=(out[k]||0)+inner[k]*n}
-      else if(/[A-Z]/.test(body[i])){let s=body[i++];if(i<body.length&&/[a-z]/.test(body[i]))s+=body[i++];if(!ELS[s])throw new Error('មិនស្គាល់ធាតុ «'+s+'»');out[s]=(out[s]||0)+num()}
-      else throw new Error('តួអក្សរមិនត្រឹមត្រូវ «'+body[i]+'»');
-    }
-    return out};
-  const r=seq();if(i<body.length)throw new Error('វង់ក្រចកមិនគ្រប់គូ');return r;
-}
-function parseFormula(str){
-  const f=normFormula(str);if(!f)throw new Error('សូមបញ្ចូលរូបមន្ត');
-  const total={};
-  for(const part of f.split(/[·.*•]/).filter(Boolean)){
-    const m=part.match(/^(\d+)(.+)$/),mult=m?+m[1]:1,cnt=parseGroup(m?m[2]:part);
-    for(const k in cnt)total[k]=(total[k]||0)+cnt[k]*mult;
-  }
-  return total;
-}
-function molar(str,mode){
-  const counts=parseFormula(str);let M=0;
-  const rows=Object.entries(counts).map(([s,n])=>{const a=massOf(ELS[s],mode),sub=a*n;M+=sub;return{s,n,a,sub}});
-  return{M:+M.toFixed(4),rows,counts};
-}
-const gcdB=(a,b)=>{a=a<0n?-a:a;b=b<0n?-b:b;while(b){[a,b]=[b,a%b]}return a};
-function parseEq(str){
-  const t=String(str).replace(/[→⟶⇒⟹⇌]|==>|=>|-->|->|=/g,'→').replace(/\s+/g,' ').trim(),sd=t.split('→');
-  if(sd.length!=2||!sd[0].trim()||!sd[1].trim())throw new Error('សូមសរសេរក្នុងទម្រង់៖ A + B → C + D');
-  const side=x=>x.split('+').map(y=>y.trim().replace(/^\d+\s*/,'')).filter(Boolean);
-  return[side(sd[0]),side(sd[1])];
-}
-function balance(str){
-  const[L,R]=parseEq(str),comps=[...L,...R],cn=comps.map(parseFormula),els=[...new Set(cn.flatMap(c=>Object.keys(c)))];
-  for(const e of els){if(!L.some((_,i)=>cn[i][e])||!R.some((_,i)=>cn[L.length+i][e]))throw new Error('ធាតុ '+e+' ត្រូវមានទាំងសងខាងនៃសមីការ')}
-  const rows=els.map(e=>cn.map((c,j)=>BigInt((c[e]||0)*(j<L.length?1:-1)))),nc=comps.length,piv=[];let r0=0;
-  for(let c=0;c<nc&&r0<rows.length;c++){
-    let p=-1;for(let i=r0;i<rows.length;i++)if(rows[i][c]!==0n){p=i;break}
-    if(p<0)continue;[rows[r0],rows[p]]=[rows[p],rows[r0]];
-    for(let i=0;i<rows.length;i++){
-      if(i==r0||rows[i][c]===0n)continue;
-      const a=rows[r0][c],b=rows[i][c];rows[i]=rows[i].map((v,j)=>v*a-rows[r0][j]*b);
-      const g=rows[i].reduce((x,y)=>gcdB(x,y),0n);if(g>1n)rows[i]=rows[i].map(v=>v/g);
-    }
-    piv.push(c);r0++;
-  }
-  const free=[...Array(nc).keys()].filter(c=>!piv.includes(c));
-  if(!free.length)throw new Error('មិនអាចតុល្យសមីការនេះបានទេ — សូមពិនិត្យរូបមន្ត');
-  if(free.length>1)throw new Error('សមីការនេះមានចម្លើយច្រើន — សូមបន្ថែមសារធាតុ ឬពិនិត្យម្តងទៀត');
-  const f=free[0];let D=1n;
-  const fr=piv.map((c,r)=>{const p=rows[r][c],a=rows[r][f],g=gcdB(p,a)||1n;let n=-a/g,d=p/g;if(d<0n){n=-n;d=-d}return[n,d]});
-  fr.forEach(([,d])=>{D=D*d/gcdB(D,d)});
-  const x=Array(nc).fill(0n);x[f]=D;piv.forEach((c,r)=>{x[c]=fr[r][0]*D/fr[r][1]});
-  const g=x.reduce((a,b)=>gcdB(a,b),0n);let co=x.map(v=>v/g);
-  if(co.every(v=>v<0n))co=co.map(v=>-v);
-  if(co.some(v=>v<=0n))throw new Error('មិនអាចតុល្យសមីការនេះបានទេ — សូមពិនិត្យរូបមន្ត');
-  const nums=co.map(Number),fmt=(a,off)=>a.map((c,i)=>(nums[off+i]>1?nums[off+i]+' ':'')+c).join(' + ');
-  return{L,R,co:nums,text:fmt(L,0)+' → '+fmt(R,L.length)};
-}
-function calc(input,deg=true,ans=0){
-  const src=String(input).replace(/×/g,'*').replace(/÷/g,'/').replace(/[−–]/g,'-').replace(/π/g,'pi').replace(/√/g,'sqrt').replace(/∛/g,'cbrt').replace(/⁻¹/g,'^(-1)').replace(/²/g,'^2').replace(/³/g,'^3').replace(/,/g,'.').replace(/\s+/g,'').toLowerCase();
-  const toks=src.match(/\d+\.?\d*(?:e[+-]?\d+)?|\.\d+|[a-z]+|[-+*/^()!%]/g)||[];
-  if(toks.join('')!==src)throw new Error('មានតួអក្សរមិនត្រឹមត្រូវ');
-  if(!toks.length)throw new Error('ទទេ');
-  let p=0;const peek=()=>toks[p],isNum=t=>t&&/^[\d.]/.test(t),isId=t=>t&&/^[a-z]/.test(t);
-  const rad=x=>deg?x*Math.PI/180:x,back=x=>deg?x*180/Math.PI:x;
-  const F={sin:x=>Math.sin(rad(x)),cos:x=>Math.cos(rad(x)),tan:x=>Math.tan(rad(x)),asin:x=>back(Math.asin(x)),acos:x=>back(Math.acos(x)),atan:x=>back(Math.atan(x)),sqrt:Math.sqrt,cbrt:Math.cbrt,ln:Math.log,log:Math.log10,exp:Math.exp,abs:Math.abs};
-  const K={pi:Math.PI,e:Math.E,ans};
-  const fact=n=>{if(n<0||n!==Math.floor(n)||n>170)throw new Error('n! ត្រូវការចំនួនគត់ 0–170');let r=1;for(let i=2;i<=n;i++)r*=i;return r};
-  function expr(){let v=term();while(peek()=='+'||peek()=='-'){const o=toks[p++],r=term();v=o=='+'?v+r:v-r}return v}
-  function term(){let v=unary();for(;;){const t=peek();if(t=='*'||t=='/'){p++;const r=unary();v=t=='*'?v*r:v/r}else if(t=='('||isId(t)){v*=unary()}else break}return v}
-  function unary(){if(peek()=='-'){p++;return-unary()}if(peek()=='+'){p++;return unary()}return pow()}
-  function pow(){let b=post();if(peek()=='^'){p++;return Math.pow(b,unary())}return b}
-  function post(){let v=prim();for(;;){if(peek()=='!'){p++;v=fact(v)}else if(peek()=='%'){p++;v/=100}else break}return v}
-  function prim(){
-    const t=toks[p++];
-    if(t===undefined)throw new Error('កន្សោមមិនពេញ');
-    if(isNum(t)){const n=+t;if(isNaN(n))throw new Error('ចំនួនមិនត្រឹមត្រូវ');return n}
-    if(t=='('){const v=expr();if(toks[p++]!=')')throw new Error('វង់ក្រចកមិនគ្រប់គូ');return v}
-    if(isId(t)){if(t in K)return K[t];if(t in F){let a;if(peek()=='('){p++;a=expr();if(toks[p++]!=')')throw new Error('វង់ក្រចកមិនគ្រប់គូ')}else a=pow();return F[t](a)}throw new Error('មិនស្គាល់ «'+t+'»')}
-    throw new Error('សញ្ញាមិនត្រឹមត្រូវ «'+t+'»');
-  }
-  const r=expr();if(p<toks.length)throw new Error('សញ្ញាមិនត្រឹមត្រូវ «'+toks[p]+'»');
-  if(!isFinite(r))throw new Error('លទ្ធផលគ្មានន័យ (÷0 ឬធំពេក)');
-  return Math.abs(r)<1e-12?0:r;
-}
-function fmtNum(x){
-  if(x===0)return '0';
-  const a=Math.abs(x);
-  if(a>=1e12||a<1e-6){const[m,e]=x.toExponential(8).split('e');return m.replace(/\.?0+$/,'')+'×10^'+(+e)}
-  return String(+x.toPrecision(12));
-}
-function quad(a,b,c){
-  if(a===0){if(b===0)throw new Error('a និង b មិនអាចស្មើ 0 ទាំងពីរ');return{lin:true,x:-c/b}}
-  const D=b*b-4*a*c,S=-b/a,P=c/a,vx=-b/(2*a),vy=a*vx*vx+b*vx+c;
-  if(D>0){const s=Math.sqrt(D);return{D,S,P,vx,vy,kind:'real2',x1:(-b+s)/(2*a),x2:(-b-s)/(2*a)}}
-  if(D===0)return{D,S,P,vx,vy,kind:'real1',x1:-b/(2*a)};
-  const im=Math.sqrt(-D)/(2*Math.abs(a));return{D,S,P,vx,vy,kind:'cplx',re:-b/(2*a),im};
-}
-function cparse(str){
-  const s=String(str).replace(/\s+/g,'').replace(/[−–]/g,'-').replace(/[jJ]/g,'i').replace(/I/g,'i');
-  if(!s)throw new Error('សូមបញ្ចូលចំនួនកុំផ្លិច ឧ. 3+4i');
-  const re=/([+-]?)(\d*\.?\d*)(i?)/y;let a=0,b=0,pos=0;
-  while(pos<s.length){
-    re.lastIndex=pos;const m=re.exec(s);if(!m||m[0]==='')throw new Error('ទម្រង់មិនត្រឹមត្រូវ ឧ. 3+4i');
-    const sg=m[1]=='-'?-1:1;
-    if(m[3])b+=sg*(m[2]===''?1:+m[2]);else{if(m[2]==='')throw new Error('ទម្រង់មិនត្រឹមត្រូវ ឧ. 3+4i');a+=sg*+m[2]}
-    pos+=m[0].length;
-  }
-  return{re:a,im:b};
-}
-function cfmt(z){
-  const r=+z.re.toFixed(10),i=+z.im.toFixed(10);
-  if(i===0)return fmtNum(r);
-  const is=Math.abs(i)===1?'i':fmtNum(Math.abs(i))+'i';
-  return r===0?(i<0?'-':'')+is:fmtNum(r)+(i<0?' - ':' + ')+is;
-}
-const cops={
-  add:(a,b)=>({re:a.re+b.re,im:a.im+b.im}),sub:(a,b)=>({re:a.re-b.re,im:a.im-b.im}),
-  mul:(a,b)=>({re:a.re*b.re-a.im*b.im,im:a.re*b.im+a.im*b.re}),
-  div:(a,b)=>{const d=b.re*b.re+b.im*b.im;if(d===0)throw new Error('មិនអាចចែកនឹង 0');return{re:(a.re*b.re+a.im*b.im)/d,im:(a.im*b.re-a.re*b.im)/d}},
-  mod:a=>Math.hypot(a.re,a.im),arg:a=>Math.atan2(a.im,a.re),conj:a=>({re:a.re,im:-a.im})
-};
-function comb(n,r,kind){
-  n=Math.floor(n);r=Math.floor(r);
-  if(!(n>=0&&n<=400)||(kind!='fact'&&!(r>=0&&r<=n)))throw new Error('សូមបញ្ចូល 0 ≤ r ≤ n ≤ 400');
-  let f=1n;for(let i=2n;i<=BigInt(n);i++)f*=i;
-  if(kind=='fact')return f;
-  let p=1n;for(let i=BigInt(n-r+1);i<=BigInt(n);i++)p*=i;
-  if(kind=='P')return p;
-  let rf=1n;for(let i=2n;i<=BigInt(r);i++)rf*=i;return p/rf;
-}
-const UNITS={
-  'ប្រវែង':{m:1,km:1e3,cm:1e-2,mm:1e-3,'µm':1e-6,nm:1e-9,'Å':1e-10,inch:.0254,ft:.3048,mile:1609.344},
-  'ម៉ាស':{kg:1,g:1e-3,mg:1e-6,t:1e3,u:1.66054e-27,lb:.45359237},
-  'ពេលវេលា':{s:1,ms:1e-3,'µs':1e-6,min:60,h:3600,'ថ្ងៃ':86400},
-  'សីតុណ្ហភាព':{'°C':1,K:1,'°F':1},
-  'សម្ពាធ':{Pa:1,kPa:1e3,atm:101325,mmHg:101325/760,Torr:101325/760,bar:1e5,mbar:100},
-  'ថាមពល':{J:1,kJ:1e3,cal:4.184,kcal:4184,eV:1.602176634e-19,kWh:3.6e6},
-  'មាឌ':{L:1,mL:1e-3,'dm³':1,'cm³':1e-3,'m³':1e3},
-  'ល្បឿន':{'m/s':1,'km/h':1/3.6,'cm/s':.01},
-  'ម៉ូដុលមុំ':{'°':1,rad:180/Math.PI,grad:.9},
-  'កម្លាំង':{N:1,kN:1e3,dyn:1e-5},
-  'ថាមពលក្នុងមួយវិនាទី':{W:1,kW:1e3,hp:745.7}
-};
-function uconv(cat,v,from,to){
-  if(cat=='សីតុណ្ហភាព'){const k=from=='°C'?v+273.15:from=='°F'?(v-32)*5/9+273.15:v;return to=='°C'?k-273.15:to=='°F'?(k-273.15)*9/5+32:k}
-  const t=UNITS[cat];return v*t[from]/t[to];
-}
-// </TOOLBOX-LOGIC>
-
-const TLS=[['calc','🧮','ម៉ាស៊ីនគិត'],['math','📐','គណិត'],['mol','⚗️','ម៉ាសម៉ូល'],['bal','⚖️','តុល្យសមីការ'],['pt','🧪','តារាងខួប'],['cst','🔢','ថេរ'],['unit','🔄','ឯកតា']];
-let TLT='calc',TMODE=(()=>{try{return localStorage.getItem('ngs-tm')||'r'}catch(e){return 'r'}})(),CALC={deg:true,ans:0,hist:[]},PTSEL=1;
-const sub=f=>esc(f).replace(/([A-Za-z)\]])(\d+)/g,'$1<sub>$2</sub>');
-const tlBox=h=>{$('#tl').innerHTML=h;rm($('#tl'))};
-function tools(){
-  $('#ttl').textContent='ឧបករណ៍';
-  $('#main').innerHTML=`<div class="max-w-3xl mx-auto"><h2 class="font-extrabold text-xl mb-0.5">🧰 ឧបករណ៍</h2><p class="text-xs text-slate-400 mb-3">ដំណើរការបានគ្មានអ៊ីនធឺណិត · គណនាច្បាស់លាស់ មិនប្រើ AI</p><div class="flex gap-1.5 overflow-x-auto pb-2 mb-2">${TLS.map(([k,i,n])=>`<button data-a="tlt" data-v="${k}" class="seg shrink-0 whitespace-nowrap ${TLT==k?'on':''}" style="padding-left:.8rem;padding-right:.8rem">${i} ${n}</button>`).join('')}</div><div id="tl"></div></div>`;
-  TLF[TLT]();
-}
-A.tlt=v=>{TLT=v;tools()};
-const tIns=(el,v)=>{const a=el.selectionStart??el.value.length,b=el.selectionEnd??a;el.value=el.value.slice(0,a)+v+el.value.slice(b);el.focus();try{el.setSelectionRange(a+v.length,a+v.length)}catch(e){}el.dispatchEvent(new Event('input',{bubbles:true}))};
-const modeBar=()=>`<div class="flex items-center gap-2 text-[11px] text-slate-400 mb-2"><span>តម្លៃម៉ាស៖</span><button data-a="tmode" data-v="r" class="seg !py-1 ${TMODE=='r'?'on':''}">បង្គត់ (H=1, C=12, Cl=35.5)</button><button data-a="tmode" data-v="p" class="seg !py-1 ${TMODE=='p'?'on':''}">ជាក់លាក់</button></div>`;
-A.tmode=v=>{TMODE=v;try{localStorage.setItem('ngs-tm',v)}catch(e){}TLF[TLT]()};
-const TLF={
-  calc(){
-    const keys=[['sin','sin('],['cos','cos('],['tan','tan('],['ln','ln('],['log','log('],['⌫','<'],['√','√('],['x²','^2'],['^','^'],['(','('],[')',')'],['C','C'],['7','7'],['8','8'],['9','9'],['÷','÷'],['π','π'],['!','!'],['4','4'],['5','5'],['6','6'],['×','×'],['e','e'],['%','%'],['1','1'],['2','2'],['3','3'],['−','−'],['ANS','ans'],['x⁻¹','^(-1)'],['0','0'],['.','.'],['+','+'],['=','=']];
-    tlBox(`<div class="glass p-3"><div class="flex items-center justify-between mb-2 text-[11px] text-slate-400"><span>មុំ៖ <button data-a="cdeg" class="chip !py-0.5">${CALC.deg?'DEG (°)':'RAD'}</button></span><span>វាយ ឬចុចគ្រាប់ចុច</span></div><input id="cin" class="inp text-lg" placeholder="ឧ. 2π×(3+4)² ឬ sin(30)" autocomplete="off" autocapitalize="off" spellcheck="false"><div id="cout" class="text-2xl font-bold mt-2 min-h-[2.25rem] break-all"></div><div class="grid grid-cols-6 gap-1.5 mt-3">${keys.map(([l,v])=>`<button data-a="ckey" data-v="${esc(v)}" class="chip !px-0 !py-2.5 text-center ${l=='='?'col-span-3 !bg-blue-600 !text-white font-bold':''}">${l}</button>`).join('')}</div><div id="chist" class="mt-3 text-xs space-y-1"></div></div>`);
-    const i=$('#cin'),o=$('#cout');
-    const prev=()=>{try{o.className='text-2xl font-bold mt-2 min-h-[2.25rem] break-all';o.textContent=i.value.trim()?'= '+fmtNum(calc(i.value,CALC.deg,CALC.ans)):''}catch(e){o.className='text-sm mt-2 min-h-[2.25rem] text-slate-500';o.textContent=''}};
-    i.oninput=prev;i.onkeydown=e=>{if(e.key=='Enter')A.ckey('=')};
-    $('#chist').innerHTML=CALC.hist.slice(-6).reverse().map(h=>`<div class="text-slate-400"><span>${esc(h[0])}</span> = <b class="text-inherit">${esc(h[1])}</b></div>`).join('');
-  },
-  math(){
-    tlBox(`<div class="space-y-3">
-      <div class="glass p-3"><b class="text-sm">សមីការដឺក្រេទី២ ax² + bx + c = 0</b><div class="grid grid-cols-3 gap-2 mt-2"><input id="qa" class="inp" inputmode="decimal" placeholder="a" value="1"><input id="qb" class="inp" inputmode="decimal" placeholder="b" value="2"><input id="qc" class="inp" inputmode="decimal" placeholder="c" value="5"></div><div id="qo" class="mt-2 text-sm space-y-0.5"></div></div>
-      <div class="glass p-3"><b class="text-sm">ចំនួនកុំផ្លិច</b><div class="grid grid-cols-2 gap-2 mt-2"><input id="z1" class="inp" placeholder="z₁ = 3+4i" value="3+4i"><input id="z2" class="inp" placeholder="z₂ = 1-2i" value="1-2i"></div><div id="zo" class="mt-2 text-sm space-y-0.5"></div></div>
-      <div class="glass p-3"><b class="text-sm">កត្តាគុណ · ចំនួនលំដាប់ P(n,r) · បន្សំ C(n,r)</b><div class="grid grid-cols-2 gap-2 mt-2"><input id="cn" class="inp" inputmode="numeric" placeholder="n" value="10"><input id="cr" class="inp" inputmode="numeric" placeholder="r" value="3"></div><div id="co2" class="mt-2 text-sm space-y-0.5 break-all"></div></div></div>`);
-    const q=()=>{const a=+$('#qa').value,b=+$('#qb').value,c=+$('#qc').value,o=$('#qo');try{const r=quad(a,b,c);if(r.lin)return o.innerHTML='សមីការដឺក្រេទី១៖ x = <b>'+fmtNum(r.x)+'</b>';
-      const rt=r.kind=='real2'?`x₁ = <b>${fmtNum(r.x1)}</b> · x₂ = <b>${fmtNum(r.x2)}</b>`:r.kind=='real1'?`x₁ = x₂ = <b>${fmtNum(r.x1)}</b> (ឫសឌុប)`:`z₁ = <b>${cfmt({re:r.re,im:r.im})}</b> · z₂ = <b>${cfmt({re:r.re,im:-r.im})}</b>`;
-      o.innerHTML=`Δ = b² − 4ac = <b>${fmtNum(r.D)}</b> (${r.D>0?'ឫសពីរផ្សេងគ្នា':r.D==0?'ឫសឌុប':'ឫសកុំផ្លិចឆ្លាស់'})<br>${rt}<br><span class="text-slate-400">S = ${fmtNum(r.S)} · P = ${fmtNum(r.P)} · កំពូល (${fmtNum(r.vx)}, ${fmtNum(r.vy)})</span>`}catch(e){o.innerHTML='<span class="text-amber-300">'+esc(e.message)+'</span>'}};
-    const z=()=>{const o=$('#zo');try{const A1=cparse($('#z1').value),B1=cparse($('#z2').value),c=cops;o.innerHTML=`z₁ + z₂ = <b>${cfmt(c.add(A1,B1))}</b><br>z₁ − z₂ = <b>${cfmt(c.sub(A1,B1))}</b><br>z₁ × z₂ = <b>${cfmt(c.mul(A1,B1))}</b><br>z₁ ÷ z₂ = <b>${cfmt(c.div(A1,B1))}</b><br><span class="text-slate-400">|z₁| = ${fmtNum(c.mod(A1))} · arg z₁ = ${fmtNum(c.arg(A1)*180/Math.PI)}° (${fmtNum(c.arg(A1))} rad) · z̄₁ = ${cfmt(c.conj(A1))}</span>`}catch(e){o.innerHTML='<span class="text-amber-300">'+esc(e.message)+'</span>'}};
-    const k=()=>{const n=+$('#cn').value,r=+$('#cr').value,o=$('#co2');try{const s=x=>{const t=x.toString();return t.length>40?t[0]+'.'+t.slice(1,6)+'×10^'+(t.length-1)+' ('+t.length+' ខ្ទង់)':t};o.innerHTML=`n! = <b>${s(comb(n,r,'fact'))}</b><br>P(n,r) = <b>${s(comb(n,r,'P'))}</b><br>C(n,r) = <b>${s(comb(n,r,'C'))}</b>`}catch(e){o.innerHTML='<span class="text-amber-300">'+esc(e.message)+'</span>'}};
-    ['qa','qb','qc'].forEach(x=>$('#'+x).oninput=q);['z1','z2'].forEach(x=>$('#'+x).oninput=z);['cn','cr'].forEach(x=>$('#'+x).oninput=k);q();z();k();
-  },
-  mol(){
-    tlBox(`<div class="glass p-3">${modeBar()}<input id="mf" class="inp text-lg" placeholder="រូបមន្ត ឧ. Ca(OH)2 ឬ CuSO4·5H2O" value="H2SO4" autocomplete="off" autocapitalize="off" spellcheck="false"><div class="flex flex-wrap gap-1.5 mt-2">${['H2O','CO2','NaOH','H2SO4','Ca(OH)2','Al2(SO4)3','CuSO4·5H2O','C6H12O6'].map(x=>`<button data-a="mfex" data-v="${x}" class="chip !py-0.5">${sub(x)}</button>`).join('')}</div><div id="mo" class="mt-3 text-sm"></div>
-      <div class="grid grid-cols-2 gap-2 mt-3"><label class="text-[11px] text-slate-400">ម៉ាស m (g)<input id="mg" class="inp mt-1" inputmode="decimal" placeholder="g"></label><label class="text-[11px] text-slate-400">ចំនួនម៉ូល n (mol)<input id="mn" class="inp mt-1" inputmode="decimal" placeholder="mol"></label></div><div id="mc" class="mt-2 text-sm"></div></div>`);
-    const f=$('#mf'),g=$('#mg'),n=$('#mn');let M=0,last='';
-    const run=()=>{const o=$('#mo');try{const r=molar(f.value,TMODE);M=r.M;
-      o.innerHTML=`<div class="text-lg">M(${sub(f.value.trim())}) = <b>${fmtNum(r.M)}</b> g/mol</div><div class="mt-2 overflow-x-auto"><table class="w-full text-xs"><thead><tr class="text-slate-400 text-left"><th class="py-1">ធាតុ</th><th>ចំនួន</th><th>ម៉ាសអាតូម</th><th>សរុប</th><th>% ម៉ាស</th></tr></thead><tbody>${r.rows.map(x=>`<tr class="border-t border-slate-700/40"><td class="py-1 font-semibold">${x.s}</td><td>${x.n}</td><td>${fmtNum(x.a)}</td><td>${fmtNum(+x.sub.toFixed(4))}</td><td>${(x.sub/r.M*100).toFixed(2)}%</td></tr>`).join('')}</tbody></table></div>`;conv()}catch(e){M=0;o.innerHTML='<span class="text-amber-300">'+esc(e.message)+'</span>';$('#mc').textContent=''}};
-    const conv=()=>{const c=$('#mc');if(!M){c.textContent='';return}if(last=='g'&&g.value!==''){const v=+g.value/M;n.value=fmtNum(+v.toFixed(6));c.innerHTML=`n = m ÷ M = ${esc(g.value)} ÷ ${fmtNum(M)} = <b>${fmtNum(v)}</b> mol`}else if(last=='n'&&n.value!==''){const v=+n.value*M;g.value=fmtNum(+v.toFixed(6));c.innerHTML=`m = n × M = ${esc(n.value)} × ${fmtNum(M)} = <b>${fmtNum(v)}</b> g`}else c.textContent=''};
-    f.oninput=run;g.oninput=()=>{last='g';conv()};n.oninput=()=>{last='n';conv()};run();
-  },
-  bal(){
-    tlBox(`<div class="glass p-3"><textarea id="bq" rows="2" class="inp text-base" placeholder="ឧ. Fe + O2 -> Fe2O3" autocapitalize="off" spellcheck="false">C3H8 + O2 -> CO2 + H2O</textarea><div class="flex flex-wrap gap-1.5 mt-2">${['Fe + O2 -> Fe2O3','C3H8 + O2 -> CO2 + H2O','Al + HCl -> AlCl3 + H2','KMnO4 + HCl -> KCl + MnCl2 + Cl2 + H2O','Ca(OH)2 + H3PO4 -> Ca3(PO4)2 + H2O'].map(x=>`<button data-a="bqex" data-v="${esc(x)}" class="chip !py-0.5 text-xs">${sub(x)}</button>`).join('')}</div><button data-a="bgo" class="btn w-full mt-3"><i class="fa-solid fa-scale-balanced"></i>តុល្យសមីការ</button><div id="bo" class="mt-3 text-base"></div><p class="text-[11px] text-slate-500 mt-2">ប្រើសញ្ញា -> ឬ → រវាងសារធាតុចូល និងផលិតផល។ ប្រើបានសម្រាប់សមីការម៉ូលេគុលធម្មតា (មិនទាន់គាំទ្រអ៊ីយ៉ុង/បន្ទុក)។</p></div>`);
-    $('#bq').oninput=()=>A.bgo();A.bgo();
-  },
-  pt(){
-    const cat={alk:'លោហៈអាល់កាឡាំង',ae:'លោហៈអាល់កាឡាំងទែរ',tm:'លោហៈឆ្លង',pt:'លោហៈក្រោយឆ្លង',md:'ពាក់កណ្តាលលោហៈ',nm:'អលោហៈ',hl:'ហាឡូសែន',ng:'ឧស្ម័នកម្រ',la:'ឡង់តានីត',ac:'អាក់ទីនីត'};
-    tlBox(`<div class="glass p-3"><input id="ps" class="inp mb-2" placeholder="ស្វែងរក៖ H, Fe, Sodium, 26…" autocomplete="off">${modeBar()}<div class="overflow-x-auto pb-2"><div id="pg" style="display:grid;grid-template-columns:repeat(18,minmax(34px,1fr));grid-template-rows:repeat(7,auto) 8px auto auto;gap:3px;min-width:650px">${EL.map(e=>{const[r,c]=ELPOS(e.z);return`<button data-a="ptsel" data-v="${e.z}" class="pt pc-${ELCAT(e.z)}" data-z="${e.z}" style="grid-column:${c};grid-row:${r>=9?r:r}"><i>${e.z}</i><b>${e.s}</b></button>`}).join('')}<div class="pt pc-la" style="grid-column:3;grid-row:6;opacity:.55;pointer-events:none"><i>57–71</i><b>*</b></div><div class="pt pc-ac" style="grid-column:3;grid-row:7;opacity:.55;pointer-events:none"><i>89–103</i><b>**</b></div></div></div><div id="pd" class="mt-2"></div><div class="flex flex-wrap gap-x-3 gap-y-1 text-[10px] mt-2">${Object.entries(cat).map(([k,v])=>`<span><span class="pt pc-${k}" style="display:inline-block;width:12px;height:12px;min-height:0;padding:0;vertical-align:-2px"></span> ${v}</span>`).join('')}</div></div>`);
-    $('#ps').oninput=e=>{const q=e.target.value.trim().toLowerCase();document.querySelectorAll('#pg .pt[data-z]').forEach(b=>{const el=EL[b.dataset.z-1],hit=!q||el.s.toLowerCase()==q||el.n.toLowerCase().includes(q)||String(el.z)==q;b.style.opacity=hit?'':'.18'})};
-    A.ptsel(PTSEL);
-  },
-  cst(){
-    const R=[['លឿនពន្លឺក្នុងសុញ្ញកាស','c','3×10⁸ m/s','(2,998×10⁸)'],['ថេរផ្លង់','h','6,63×10⁻³⁴ J·s',''],['បន្ទុកអេឡិចត្រុង (បន្ទុកគោល)','e','1,6×10⁻¹⁹ C',''],['ម៉ាស់អេឡិចត្រុង','mₑ','9,11×10⁻³¹ kg',''],['ម៉ាស់ប្រូតុង','mₚ','1,673×10⁻²⁷ kg',''],['ម៉ាស់នឺត្រុង','mₙ','1,675×10⁻²⁷ kg',''],['ឯកតាម៉ាស់អាតូម','1 u','1,66×10⁻²⁷ kg','= 931,5 MeV/c²'],['ចំនួនអាវ៉ូហ្គាដ្រូ','N_A','6,02×10²³ mol⁻¹',''],['ថេរឧស្ម័នបរិសុទ្ធ','R','8,31 J·mol⁻¹·K⁻¹','= 0,082 L·atm·mol⁻¹·K⁻¹'],['ថេរបូលស្ម៉ង់','k_B','1,38×10⁻²³ J/K',''],['ថេរហ្វារ៉ាដេ','F','96 500 C/mol',''],['សំទុះទំនាញផែនដី','g','9,8 m/s²','(ប្រើ 10 បើលំហាត់ឱ្យ)'],['ថេរទំនាញសកល','G','6,67×10⁻¹¹ N·m²/kg²',''],['ថេរគូឡុង','k','9×10⁹ N·m²/C²','= 1/(4πε₀)'],['ភាពអនុញ្ញាតអគ្គិសនីក្នុងសុញ្ញកាស','ε₀','8,85×10⁻¹² F/m',''],['ភាពជ្រាបម៉ាញេទិកក្នុងសុញ្ញកាស','μ₀','4π×10⁻⁷ H/m',''],['មាឌម៉ូលឧស្ម័ន (STP: 0°C, 1 atm)','V_m','22,4 L/mol',''],['មាឌម៉ូលឧស្ម័ន (25°C, 1 atm)','V_m','24 L/mol',''],['សម្ពាធ 1 atm','','101 325 Pa','= 760 mmHg = 1,013 bar'],['សីតុណ្ហភាពដាច់ខាត','T','T(K) = t(°C) + 273',''],['កម្ដៅដោយឡែកនៃទឹក','c','4,18 J·g⁻¹·K⁻¹','= 4180 J·kg⁻¹·K⁻¹ (ឬ 4200)'],['ដង់ស៊ីតេទឹក','ρ','1 g/cm³','= 1000 kg/m³'],['1 អេឡិចត្រុងវ៉ុល','1 eV','1,6×10⁻¹⁹ J',''],['ថាមពលអ៊ីយ៉ូដ H (n=1)','E₁','−13,6 eV','']];
-    const CEN={c:'speed of light',h:'planck',e:'elementary charge electron',N_A:'avogadro mole',R:'gas constant',k_B:'boltzmann','1 u':'atomic mass unit amu',F:'faraday',g:'gravity gravitational acceleration',G:'gravitational constant newton',k:'coulomb electrostatic','ε₀':'permittivity','μ₀':'permeability',V_m:'molar volume stp','ρ':'density water','E₁':'hydrogen ionization bohr','mₑ':'electron mass','mₚ':'proton mass','mₙ':'neutron mass','1 eV':'electronvolt'};
-    tlBox(`<div class="glass p-3"><p class="text-[11px] text-amber-300 mb-2">⚠ តម្លៃទូទៅ។ ក្នុងការប្រឡង សូមប្រើតម្លៃដែលលំហាត់ ឬសៀវភៅក្រសួងឱ្យជានិច្ច ព្រោះអាចមានការបង្គត់ខុសគ្នា។</p><input id="cs" class="inp mb-2" placeholder="ស្វែងរក…" autocomplete="off"><div id="cl2" class="divide-y divide-slate-700/30">${R.map(r=>`<div class="py-2 flex items-start gap-3 cst-row" data-t="${esc(r.join(' ')+' '+(CEN[r[1]]||'')).toLowerCase()}"><div class="w-12 shrink-0 text-center font-bold text-blue-300">${esc(r[1]||'—')}</div><div class="min-w-0"><div class="text-sm">${esc(r[0])}</div><div class="text-sm font-semibold">${esc(r[2])} <span class="text-xs font-normal text-slate-400">${esc(r[3])}</span></div></div></div>`).join('')}</div></div>`);
-    $('#cs').oninput=e=>{const q=e.target.value.trim().toLowerCase();document.querySelectorAll('.cst-row').forEach(x=>x.style.display=!q||x.dataset.t.includes(q)?'':'none')};
-  },
-  unit(){
-    const cats=Object.keys(UNITS);
-    tlBox(`<div class="glass p-3"><div class="grid grid-cols-1 gap-2"><select id="uc" class="inp">${cats.map(c=>`<option>${c}</option>`).join('')}</select><div class="grid grid-cols-5 gap-2 items-center"><input id="uv" class="inp col-span-2" inputmode="decimal" value="1"><select id="uf" class="inp col-span-1 !px-1"></select><span class="text-center">→</span><select id="ut" class="inp col-span-1 !px-1"></select></div></div><div id="uo" class="text-2xl font-bold mt-3 break-all"></div><div id="ua" class="text-xs text-slate-400 mt-2"></div></div>`);
-    const fill=()=>{const u=Object.keys(UNITS[$('#uc').value]);$('#uf').innerHTML=u.map(x=>`<option>${x}</option>`).join('');$('#ut').innerHTML=u.map(x=>`<option>${x}</option>`).join('');$('#ut').selectedIndex=Math.min(1,u.length-1);run()};
-    const run=()=>{try{const v=+$('#uv').value.replace(',','.');if($('#uv').value.trim()===''||isNaN(v))return $('#uo').textContent='';const r=uconv($('#uc').value,v,$('#uf').value,$('#ut').value);$('#uo').textContent='= '+fmtNum(r)+' '+$('#ut').value;$('#ua').textContent=fmtNum(v)+' '+$('#uf').value+' = '+fmtNum(r)+' '+$('#ut').value}catch(e){$('#uo').textContent=''}};
-    $('#uc').onchange=fill;['uv','uf','ut'].forEach(x=>{$('#'+x).oninput=run;$('#'+x).onchange=run});fill();
-  }
-};
-A.cdeg=()=>{CALC.deg=!CALC.deg;TLF.calc()};
-A.ckey=v=>{
-  const i=$('#cin');if(!i)return;
-  if(v=='C'){i.value='';i.dispatchEvent(new Event('input'));i.focus();return}
-  if(v=='<'){const a=i.selectionStart??i.value.length,b=i.selectionEnd??a;if(a!==b)i.value=i.value.slice(0,a)+i.value.slice(b);else if(a>0){i.value=i.value.slice(0,a-1)+i.value.slice(a);try{i.setSelectionRange(a-1,a-1)}catch(e){}}i.dispatchEvent(new Event('input'));i.focus();return}
-  if(v=='='){try{const r=calc(i.value,CALC.deg,CALC.ans),t=fmtNum(r);CALC.hist.push([i.value,t]);CALC.ans=r;$('#cout').className='text-2xl font-bold mt-2 min-h-[2.25rem] break-all';$('#cout').textContent='= '+t;$('#chist').innerHTML=CALC.hist.slice(-6).reverse().map(h=>`<div class="text-slate-400"><span>${esc(h[0])}</span> = <b class="text-inherit">${esc(h[1])}</b></div>`).join('')}catch(e){$('#cout').className='text-sm mt-2 min-h-[2.25rem] text-amber-300';$('#cout').textContent=e.message}return}
-  tIns(i,v);
-};
-A.mfex=v=>{$('#mf').value=v;$('#mf').dispatchEvent(new Event('input'))};
-A.bqex=v=>{$('#bq').value=v;A.bgo()};
-A.bgo=()=>{const o=$('#bo');if(!o)return;try{const r=balance($('#bq').value);o.innerHTML='<div class="rounded-xl p-3 bg-emerald-500/10 border border-emerald-500/30 font-semibold break-words">'+r.text.replace(/(\d+ )?([A-Za-z0-9()·.]+)/g,(m,c,f)=>(c?'<span class="text-emerald-300">'+c+'</span>':'')+sub(f))+'</div>'}catch(e){o.innerHTML='<span class="text-sm text-amber-300">'+esc(e.message)+'</span>'}};
-A.ptsel=z=>{
-  z=+z||1;PTSEL=z;const e=EL[z-1],[r,c]=ELPOS(z);document.querySelectorAll('#pg .pt[data-z]').forEach(b=>b.classList.toggle('sel',+b.dataset.z==z));
-  const d=$('#pd');if(d)d.innerHTML=`<div class="rounded-xl p-3 bg-black/10 flex items-center gap-4"><div class="pt pc-${ELCAT(z)}" style="width:64px;height:64px;display:flex;flex-direction:column;justify-content:center"><i style="font-size:11px">${e.z}</i><b style="font-size:24px">${e.s}</b></div><div class="text-sm"><div class="font-bold text-base">${e.n}</div><div>ម៉ាសអាតូម៖ <b>${fmtNum(massOf(e,'r'))}</b> (បង្គត់) · <b>${fmtNum(e.m)}</b> (ជាក់លាក់)</div><div class="text-xs text-slate-400">${r>=9?'ក្រុម f-block':'ខួបទី '+r+' · ក្រុមទី '+c}</div></div></div>`;
-};
 
 // ---------- PHOTO CLEAN-UP + SYMBOL KEYBOARD ----------
 // grey + auto-levels + gentle S-curve: pen on paper stays dark, shaded paper turns white, so handwriting reads much better in a dim photo
