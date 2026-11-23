@@ -249,23 +249,24 @@ const getDocs=q=>fsRead(()=>fsGetDocs(q),()=>getDocsFromCache(q));
 const setDoc=(...a)=>{const p=fsSetDoc(...a);return OFFLINE()?(p.catch(()=>{}),Promise.resolve()):Promise.race([p,new Promise(r=>setTimeout(r,3000))])};
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-const S=[
+const S=[ // order: language first, then the sciences, then the social subjects, English last
+  ["khm","ភាសាខ្មែរ","Khmer Language","fa-book-open","#ef4444"],
   ["math","គណិតវិទ្យា","Math","fa-square-root-variable","#3b82f6"],
-  ["chem","គីមីវិទ្យា","Chemistry","fa-flask","#10b981"],
   ["phys","រូបវិទ្យា","Physics","fa-atom","#8b5cf6"],
+  ["chem","គីមីវិទ្យា","Chemistry","fa-flask","#10b981"],
   ["bio","ជីវវិទ្យា","Biology","fa-dna","#22c55e"],
+  ["earth","ផែនដីវិទ្យា","Earth Science","fa-mountain","#f97316"],
+  ["hist","ប្រវត្តិវិទ្យា","History","fa-landmark","#a78bfa"],
   ["geo","ភូមិវិទ្យា","Geography","fa-earth-asia","#06b6d4"],
   ["civ","សីលធម៍ពលរដ្ឋ","Civics & Morality","fa-scale-balanced","#f59e0b"],
-  ["eng","ភាសាអង់គ្លេស","English","fa-language","#ec4899"],
-  ["earth","ផែនដីវិទ្យា","Earth Science","fa-mountain","#f97316"],
-  ["khm","ភាសាខ្មែរ","Khmer Language","fa-book-open","#ef4444"],
-  ["hist","ប្រវត្តិវិទ្យា","History","fa-landmark","#a78bfa"]
+  ["eng","ភាសាអង់គ្លេស","English","fa-language","#ec4899"]
 ];
 const SCI=new Set(['math','phys','chem','bio']);
 const T=[
   ["files","ឯកសារ","Files","fa-folder-open"],
   ["mist","កំហុស","Mistakes","fa-book-bookmark"],
   ["form","រូបមន្ត","Formulas","fa-compass-drafting"],
+  ["terms","ពាក្យគន្លឹះ","Key terms","fa-key"],
   ["notes","កំណត់ត្រា","Notes","fa-note-sticky"],
   ["hw","កិច្ចការ","Tasks","fa-list-check"],
   ["ai","គ្រូ AI","AI Tutor","fa-wand-magic-sparkles"],
@@ -387,6 +388,7 @@ function doSearch(q){
     (d.cards||[]).forEach(c=>add('🃏 ប័ណ្ណ','cards',c.f,c.b));
     (d.mist||[]).forEach(m=>add('📒 កំហុស','mist',m.q,(m.o||[])[m.a]||''));
     (d.forms||[]).forEach(f=>add('📐 រូបមន្ត','form',f.t,f.b));
+    (d.terms||[]).forEach(t=>add('🔑 ពាក្យគន្លឹះ','terms',t.w,t.m));
     d.files.forEach(f=>add('📄 ឯកសារ','files',f.name,''));
     Object.values(d.know||{}).forEach(x=>add('🧠 សង្ខេបរបស់ AI','ai',x.n,x.s));
     (d.hw||[]).forEach(h=>add('✅ កិច្ចការ','hw',h.t,''));
@@ -446,21 +448,21 @@ function render(){
   if(view=='sched')return sched();
   if(view=='srch')return srch();
   if(view=='friends')return friends();
-  const s=subj(view);$('#ttl').textContent=s[1];
+  const s=subj(view),EN=view=='eng';$('#ttl').textContent=EN?'English':s[1];
   $('#main').innerHTML=`<div class="max-w-3xl mx-auto space-y-4" style="--c:${s[4]}">
     <div class="flex items-center justify-between gap-3">
       <div class="flex items-center gap-3">
         <div class="w-11 h-11 rounded-2xl flex items-center justify-center shadow" style="background:${s[4]}28;color:${s[4]};border:1px solid ${s[4]}55"><i class="fa-solid ${s[3]} text-lg"></i></div>
-        <div><h2 class="font-extrabold text-xl leading-tight">${s[1]}</h2><p class="text-xs text-slate-400">${s[2]} · ថ្នាក់រៀន · ⏱ ${Math.round(sd(s[0]).log?.[today()]||0)} នាទីថ្ងៃនេះ</p></div>
+        <div><h2 class="font-extrabold text-xl leading-tight">${EN?'English':s[1]}</h2><p class="text-xs text-slate-400">${EN?'Grade 12 · ⏱ '+Math.round(sd(s[0]).log?.[today()]||0)+' min today':`${s[2]} · ថ្នាក់រៀន · ⏱ ${Math.round(sd(s[0]).log?.[today()]||0)} នាទីថ្ងៃនេះ`}</p></div>
       </div>
-      <button data-t="ai" class="chip flex items-center gap-1.5 text-blue-300 border-blue-500/30 bg-blue-500/10"><i class="fa-solid fa-wand-magic-sparkles"></i>សួរគ្រូ AI</button>
+      <button data-t="ai" class="chip flex items-center gap-1.5 text-blue-300 border-blue-500/30 bg-blue-500/10"><i class="fa-solid fa-wand-magic-sparkles"></i>${EN?'Ask AI tutor':'សួរគ្រូ AI'}</button>
     </div>
-    <div class="tabs">${(()=>{if(tab=='form'&&!SCI.has(view))tab='files';return T.filter(t=>t[0]!='form'||SCI.has(view))})().map(([k,kh,en,i])=>`<button data-t="${k}" class="tab ${tab==k?'on':''}"><i class="fa-solid ${i}"></i><span class="block leading-tight mt-0.5">${kh}</span></button>`).join('')}</div>
+    <div class="tabs">${(()=>{if((tab=='form'&&!SCI.has(view))||(tab=='terms'&&SCI.has(view)))tab='files';return T.filter(t=>t[0]=='form'?SCI.has(view):t[0]=='terms'?!SCI.has(view):true)})().map(([k,kh,en,i])=>`<button data-t="${k}" class="tab ${tab==k?'on':''}"><i class="fa-solid ${i}"></i><span class="block leading-tight mt-0.5">${k=='terms'?ktm(view).n:EN?en:kh}</span></button>`).join('')}</div>
     <div id="pane" class="glass p-4 md:p-5"></div>
   </div>`;
   pane();
 }
-const pane=()=>({files,mist,form,notes:nlist,hw,ai,quiz,cards})[tab]();
+const pane=()=>({files,mist,form,terms,notes:nlist,hw,ai,quiz,cards})[tab]();
 // ---------- THEME (light / dark / auto) ----------
 // The early <script> in <head> already applied the saved mode; this keeps it in sync after the user changes it.
 const THEMES=['light','dark','auto'];
@@ -1010,13 +1012,13 @@ const SR={
   geo:'Use precise geography facts (places, climate, population, economy); if you are unsure of a number or date, say so instead of guessing.',
   earth:'Explain Earth-science processes with causes and effects; keep terms exactly as in the MoEYS textbook; if unsure of a figure, say so.',
   civ:'Explain concepts, laws and values clearly with examples relevant to Cambodia; never invent legal articles or numbers.',
-  eng:"Teach English grammar, vocabulary, reading and writing at Grade 12 BacII level. Give English examples, explain rules in Khmer, and correct the student's English kindly.",
+  eng:"Teach English grammar, vocabulary, reading and writing at Grade 12 BacII level, in English. Give clear examples, explain rules in simple English (Khmer only as a short gloss for hard words), and correct the student's English kindly.",
   khm:'Answer Khmer language and literature questions in correct Khmer spelling; never invent poems, authors, dates or quotations — if unsure, say so.',
   hist:'Give dates, names and causes/effects precisely as in the MoEYS history textbook; if unsure of a date or name, say so instead of guessing.'
 };
-const sys=k=>{const s=subj(k),mem='';return `You are the dedicated ${s[2]} (${s[1]}) AI tutor for Grade 12 students (${CLS()?'class '+CLS()+', ':''}Cambodia, MoEYS BacII curriculum). You teach ONLY ${s[2]}. If the student asks about a different subject, politely tell them in Khmer that this tutor covers only ${s[1]} and to open that subject's own tutor, and do not answer it. Never mix in other subjects, even if the provided files or notes contain them: ignore off-subject material. Student: ${ME.profile?.name||'a Grade 12 student'}. ALWAYS reply in natural, clear Khmer (keep key technical terms in English in brackets${k=='eng'?'; for English, explain grammar in Khmer and give examples in English':''}).  ${SR[k]||''} The student's own uploaded files (lessons មេរៀន, homework កិច្ចការផ្ទះ, past exams វិញ្ញាសា) and notes are given below as excerpts labelled with the file name. When the answer can come from them, answer from them. NEVER write file names, page numbers or source citations (such as "តាមឯកសារ «name»") inside the answer text; the app adds the list of files you read at the bottom automatically. If the excerpts do not contain it, say so in one short sentence, then answer from your own knowledge of ${s[2]}. The student's files and pictures are the authority: base your answer on them and never contradict them. Re-check every calculation step by step. If text read from a picture looks garbled or unclear, say exactly what is unclear and ask for a clearer photo instead of guessing. Follow the method, notation and Khmer terms of the Cambodian MoEYS Grade 12 textbooks used for the BacII exam; if you are not sure what the official textbook says, say so instead of guessing. Never invent file content. ACCURACY FIRST: take your time, reread the excerpts, copy Khmer technical terms exactly as written in the student's files (never invent or substitute terms), recompute every calculation and verify the final answer (for example by substitution) before replying. Never guess. If you are not sure about a fact, say so plainly. Lead with the core formula or final answer, then numbered steps. Write all math/science in LaTeX using $...$ or $$...$$.${mem?`\n\nWhat you remember about this student in ${s[1]} (use it to personalise your help): ${mem}`:''}`};
+const sys=k=>{const s=subj(k),mem='';return `You are the dedicated ${s[2]} (${s[1]}) AI tutor for Grade 12 students (${CLS()?'class '+CLS()+', ':''}Cambodia, MoEYS BacII curriculum). You teach ONLY ${s[2]}. If the student asks about a different subject, politely tell them in ${k=='eng'?'English':'Khmer'} that this tutor covers only ${k=='eng'?s[2]:s[1]} and to open that subject's own tutor, and do not answer it. Never mix in other subjects, even if the provided files or notes contain them: ignore off-subject material. Student: ${ME.profile?.name||'a Grade 12 student'}. ${k=='eng'?'ALWAYS reply in clear, simple English (about CEFR B1-B2), because this is an English-medium class: explain grammar, vocabulary and answers in English with short examples. Add a Khmer translation in brackets only for hard words, or when the student writes in Khmer or asks for Khmer (then reply in Khmer). When the student writes a sentence or paragraph, correct it kindly: show the mistake, the correction and the rule.':'ALWAYS reply in natural, clear Khmer (keep key technical terms in English in brackets).'}  ${SR[k]||''} The student's own uploaded files (lessons មេរៀន, homework កិច្ចការផ្ទះ, past exams វិញ្ញាសា) and notes are given below as excerpts labelled with the file name. When the answer can come from them, answer from them. NEVER write file names, page numbers or source citations (such as "តាមឯកសារ «name»") inside the answer text; the app adds the list of files you read at the bottom automatically. If the excerpts do not contain it, say so in one short sentence, then answer from your own knowledge of ${s[2]}. The student's files and pictures are the authority: base your answer on them and never contradict them. Re-check every calculation step by step. If text read from a picture looks garbled or unclear, say exactly what is unclear and ask for a clearer photo instead of guessing. Follow the method, notation and Khmer terms of the Cambodian MoEYS Grade 12 textbooks used for the BacII exam; if you are not sure what the official textbook says, say so instead of guessing. Never invent file content. ACCURACY FIRST: take your time, reread the excerpts, copy Khmer technical terms exactly as written in the student's files (never invent or substitute terms), recompute every calculation and verify the final answer (for example by substitution) before replying. Never guess. If you are not sure about a fact, say so plainly. Lead with the core formula or final answer, then numbered steps. Write all math/science in LaTeX using $...$ or $$...$$.${mem?`\n\nWhat you remember about this student in ${s[1]} (use it to personalise your help): ${mem}`:''}`};
 
-const LQ=k=>k=='eng'?'Write the questions and options in English and the explanations in Khmer.':'Write ALL questions, options and explanations in clear Khmer.';
+const LQ=k=>k=='eng'?'Write the questions, options and explanations in English.':'Write ALL questions, options and explanations in clear Khmer.';
 const srcSel=(k,all)=>`<select id="src" class="inp">${all?'<option value="all">📚 ឯកសារទាំងអស់ (AI ស្វែងរកក្នុងឯកសារទាំងអស់)</option>':''}<option value="">🧠 ចំណេះដឹងទូទៅ (មិនប្រើឯកសារ)</option>${ftsOf(view).map(([t])=>{const fs=sd(k).files.filter(f=>rd(f)&&f.tag==t);return fs.length?`<optgroup label="${t}">${fs.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join('')}</optgroup>`:''}).join('')}</select>`;
 function printDoc(title,html){
   const w=window.open('','_blank');if(!w)return toast('សូមអនុញ្ញាតឱ្យបើកទំព័រថ្មី (pop-up)');
@@ -1086,6 +1088,14 @@ const CH=[
   ['លំហាត់គំរូ + ចម្លើយ','សូមផ្តល់លំហាត់គំរូបាក់ឌុប ២ ព្រមទាំងចម្លើយលម្អិតមួយជំហានម្តងៗ។'],
   ['សួរខ្ញុំ ៥ សំណួរ','សូមសួរខ្ញុំ ៥ សំណួរខ្លីៗ ម្តងមួយ លើមេរៀននេះតាមស្តង់ដារបាក់ឌុប ហើយកែចម្លើយរបស់ខ្ញុំរាល់ពេល។'],
 ];
+const CHE=[
+  ['Summarize lesson','Please summarize this lesson in 8 clear points, with the key grammar rules and vocabulary.'],
+  ['Explain simply','Please explain this lesson step by step in the simplest English, with practical examples.'],
+  ['Cheat sheet','Please make a short cheat sheet of the key rules and vocabulary for the BacII exam.'],
+  ['Practice + answers','Please give me 2 BacII-style practice exercises with full answers and explanations.'],
+  ['Quiz me (5 questions)','Please ask me 5 short questions on this lesson, one at a time, and correct my answer each time.'],
+  ['Check my writing','Please check and correct my English writing below. Show each mistake, the rule, and an improved version:\n\n',0,1]
+],chs=()=>view=='eng'?CHE:CH;
 const CHP={},DRAFT={},PEND={};let AIK='',AOPT=false; // unsent text and "answer on its way" flags per chat, so they survive leaving the tab
 const SRC={},srcOf=k=>SRC[k]===undefined?'all':SRC[k],FM=k=>{const v=srcOf(k);return !!v&&v!='all'};
 const ck=k=>{const v=srcOf(k);return v=='all'?k:k+'|'+(v||'g')},cdoc=c=>{const q=c.split('|');return q[1]?'_chat_'+q[1]:'_chat'};
@@ -1116,7 +1126,7 @@ function ai(){
   <div id="aopt" class="${AOPT?'':'hide '}glass-soft p-2.5 mb-2 flex flex-wrap gap-2 text-xs"><button data-a="sty" class="chip">✍️ ចម្លើយ៖ ${STYS[STY][0]}</button><button data-a="strict" class="chip">${STRICT?'🔒 តាមឯកសារតែប៉ុណ្ណោះ៖ បើក':'🔓 តាមឯកសារតែប៉ុណ្ណោះ៖ បិទ'}</button>${SCI.has(k)?`<button data-a="vfy" class="chip">${VERIFY?'🔍 ពិនិត្យចម្លើយ២ដង៖ បើក':'🔍 ពិនិត្យចម្លើយ២ដង៖ បិទ'}</button>`:''}</div>
   <div id="cl" class="space-y-3 mb-3 min-h-[32vh] max-h-[54vh] overflow-y-auto pr-1"><p class="text-sm text-slate-400 text-center py-6">សួរមេរៀន ឬលំហាត់អ្វីក៏បាន — ឬចុច ✅ ដើម្បីឱ្យ AI ពិនិត្យការងាររបស់អ្នក។</p></div>
   <div id="ckw" class="mb-2.5"></div>
-  <div class="flex flex-wrap gap-1.5 mb-2.5"><button data-a="cktoggle" class="chip text-emerald-300 border-emerald-500/40 font-semibold">✅ ពិនិត្យការងារខ្ញុំ</button>${CH.map(([kh],i)=>i==2&&!SCI.has(view)?'':`<button data-a="chip" data-v="${i}" class="chip">${kh}</button>`).join("")}${SCI.has(view)?'<button data-a="symt" class="chip" title="និមិត្តសញ្ញា">Σ √</button>':''}</div>
+  <div class="flex flex-wrap gap-1.5 mb-2.5"><button data-a="cktoggle" class="chip text-emerald-300 border-emerald-500/40 font-semibold">✅ ពិនិត្យការងារខ្ញុំ</button>${chs().map(([kh],i)=>i==2&&!SCI.has(view)?'':`<button data-a="chip" data-v="${i}" class="chip">${kh}</button>`).join("")}${SCI.has(view)?'<button data-a="symt" class="chip" title="និមិត្តសញ្ញា">Σ √</button>':''}</div>
   ${SCI.has(view)?symRow('hide mb-1.5" id="symr'):''}
   <p id="pa" class="hide text-xs text-emerald-300 mb-2">📎 <span id="pan"></span> · <button data-a="rmat" class="underline">ដកចេញ</button></p>
   <p id="pc" class="hide text-xs text-emerald-300 mb-2">📷 បានភ្ជាប់រូបថត · <button data-a="rmph" class="underline">ដកចេញ</button></p>
@@ -1150,13 +1160,13 @@ A.svmsg=async i=>{if(!SCI.has(view))return A.svnote(i);const t=cleanAI(chat[ck(v
 A.send=async()=>{
   const k=view,i=$('#ci'),q=i.value.trim();if(!q&&!IMG&&!ATT)return;if(needNet())return;
   const cc=ck(k);await loadChat(cc);const c=chat[cc],ctx=await getSrc(k,srcOf(k),q),srcs=[...LASTSRC],img=IMG,att=ATT;IMG=null;ATT=null;$('#pa')?.classList.add('hide');$('#pc')?.classList.add('hide');
-  c.push({role:'user',content:(img?'📷 ':'')+(att?'📎 '+att.name+' · ':'')+(q||(att?'សូមអានឯកសារនេះ':'ដោះស្រាយលំហាត់ក្នុងរូបនេះ'))});i.value='';DRAFT[cc]='';PEND[cc]=Date.now();draw($('#cl'),c,true);
+  c.push({role:'user',content:(img?'📷 ':'')+(att?'📎 '+att.name+' · ':'')+(q||(k=='eng'?(att?'Please read this file':'Please read the exercise in this photo'):(att?'សូមអានឯកសារនេះ':'ដោះស្រាយលំហាត់ក្នុងរូបនេះ')))});i.value='';DRAFT[cc]='';PEND[cc]=Date.now();draw($('#cl'),c,true);
   if(FM(k)&&ctx.trim().length<30){c.push({role:'assistant',content:'⚠ AI មិនអាចអានអត្ថបទពីឯកសារនេះបានទេ (អក្សរខ្មែរក្នុង PDF អាចខូច)។ ចុច «👁 មើលអត្ថបទដែល AI អាន» ដើម្បីពិនិត្យ ឬលុបឯកសារ រួចផ្ទុកឡើងម្តងទៀត — ប្រព័ន្ធនឹងស្កេនទំព័រដោយ AI។'});PEND[cc]=0;saveChat(cc);draw($('#cl'),c);return}
   const h=c.filter(m=>!(m.role=='assistant'&&String(m.content).startsWith('⚠'))).slice(-10); // error bubbles are not sent back to the model
-  if(att)h[h.length-1]={role:'user',content:(q||'សូមអាន សង្ខេប និងឆ្លើយសំណួរពីឯកសារនេះ។')+'\n\n[ឯកសារភ្ជាប់៖ '+att.name+']\n"""'+att.t+'"""'};
-  if(img)h[h.length-1]={role:'user',content:[{type:'text',text:q||'សូមអានលំហាត់ក្នុងរូបនេះឱ្យច្បាស់ ហើយដោះស្រាយមួយជំហានម្តងៗជាភាសាខ្មែរ។'},{type:'image_url',image_url:{url:img}}]};
-  const SM=[{role:'system',content:sys(k)+STYS[STY][1]+digest(k)+(FM(k)?' SINGLE-FILE MODE: use ONLY the excerpts from the one file the student selected. Never use other lessons or files, or earlier chat about other files. If the excerpts do not contain the answer, say "មិនមានក្នុងឯកសារនេះ" in one short sentence, then answer from general knowledge of the subject and mark it "(ចំណេះដឹងទូទៅ)".':'')+(STRICT?' STRICT MODE: answer ONLY from the excerpts below. If they do not contain the answer, reply exactly "មិនមានក្នុងឯកសារ" and ask the student to upload or photograph the page. Do not use outside knowledge.':'')+(ctx?`\n\nឯកសារ និងកំណត់ត្រារបស់សិស្ស (ប្រើជាប្រភពសំខាន់)៖\n"""${ctx.slice(0,9000)}"""`:'')}];let r=await ask([...SM,...h],false,!!img);
-  if(!r&&img){toast('កំពុងអានរូបភាពដោយឧបករណ៍…');const ot=await ocr(img);if(ot.length>8){r=await ask([...SM,...h.slice(0,-1),{role:'user',content:(q||'សូមដោះស្រាយលំហាត់នេះមួយជំហានម្តងៗជាភាសាខ្មែរ។')+'\n\n[អត្ថបទអានពីរូបភាព៖ អាចមានកំហុសបន្តិចបន្តួច]\n'+ot.slice(0,4000)}],false,false)}}
+  if(att)h[h.length-1]={role:'user',content:(q||(k=='eng'?'Please read, summarize and answer questions about this file.':'សូមអាន សង្ខេប និងឆ្លើយសំណួរពីឯកសារនេះ។'))+'\n\n[ឯកសារភ្ជាប់៖ '+att.name+']\n"""'+att.t+'"""'};
+  if(img)h[h.length-1]={role:'user',content:[{type:'text',text:q||(k=='eng'?'Please read the exercise in this picture carefully and answer it step by step in English.':'សូមអានលំហាត់ក្នុងរូបនេះឱ្យច្បាស់ ហើយដោះស្រាយមួយជំហានម្តងៗជាភាសាខ្មែរ។')},{type:'image_url',image_url:{url:img}}]};
+  const SM=[{role:'system',content:sys(k)+STYS[STY][1]+digest(k)+(FM(k)?' SINGLE-FILE MODE: use ONLY the excerpts from the one file the student selected. Never use other lessons or files, or earlier chat about other files. If the excerpts do not contain the answer, say "'+(k=='eng'?'Not in this file':'មិនមានក្នុងឯកសារនេះ')+'" in one short sentence, then answer from general knowledge of the subject and mark it "'+(k=='eng'?'(general knowledge)':'(ចំណេះដឹងទូទៅ)')+'".':'')+(STRICT?' STRICT MODE: answer ONLY from the excerpts below. If they do not contain the answer, reply exactly "'+(k=='eng'?'Not in the file':'មិនមានក្នុងឯកសារ')+'" and ask the student to upload or photograph the page. Do not use outside knowledge.':'')+(ctx?`\n\nឯកសារ និងកំណត់ត្រារបស់សិស្ស (ប្រើជាប្រភពសំខាន់)៖\n"""${ctx.slice(0,9000)}"""`:'')}];let r=await ask([...SM,...h],false,!!img);
+  if(!r&&img){toast('កំពុងអានរូបភាពដោយឧបករណ៍…');const ot=await ocr(img);if(ot.length>8){r=await ask([...SM,...h.slice(0,-1),{role:'user',content:(q||(k=='eng'?'Please answer this exercise step by step in English.':'សូមដោះស្រាយលំហាត់នេះមួយជំហានម្តងៗជាភាសាខ្មែរ។'))+'\n\n[អត្ថបទអានពីរូបភាព៖ អាចមានកំហុសបន្តិចបន្តួច]\n'+ot.slice(0,4000)}],false,false)}}
   if(r&&VERIFY&&SCI.has(k)){
     prog('🔍 កំពុងពិនិត្យចម្លើយម្តងទៀត…');
     const v=await ask([{role:'system',content:'You are a strict '+subj(k)[2]+' answer checker for Grade 12 BacII. Review the tutor answer to the student question. Recompute every calculation, and check formulas and logic against the excerpts if any are given. If everything is correct reply with exactly: OK . Otherwise reply with the COMPLETE corrected answer only (same Khmer language and format, math in LaTeX, no commentary about the checking).'},{role:'user',content:'QUESTION:\n'+(q||'')+(ctx?'\n\nEXCERPTS:\n'+ctx.slice(0,3500):'')+'\n\nTUTOR ANSWER:\n'+r}]);
@@ -1167,7 +1177,160 @@ A.send=async()=>{
   if(r&&img)saveShot(k,img);
   if(view==k&&tab=='ai'&&ck(k)==cc)draw($('#cl'),c);
 };
-A.chip=i=>{const c=CH[i];$('#ci').value=c[1]+' (មុខវិជ្ជា '+subj(view)[1]+')';if(c[2]){toast('ថតរូបលំហាត់ និងចម្លើយរបស់អ្នក រួចចុចផ្ញើ');$('#ph').click();return}A.send()};
+A.chip=i=>{const c=chs()[i];if(c[3]){$('#ci').value=c[1];$('#ci').focus();return}$('#ci').value=view=='eng'?c[1]:c[1]+' (មុខវិជ្ជា '+subj(view)[1]+')';if(c[2]){toast('ថតរូបលំហាត់ និងចម្លើយរបស់អ្នក រួចចុចផ្ញើ');$('#ph').click();return}A.send()};
+
+// ---------- KEY TERMS: the 8th tab of the six subjects that have no formulas (Khmer, History, Geography, Earth Science, Civics, English) ----------
+const KTM={
+  eng:{n:'Vocabulary',w:'Word or phrase',m:'Meaning (Khmer or English) and an example',x:'vocabulary words and useful phrases',b:'the meaning in simple English, then the Khmer meaning in brackets, then "e.g." and one short English example sentence; under 30 words'},
+  hist:{n:'ព្រឹត្តិការណ៍',w:'ព្រឹត្តិការណ៍ / ព្រះនាម / ឆ្នាំ',m:'ពិពណ៌នាខ្លី និងសារៈសំខាន់',x:'key events, dates, people and their significance',b:'a short clear description with the year and why it matters, under 25 words'},
+  khm:{n:'ពាក្យគន្លឹះ',w:'ពាក្យ / អ្នកនិពន្ធ / ស្នាដៃ',m:'អត្ថន័យ ឬព័ត៌មានសំខាន់',x:'key literary terms, authors, works and their meanings',b:'a short clear meaning, under 25 words'},
+  geo:{n:'ពាក្យគន្លឹះ',w:'ពាក្យ / ទីកន្លែង',m:'និយមន័យ',x:'key geography terms, places and definitions',b:'a short clear definition, under 25 words'},
+  civ:{n:'ពាក្យគន្លឹះ',w:'ពាក្យ / មាត្រា',m:'និយមន័យ',x:'key civics and morality terms, laws, values and definitions',b:'a short clear definition, under 25 words'},
+  earth:{n:'ពាក្យគន្លឹះ',w:'ពាក្យ',m:'និយមន័យ',x:'key earth-science terms and definitions',b:'a short clear definition, under 25 words'}
+};
+const ktm=k=>KTM[k]||KTM.geo,GENT={};
+const KT={k:'',f:'all',q:'',test:false,rev:new Set(),edit:null};
+const ktList=k=>sd(k).terms||(sd(k).terms=[]);
+const ktRow=x=>{const en=view=='eng',hide=KT.test&&!KT.rev.has(x.id);
+  return `<div class="rounded-xl p-3 bg-black/10 flex items-start gap-2.5"><button data-a="ktk" data-v="${x.id}" class="shrink-0 text-lg leading-none mt-0.5" title="${en?'I know it':'ចាំហើយ'}">${x.k?'✅':'⬜'}</button><div class="min-w-0 flex-1 ${KT.test?'cursor-pointer':''}" ${KT.test?`data-a="ktrev" data-v="${x.id}"`:''}><div class="font-semibold break-words">${esc(x.w)}</div><div class="text-sm text-slate-300 mt-0.5 whitespace-pre-wrap break-words">${hide?`<span class="text-slate-500">••• ${en?'tap to reveal':'ចុចដើម្បីមើល'}</span>`:esc(x.m)}</div></div><button data-a="ktedit" data-v="${x.id}" class="shrink-0 text-slate-500 hover:text-blue-300 px-1.5 py-1" title="${en?'Edit':'កែ'}"><i class="fa-solid fa-pen text-xs"></i></button><button data-a="ktdel" data-v="${x.id}" class="shrink-0 text-slate-500 hover:text-red-400 px-1.5 py-1" title="${en?'Delete':'លុប'}"><i class="fa-solid fa-trash text-xs"></i></button></div>`};
+function ktRefresh(){
+  const k=view,L=ktList(k),en=k=='eng',kn=L.filter(x=>x.k).length,q=KT.q.trim().toLowerCase();
+  const sh=L.filter(x=>(KT.f=='all'||!x.k)&&(!q||(x.w+' '+x.m).toLowerCase().includes(q))).slice().reverse();
+  const l=$('#ktl'),c=$('#ktc');if(!l)return;
+  if(c)c.textContent=en?`${L.length} items · ${kn} learned`:`សរុប ${L.length} · ចាំហើយ ${kn}`;
+  l.innerHTML=sh.length?sh.slice(0,300).map(ktRow).join(''):`<p class="text-sm text-slate-400 text-center py-6">${L.length?(en?'Nothing matches.':'រកមិនឃើញទេ។'):(en?'No items yet. Add your own above, or let AI pull them from your files.':'មិនទាន់មានទេ។ បន្ថែមខ្លួនឯងខាងលើ ឬឱ្យ AI ស្រង់ចេញពីឯកសាររបស់អ្នក។')}</p>`;
+}
+function terms(){
+  const k=view,M=ktm(k),en=k=='eng',L=ktList(k);
+  if(KT.k!==k){Object.assign(KT,{k,f:'all',q:'',test:false,rev:new Set(),edit:null})}
+  const ed=KT.edit&&L.find(x=>x.id==KT.edit);
+  $('#pane').innerHTML=`<div class="space-y-2 mb-3">
+    <input id="ktw" class="inp" placeholder="${esc(M.w)}" autocomplete="off" value="${ed?esc(ed.w):''}">
+    <textarea id="ktm" rows="2" class="inp" placeholder="${esc(M.m)}">${ed?esc(ed.m):''}</textarea>
+    <div class="flex gap-2"><button data-a="ktadd" class="btn flex-1"><i class="fa-solid ${ed?'fa-check':'fa-plus'}"></i>${ed?(en?'Save':'រក្សាទុក'):(en?'Add':'បន្ថែម')}</button>${ed?`<button data-a="ktcancel" class="btn btn-sec">${en?'Cancel':'បោះបង់'}</button>`:''}</div>
+    <details class="glass-soft p-3"><summary class="cursor-pointer text-sm font-semibold">✨ ${en?'Let AI pull items from my files':'ឱ្យ AI ស្រង់ចេញពីឯកសាររបស់ខ្ញុំ'}</summary><div class="space-y-2 mt-2.5">${srcSel(k,true)}<div class="flex gap-2"><input id="ktt" class="inp" placeholder="${en?'Topic (optional)':'ប្រធានបទ (មិនបង្ខំ)'}"><input id="ktn" type="number" min="1" max="40" value="15" class="inp" style="width:74px" title="${en?'How many':'ចំនួន'}"><button data-a="ktai" class="btn whitespace-nowrap"><i class="fa-solid fa-wand-magic-sparkles"></i>${en?'Create':'បង្កើត'}</button></div></div></details>
+  </div>
+  <div class="flex flex-wrap items-center gap-2 mb-2"><input id="ktq" class="inp !py-1.5 !text-sm" style="flex:1 1 7rem;min-width:7rem" placeholder="${en?'Search…':'ស្វែងរក…'}" value="${esc(KT.q)}" autocomplete="off"><button data-a="ktf" data-v="all" class="seg shrink-0 whitespace-nowrap ${KT.f=='all'?'on':''}">${en?'All':'ទាំងអស់'}</button><button data-a="ktf" data-v="new" class="seg shrink-0 whitespace-nowrap ${KT.f=='new'?'on':''}">${en?'Not yet':'មិនទាន់ចាំ'}</button><button data-a="kttest" class="seg shrink-0 whitespace-nowrap ${KT.test?'on':''}">🙈 ${en?'Test myself':'ប្រលងខ្លួនឯង'}</button></div>
+  <p id="ktc" class="text-xs text-slate-400 mb-2"></p><div id="ktl" class="space-y-2"></div>`;
+  $('#ktq').oninput=e=>{KT.q=e.target.value;ktRefresh()};
+  $('#ktw').onkeydown=e=>{if(e.key=='Enter'){e.preventDefault();$('#ktm').focus()}};
+  ktRefresh();
+}
+A.ktadd=()=>{
+  const k=view,en=k=='eng',w=$('#ktw').value.trim(),m=$('#ktm').value.trim(),L=ktList(k);
+  if(!w||!m)return toast(en?'Please fill in both fields':'សូមបញ្ចូលទាំងពាក្យ និងអត្ថន័យ');
+  if(KT.edit){const x=L.find(y=>y.id==KT.edit);if(x){x.w=w.slice(0,200);x.m=m.slice(0,800)}KT.edit=null}
+  else{
+    if(L.some(x=>x.w.toLowerCase()==w.toLowerCase()))return toast(en?'Already in your list':'មានក្នុងបញ្ជីរួចហើយ');
+    if(L.length>=800)return toast(en?'The list is full (800)':'បញ្ជីពេញហើយ (800)');
+    L.push({id:Date.now().toString(36)+Math.random().toString(36).slice(2,5),w:w.slice(0,200),m:m.slice(0,800),k:0,ts:Date.now()});
+  }
+  save(k);terms();$('#ktw')?.focus();
+};
+A.ktcancel=()=>{KT.edit=null;terms()};
+A.ktedit=id=>{KT.edit=id;terms();$('#ktw')?.focus();$('#ktw')?.scrollIntoView({block:'nearest'})};
+A.ktdel=id=>{const d=sd(view);d.terms=ktList(view).filter(x=>x.id!=id);if(KT.edit==id)KT.edit=null;save(view);ktRefresh()};
+A.ktk=id=>{const x=ktList(view).find(y=>y.id==id);if(!x)return;x.k=x.k?0:1;save(view);ktRefresh()};
+A.ktf=v=>{KT.f=v;terms()};
+A.kttest=()=>{KT.test=!KT.test;KT.rev=new Set();terms()};
+A.ktrev=id=>{KT.rev.has(id)?KT.rev.delete(id):KT.rev.add(id);ktRefresh()};
+A.ktai=async(_,b)=>{
+  const k=view,en=k=='eng';if(needNet())return;
+  if(GENT[k]&&Date.now()-GENT[k]<3e5)return toast(en?'Already working on it…':'កំពុងបង្កើត… សូមរង់ចាំបន្តិច');
+  const N=Math.max(1,Math.min(40,Math.floor(+$('#ktn').value||15))),top=$('#ktt').value.trim(),M=ktm(k),L=ktList(k),src=$('#src').value;
+  GENT[k]=Date.now();b.disabled=true;prog(en?'Pulling vocabulary from your files…':'កំពុងស្រង់ពីឯកសាររបស់អ្នក…');
+  let got=[];
+  try{
+    const ctx=await getSrc(k,src,top);
+    const r=await ask([{role:'system',content:sys(k)+' Output ONLY '+N+' items: '+M.x+'. Use this exact plain-text format, items separated by a line containing only ---. No JSON, no code fences.\nF: <the term, word, name or event>\nB: <'+M.b+'>\nWhen a source is given use ONLY facts that appear in it. '+(en?'Write in English.':'Write in clear Khmer (keep technical terms in English in brackets).')+(L.length?' Do NOT repeat these: '+L.slice(-80).map(x=>x.w).join(' | ').slice(0,1500)+'.':'')},{role:'user',content:`List ${N} items${top?` about: ${top}`:''}.${ctx?`\nBase them on:\n"""${ctx.slice(0,5200)}"""`:''}`}],false,false,t=>parseCards(t).length>0);
+    got=parseCards(r);
+  }finally{GENT[k]=0;b.disabled=false;endProg()}
+  const have=new Set(L.map(x=>x.w.toLowerCase())),fresh=got.filter(x=>!have.has(x.f.toLowerCase())).slice(0,N);
+  if(!fresh.length)return toast(en?'Could not create items: '+(ERR||'try again'):'មិនអាចបង្កើតបានទេ៖ '+(ERR||'សូមព្យាយាមម្តងទៀត'));
+  fresh.forEach((x,i)=>L.push({id:Date.now().toString(36)+i+Math.random().toString(36).slice(2,5),w:x.f.slice(0,200),m:x.b.slice(0,800),k:0,ts:Date.now()+i}));
+  if(L.length>800)sd(k).terms=L.slice(-800);
+  await save(k);toast(en?'Added '+fresh.length+' items ✓':'បានបន្ថែម '+fresh.length+' ✓');
+  if(view==k&&tab=='terms')terms();
+};
+
+// ---------- ENGLISH SUBJECT: the whole English page (tabs, buttons, hints, messages) is shown in English ----------
+// Only the English subject is affected. Text is swapped as it appears on screen; anything not listed stays in Khmer.
+// The "📚 ឯកសារដែល AI បានអាន៖" footer under AI answers is deliberately never translated.
+const ENUI={
+  'ផ្ទុកឡើង':'Upload','⏳ AI នឹងអានពេលប្រើ':'⏳ AI will read it when used','មិនទាន់ដាក់ក្រុម':'Not grouped yet','ពន្យល់ពីហេតុផល':'Explain why','លុប':'Delete',
+  '☁️ = មើលបានគ្រប់ឧបករណ៍ · 📱 = ធំជាង 2.5MB មានតែលើឧបករណ៍នេះ។ គ្រូ AI នឹងអានឯកសារពេលអ្នកប្រើវា។':'☁️ = available on every device · 📱 = larger than 2.5MB, only on this device. The AI tutor reads a file when you use it.',
+  'មើលបានគ្រប់ឧបករណ៍':'Available on every device','ធំជាង 2.5MB — មានតែលើឧបករណ៍នេះ':'Larger than 2.5MB — only on this device','ឱ្យ AI អានម្តងទៀត':'Let AI read it again','បើកមើល':'Open',
+  'មេរៀន':'Lesson','កិច្ចការផ្ទះ':'Homework','វិញ្ញាសា':'Exam','📚 ឯកសារទាំងអស់ (AI ស្វែងរកក្នុងឯកសារទាំងអស់)':'📚 All files (AI searches all of them)','🧠 ចំណេះដឹងទូទៅ (មិនប្រើឯកសារ)':'🧠 General knowledge (no files)',
+  'កំណត់ត្រាចាស់':'Old notes','កំណត់ត្រា':'Note','ចំណងជើង (មិនបង្ខំ)':'Title (optional)','សរសេរកំណត់ត្រារបស់អ្នកនៅទីនេះ…':'Write your notes here…','ចុះផ្សាយ':'Post','សម្អាត':'Clear','បោះពុម្ព / PDF':'Print / PDF',
+  'កែសម្រួល':'Edit','ដកខ្ទាស់':'Unpin','ខ្ទាស់':'Pin','ចម្លង':'Copy','មិនទាន់មានកំណត់ត្រាទេ។ សរសេរខាងលើ ហើយចុច «ចុះផ្សាយ»។':'No notes yet. Write above and tap “Post”.','សូមសរសេរអ្វីមួយសិន':'Please write something first',
+  'បានចុះផ្សាយ ✓':'Posted ✓','បានចម្លង ✓':'Copied ✓','បានចម្លងចម្លើយ ✓':'Answer copied ✓','កំពុងកែសម្រួល — ចុច «ចុះផ្សាយ» ដើម្បីរក្សាទុក':'Editing — tap “Post” to save','លុបកំណត់ត្រានេះឬ?':'Delete this note?',
+  'សំណួរដែលឆ្លើយខុស មកទីនេះដោយស្វ័យប្រវត្តិ':'Questions you answer wrongly appear here automatically','មិនទាន់មានកំហុសទេ 🎉 ធ្វើសំណួរ ហើយចម្លើយខុសនឹងមកទីនេះដោយស្វ័យប្រវត្តិ។':'No mistakes yet 🎉 Take a quiz and wrong answers will appear here automatically.',
+  '🔁 ធ្វើប្រធានបទនេះ':'🔁 Practise this topic','🗂 ចាត់ក្រុមតាមប្រធានបទ (AI)':'🗂 Group by topic (AI)','🔁 ធ្វើទាំងអស់ឡើងវិញ':'🔁 Redo all','បានចាត់ក្រុមរួចហើយ ✓':'Already grouped ✓','សម្អាតកំហុសទាំងអស់ឬ?':'Clear all mistakes?',
+  'សន្លឹកកិច្ចការ':'Worksheet','✓ កិច្ចការផ្ទះ':'✓ Homework','ប្រឡង':'Exam','ឆែកសៀវភៅ':'Notebook check','ថ្ងៃកំណត់ប្រគល់ (Deadline)':'Deadline','បន្ថែមកិច្ចការ':'Add task','មិនទាន់មានកិច្ចការទេ 🎉':'No tasks yet 🎉','ប្រធានបទ (មិនបាច់វាយក៏បាន)…':'Topic (optional)…',
+  'សូមជ្រើសប្រភេទ ឬវាយប្រធានបទសិន':'Please choose a type or write a topic first','លុបកិច្ចការនេះឬ?':'Delete this task?','ជួយខ្ញុំដោះស្រាយកិច្ចការនេះមួយជំហានម្តងៗ៖':'Help me do this task step by step:',
+  '✅ ពិនិត្យការងារខ្ញុំ':'✅ Check my work','សួរមេរៀន ឬលំហាត់អ្វីក៏បាន — ឬចុច ✅ ដើម្បីឱ្យ AI ពិនិត្យការងាររបស់អ្នក។':'Ask about any lesson or exercise — or tap ✅ to have the AI check your work.','ដកចេញ':'Remove','📷 បានភ្ជាប់រូបថត ·':'📷 Photo attached ·',
+  'ជម្រើស':'Options','ថតរូបលំហាត់':'Photograph an exercise','ភ្ជាប់ឯកសារ (PDF, Word, រូបភាព)':'Attach a file (PDF, Word, image)','និយាយសួរ':'Ask by voice','ផ្ញើ':'Send','និមិត្តសញ្ញា':'Symbols','សម្អាតការសន្ទនា':'Clear chat',
+  'វាយសំណួរ ឬលំហាត់ (ឧ. ទំព័រ ៤០-៦០)…':'Type a question or exercise (e.g. pages 40-60)…','គ្រូ AI កំពុងគិត និងសរសេរចម្លើយ…':'The AI tutor is thinking and writing…','ទុកក្នុងកំណត់ត្រា':'Save to notes','ចម្លើយ AI':'AI answer',
+  'AI នឹងឆ្លើយតាមតែឯកសារ និងរូបថតរបស់អ្នក':'The AI will answer only from your files and photos','AI ប្រើឯកសារជាមុន ហើយបំពេញដោយចំណេះដឹងរបស់វា':'The AI uses your files first and fills the gaps with its own knowledge',
+  'AI នឹងពិនិត្យចម្លើយម្តងទៀតមុនបង្ហាញ (យឺតជាង តែត្រឹមត្រូវជាង)':'The AI will double-check answers before showing them (slower but more accurate)','បិទការពិនិត្យពីរដង':'Double-check turned off',
+  'AI កំពុងសិក្សាឯកសារនេះឱ្យយល់…':'The AI is studying this file…','AI បានសិក្សាឯកសារនេះរួច ✓ — សួរសំណួរបាន':'The AI has studied this file ✓ — you can ask questions','មិនអាចអានឯកសារនេះបានទេ':'This file could not be read',
+  'លំហាត់ / សំណួរ (ជម្រើស — បើមិនមាននៅក្នុងរូប)':'Exercise / question (optional — if it is not in the photo)','ថតចម្លើយ / ជ្រើសរូប':'Take a photo / choose images','អតិបរមា ៣ រូប':'Maximum 3 photos','ឬវាយចម្លើយរបស់អ្នកជាអក្សរ':'Or type your answer as text','ពិនិត្យឥឡូវនេះ':'Check now',
+  '💡 ថតឱ្យភ្លឺ ត្រង់ និងអក្សរច្បាស់។ AI នឹងបង្ហាញអ្វីដែលវាអាន — បើអានខុស សូមថតម្តងទៀត។':'💡 Take the photo in good light, straight and sharp. The AI shows what it read — if it read it wrong, retake it more clearly.',
+  'បិទ':'Close','ឧ. ដោះស្រាយសមីការ z² + 2z + 5 = 0':'e.g. Write a paragraph about your hometown','សរសេរជំហានដោះស្រាយរបស់អ្នកនៅទីនេះ…':'Write your answer here…',
+  'កំពុងពិនិត្យការងាររបស់អ្នក… អ្នកអាចទៅផ្ទាំងផ្សេងបាន ចម្លើយនឹងរង់ចាំអ្នកក្នុងការសន្ទនា':'Checking your work… you can switch tabs; the result will wait for you in the chat',
+  'បង្កើតសំណួរ':'Create questions','កម្រិតងាយ':'Easy','កម្រិតមធ្យម':'Medium','កម្រិតពិបាក (បាក់ឌុប)':'Hard (BacII)','ប្រធានបទ':'Topic','ចំនួនសំណួរ':'Number of questions','ចំនួនប័ណ្ណ':'Number of cards',
+  'កំពុងបង្កើតសំណួរតេស្ត… អ្នកអាចទៅផ្ទាំងផ្សេងបាន សំណួរនឹងរង់ចាំអ្នក':'Creating the quiz… you can switch tabs; it will be waiting for you','កំពុងបង្កើតសំណួរ… សូមរង់ចាំបន្តិច':'Creating questions… please wait','មិនអាចបង្កើតសំណួរបានទេ — សូមព្យាយាមម្តងទៀត':'Could not create questions — please try again',
+  'លុបសំណួរនេះ':'Delete this question','សំណួរបន្ទាប់ →':'Next question →','មើលលទ្ធផល':'See results','សំណួរថ្មី':'New questions','បានរក្សាទុកពិន្ទុ ✓':'Score saved ✓','✅ សំណួររួចរាល់ — បើកផ្ទាំង «សំណួរ» ដើម្បីធ្វើ':'✅ Questions are ready — open the “Quiz” tab to take them',
+  'បង្កើតប័ណ្ណ':'Create cards','ចាប់ផ្តើមរំលឹកឥឡូវនេះ':'Start reviewing now','មិនទាន់ចាំ (ម្តងទៀត)':'Not yet (again)','ចាំច្បាស់ហើយ ✓':'I know it ✓','ចុចលើប័ណ្ណដើម្បីមើលចម្លើយ':'Tap the card to see the answer','🎉 អស្ចារ្យណាស់! អ្នកបានរំលឹកប័ណ្ណថ្ងៃនេះចប់អស់ហើយ!':'🎉 Great job! You have finished today’s cards!',
+  'លុបប័ណ្ណទាំងអស់':'Delete all cards','លុបប័ណ្ណទាំងអស់ឬ?':'Delete all cards?','កំពុងបង្កើតប័ណ្ណចងចាំ… អ្នកអាចទៅផ្ទាំងផ្សេងបាន ប័ណ្ណនឹងរង់ចាំអ្នក':'Creating cards… you can switch tabs; they will be waiting for you','កំពុងបង្កើតប័ណ្ណ… សូមរង់ចាំបន្តិច':'Creating cards… please wait',
+  '📴 គ្មានអ៊ីនធឺណិត — មុខងារ AI ត្រូវការអ៊ីនធឺណិត':'📴 You are offline — AI needs the internet','AI បានរៀន និងចងចាំរូបថតនេះក្នុងមុខវិជ្ជា ✓':'The AI has learned and remembered this photo ✓'
+};
+const ENTAG={'មេរៀន':'Lesson','កិច្ចការផ្ទះ':'Homework','វិញ្ញាសា':'Exam'};
+const ENPAT=[
+  [/^(មេរៀន|កិច្ចការផ្ទះ|វិញ្ញាសា) \((Lesson|Homework|Exam)\) · (\d+)$/,'$2 · $3'],
+  [/^មិនទាន់មាន (មេរៀន|កិច្ចការផ្ទះ|វិញ្ញាសា) ទេ។ ជ្រើសប្រភេទខាងលើ រួចចុច «ផ្ទុកឡើង»។$/,(m,a)=>'No '+ENTAG[a].toLowerCase()+' files yet. Choose the type above, then tap “Upload”.'],
+  [/^កំណត់ត្រារបស់ខ្ញុំ (\d+)$/,'My notes $1'],
+  [/^បានផ្ទុកឡើង (\d+) ឯកសារ ✓ — AI នឹងអានពេលអ្នកប្រើក្នុងគ្រូ AI$/,'Uploaded $1 file(s) ✓ — the AI reads them when you use the tutor'],
+  [/AI អានបាន (\d+) តួអក្សរ/,'AI read $1 characters'],[/AI មិនទាន់អាន/,'AI has not read it yet'],
+  [/^✍️ ចម្លើយ៖ (.+)$/,(m,a)=>'✍️ Answer: '+({'ធម្មតា':'Normal','ខ្លី':'Short','លម្អិត':'Detailed'}[a]||a)],
+  [/^(🔒|🔓) តាមឯកសារតែប៉ុណ្ណោះ៖ (បើក|បិទ)$/,(m,i,o)=>i+' Files only: '+(o=='បើក'?'On':'Off')],
+  [/^🔍 ពិនិត្យចម្លើយ២ដង៖ (បើក|បិទ)$/,(m,o)=>'🔍 Double-check answers: '+(o=='បើក'?'On':'Off')],
+  [/^AI កំពុងអានឯកសារ៖ /,'AI is reading the file: '],
+  [/^សំណួរទី (\d+)\/(\d+)$/,'Question $1/$2'],[/^ប័ណ្ណទី (\d+)\/(\d+)$/,'Card $1/$2'],
+  [/^សរុប (\d+) ប័ណ្ណ · ត្រូវរំលឹកថ្ងៃនេះ (\d+) ប័ណ្ណ · សំណួរដែលឆ្លើយខុសនឹងត្រូវបន្ថែមមកទីនេះដោយស្វ័យប្រវត្តិ$/,'$1 cards · $2 due today · wrong quiz answers are added here automatically'],
+  [/^📇 មើលប័ណ្ណទាំងអស់ \((\d+)\)$/,'📇 View all cards ($1)'],
+  [/^ពិន្ទុថ្មីៗ៖/,'Recent scores:'],
+  [/^បានបញ្ចប់ (\d+)\/(\d+) · តម្រៀបតាមថ្ងៃកំណត់ជិតបំផុត$/,'Done $1/$2 · sorted by nearest deadline'],
+  [/^📒 កំហុសរបស់ខ្ញុំ \(.+\)$/,'📒 My mistakes (English)'],
+  [/^✗ ចម្លើយរបស់ខ្ញុំ៖ /,'✗ My answer: '],[/^✓ ចម្លើយត្រឹមត្រូវ៖ /,'✓ Correct answer: '],
+  [/^កំពុងបង្កើតប័ណ្ណ /,'Creating cards '],[/^កំពុងបង្កើតសំណួរ /,'Creating questions '],
+  [/^បានបង្កើត (\d+) ប័ណ្ណ ✓$/,'Created $1 cards ✓']
+];
+const ENKH=/[ក-៿]/;
+function trE(t){
+  const lead=t.match(/^\s*/)[0],trail=t.match(/\s*$/)[0],n=t.trim().replace(/\s+/g,' ');
+  if(!n||!ENKH.test(n))return t;
+  let r=ENUI[n];
+  if(r===undefined){let m=n;for(const [re,f] of ENPAT)m=m.replace(re,f);if(m!==n)r=m}
+  return r===undefined?t:lead+r+trail;
+}
+const ENSCOPE='#main,#fv,#xo,#toast';
+function enApply(root){
+  if(view!='eng'||!root||root.nodeType!=1)return;
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),ns=[];let n;
+  while(n=w.nextNode())if(ENKH.test(n.nodeValue))ns.push(n);
+  ns.forEach(x=>{const v=trE(x.nodeValue);if(v!==x.nodeValue)x.nodeValue=v});
+  const el=[...root.querySelectorAll('[placeholder],[title],[aria-label],optgroup[label]')];if(root.matches('[placeholder],[title],[aria-label],optgroup[label]'))el.push(root);
+  el.forEach(e=>{for(const a of ['placeholder','title','aria-label','label']){const v=e.getAttribute(a);if(v&&ENKH.test(v)){const t=trE(v);if(t!==v)e.setAttribute(a,t)}}});
+}
+new MutationObserver(ms=>{
+  if(view!='eng')return;
+  for(const m of ms)m.addedNodes.forEach(nd=>{
+    if(nd.nodeType==3){const p=nd.parentElement;if(p&&p.closest(ENSCOPE)&&ENKH.test(nd.nodeValue)){const v=trE(nd.nodeValue);if(v!==nd.nodeValue)nd.nodeValue=v}}
+    else if(nd.nodeType==1&&(nd.closest(ENSCOPE)))enApply(nd);
+  });
+}).observe(document.body,{childList:true,subtree:true});
+{const _cf=window.confirm.bind(window);window.confirm=m=>_cf(view=='eng'?trE(String(m)):m)}
 
 // ---------- PHOTO CLEAN-UP + SYMBOL KEYBOARD ----------
 // grey + auto-levels + gentle S-curve: pen on paper stays dark, shaded paper turns white, so handwriting reads much better in a dim photo
@@ -1193,7 +1356,7 @@ A.symt=()=>{const r=$('#symr');if(r)r.classList.toggle('hide')};
 // stage 2: a text model solves the problem itself and marks the transcription step by step; stage 3 (sciences): an independent re-check.
 const CKS={},CKBUSY={};
 const CK_TRANSCRIBE='You are a careful OCR transcriber for a Cambodian Grade 12 student\'s handwritten work. Transcribe EXACTLY what the student wrote, line by line, and KEEP their mistakes as written - never solve, correct, judge or add anything. Output format: first line "PROBLEM: <the problem statement if it is visible on the page, otherwise (not shown)>", second line "WORK:", then the student\'s lines (one step per line). Write maths in LaTeX inside $...$. Keep Khmer text as written. Use [?] for any part you cannot read.';
-const CK_RULES=k=>' MODE: CHECK-MY-WORK. You are marking the student\'s OWN work, not teaching a new lesson. '+
+const CK_RULES0=k=>' MODE: CHECK-MY-WORK. You are marking the student\'s OWN work, not teaching a new lesson. '+
  (SCI.has(k)
   ?'First solve the problem yourself, completely and independently, and verify your result (substitution, units, plausibility) BEFORE judging the student\'s result. Then compare the student\'s work line by line. Never call a step wrong unless you have verified that it is wrong; if a line is unreadable or ambiguous write "មិនច្បាស់" instead of marking it wrong. If the student reaches a correct answer by a different valid method, mark it correct. A later step that is correct given an earlier mistake is marked ✅ (តាមលទ្ធផលមុន).'
   :'Judge the student\'s answer for factual accuracy against the Cambodian MoEYS Grade 12 textbook, completeness and structure (and, for English, grammar and vocabulary). Quote the exact parts that are wrong or missing. Never invent facts; if you are unsure say so.')+
@@ -1202,6 +1365,12 @@ const CK_RULES=k=>' MODE: CHECK-MY-WORK. You are marking the student\'s OWN work
  '### 🔎 ពិនិត្យម្តងមួយជំហាន\n<numbered list, one line per student step: the step in short - ✅ ត្រូវ or ❌ ខុស plus the reason. Put "⚠️ កំហុសដំបូង" on the first wrong step.>\n'+
  '### 🛠 កែឱ្យត្រូវ\n<the correct solution from the first wrong step to the final answer'+(SCI.has(k)?', maths in LaTeX, final answer in $\\boxed{...}$':'')+'; if everything is correct write "គ្មានកំហុស 🎉" and one way to make the answer shorter or stronger>\n'+
  '### 💡 ដំបូន្មាន\n<the type of mistake (គណនា / រូបមន្ត / ឯកតា / ខ្វះជំហាន / យល់ខុសសំណួរ …) and one concrete tip to avoid it next time, at most 2 lines>\n'+
+ 'Be kind but exact. Do not repeat the transcription.';
+const CK_RULES=k=>k!='eng'?CK_RULES0(k):' MODE: CHECK-MY-WORK. You are marking the student\'s OWN English work (an answer, a paragraph or an exercise), not teaching a new lesson. Judge grammar, spelling, vocabulary, punctuation, sentence structure and, when there is a question, whether the answer is correct and complete. Quote the exact words that are wrong. Never invent rules; if you are unsure, say so. If part of a photo is unreadable write "unclear" instead of marking it wrong. Reply ONLY in English with exactly these four sections (markdown headings as written):\n'+
+ '### 🎯 Result\n<one line verdict: Correct / Partly correct / Needs work> · approximate score: X/10 (short reason)\n'+
+ '### 🔎 Line-by-line check\n<numbered list, one line per sentence or step: ✅ correct or ❌ wrong, plus the reason and the rule. Put "⚠️ First mistake" on the first wrong item.>\n'+
+ '### 🛠 Corrected version\n<the corrected text or answer; if everything is correct write "No mistakes 🎉" and one way to make it stronger>\n'+
+ '### 💡 Tip\n<the type of mistake (grammar / spelling / vocabulary / punctuation / meaning …) and one concrete tip to avoid it next time, at most 2 lines>\n'+
  'Be kind but exact. Do not repeat the transcription.';
 function ckUI(){
   const z=$('#ckw');if(!z)return;
