@@ -1095,7 +1095,13 @@ const CHE=[
   ['Cheat sheet','Please make a short cheat sheet of the key rules and vocabulary for the BacII exam.'],
   ['Practice + answers','Please give me 2 BacII-style practice exercises with full answers and explanations.'],
   ['Quiz me (5 questions)','Please ask me 5 short questions on this lesson, one at a time, and correct my answer each time.']
-],chs=()=>view=='eng'?CHE:CH;
+],CHN=[
+  ['សង្ខេបមេរៀន','សូមសង្ខេបមេរៀននេះជា ៨ ចំណុចច្បាស់ៗ ព្រមទាំងពាក្យគន្លឹះ និងចំណុចសំខាន់ៗ។'],
+  CH[1],
+  ['បង្កើតសន្លឹកចំណាំ','សូមបង្កើតសន្លឹកចំណាំ និងចំណុចគន្លឹះសង្ខេប សម្រាប់ត្រៀមប្រឡងបាក់ឌុប។'],
+  ['សំណួរគំរូ + ចម្លើយ','សូមផ្តល់សំណួរគំរូបាក់ឌុប ២ ព្រមទាំងចម្លើយលម្អិត។'],
+  CH[4]
+],chs=()=>view=='eng'?CHE:SCI.has(view)?CH:CHN;
 const CHP={},DRAFT={},PEND={};let AIK='',AOPT=false; // unsent text and "answer on its way" flags per chat, so they survive leaving the tab
 const SRC={},srcOf=k=>SRC[k]===undefined?'all':SRC[k],FM=k=>{const v=srcOf(k);return !!v&&v!='all'};
 const ck=k=>{const v=srcOf(k);return v=='all'?k:k+'|'+(v||'g')},cdoc=c=>{const q=c.split('|');return q[1]?'_chat_'+q[1]:'_chat'};
@@ -1448,6 +1454,13 @@ const CK_RULES=k=>k!='eng'?CK_RULES0(k):' MODE: CHECK-MY-WORK. You are marking t
  '### 💡 Tip\n<the type of mistake (grammar / spelling / vocabulary / punctuation / meaning …) and one concrete tip to avoid it next time, at most 2 lines>\n'+
  'After the four sections, on new lines, list every mistake as JSON between the tags <mistakes> and </mistakes>: an array (at most 12 items) of {"bad":"<the exact wrong words copied from the student\'s text>","good":"<the corrected words>","cat":"<exactly one of: Verb tense, Subject-verb agreement, Articles, Prepositions, Spelling, Punctuation, Word choice, Word order, Plurals, Other>","rule":"<the rule in one short sentence>"}. Use [] when there are no mistakes. Write nothing after </mistakes>. '+
  'Be kind but exact. Do not repeat the transcription.';
+// Wording of the ✅ check panel for each subject (a History student must not see a maths example)
+const CKX=k=>{
+  if(k=='eng')return {ql:'Task or question (optional — if it is not in the photo)',qp:'e.g. Write a paragraph about your hometown',al:'Or paste / type your writing',ap:'Paste or type your writing here…'};
+  const sol=SCI.has(k)&&k!='bio',ql=sol?'លំហាត់ / សំណួរ (ជម្រើស — បើមិនមាននៅក្នុងរូប)':'សំណួរ / លំហាត់ (ជម្រើស — បើមិនមាននៅក្នុងរូប)';
+  const qp={math:'ឧ. ដោះស្រាយសមីការ z² + 2z + 5 = 0',phys:'ឧ. វត្ថុធ្លាក់ដោយសេរីពីកម្ពស់ 45 m។ គណនាល្បឿនពេលប៉ះដី (g = 10 m/s²)',chem:'ឧ. គណនាកំហាប់ម៉ូលនៃសូលុយស្យុងដែលមាន NaOH 4 g ក្នុង 500 mL',bio:'ឧ. ពន្យល់ពីដំណើរការធ្វើរស្មីសំយោគ',hist:'ឧ. ចូរពន្យល់ពីមូលហេតុនៃសង្គ្រាមលោកលើកទី២',geo:'ឧ. ចូរពន្យល់ពីលក្ខណៈអាកាសធាតុមូសុងនៅអាស៊ីអាគ្នេយ៍',earth:'ឧ. ចូរពន្យល់ពីមូលហេតុនៃការកើតរញ្ជួយដី',civ:'ឧ. ចូរពន្យល់ពីសិទ្ធិ និងករណីយកិច្ចរបស់ពលរដ្ឋ',khm:'ឧ. សរសេរកិច្ចតែងសេចក្តីអំពី «សារៈសំខាន់នៃការអប់រំ»'}[k]||'ឧ. សំណួរដែលអ្នកចង់ពិនិត្យ';
+  return {ql,qp,al:k=='khm'?'ឬវាយកិច្ចតែង / ចម្លើយរបស់អ្នកជាអក្សរ':'ឬវាយចម្លើយរបស់អ្នកជាអក្សរ',ap:sol?'សរសេរជំហានដោះស្រាយរបស់អ្នកនៅទីនេះ…':k=='khm'?'សរសេរកិច្ចតែង ឬចម្លើយរបស់អ្នកនៅទីនេះ…':'សរសេរចម្លើយ ឬការពន្យល់របស់អ្នកនៅទីនេះ…'};
+};
 function ckUI(){
   const z=$('#ckw');if(!z)return;
   const k=view,S0=CKS[k]||(CKS[k]={imgs:[],q:'',a:'',open:false});
@@ -1455,10 +1468,10 @@ function ckUI(){
   if(!S0.open){z.innerHTML='';return}
   z.innerHTML=`<div class="glass-soft p-3 space-y-2.5 border border-emerald-500/30">
     <div class="flex items-center justify-between"><b class="text-sm">✅ ពិនិត្យការងារខ្ញុំ</b><button data-a="ckclose" class="text-xs text-slate-400 hover:text-red-400" title="បិទ"><i class="fa-solid fa-xmark"></i></button></div>
-    <label class="block text-[11px] text-slate-400">លំហាត់ / សំណួរ (ជម្រើស — បើមិនមាននៅក្នុងរូប)<textarea id="ckq" rows="2" class="inp mt-1" placeholder="ឧ. ដោះស្រាយសមីការ z² + 2z + 5 = 0"></textarea></label>
+    <label class="block text-[11px] text-slate-400">${CKX(k).ql}<textarea id="ckq" rows="2" class="inp mt-1" placeholder="${CKX(k).qp}"></textarea></label>
     <div class="flex flex-wrap items-center gap-2"><label class="btn btn-sec cursor-pointer"><i class="fa-solid fa-camera"></i>ថតចម្លើយ / ជ្រើសរូប<input id="ckf" type="file" accept="image/*" multiple class="hide"></label>${S0.imgs.length?`<span class="text-xs text-emerald-300">📷 ${S0.imgs.length}/3</span>`:'<span class="text-[11px] text-slate-500">អតិបរមា ៣ រូប</span>'}</div>
     ${S0.imgs.length?`<div class="flex flex-wrap gap-2">${S0.imgs.map((u,i)=>`<div class="relative"><img src="${u}" alt="" class="h-16 w-16 object-cover rounded-lg border border-slate-600/40"><button data-a="ckrm" data-v="${i}" class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-600 text-white text-[10px] leading-none flex items-center justify-center" aria-label="ដកចេញ">✕</button></div>`).join('')}</div>`:''}
-    ${SCI.has(k)?symRow():''}<label class="block text-[11px] text-slate-400">ឬវាយចម្លើយរបស់អ្នកជាអក្សរ<textarea id="cka" rows="4" class="inp mt-1" placeholder="សរសេរជំហានដោះស្រាយរបស់អ្នកនៅទីនេះ…"></textarea></label>
+    ${SCI.has(k)?symRow():''}<label class="block text-[11px] text-slate-400">${CKX(k).al}<textarea id="cka" rows="4" class="inp mt-1" placeholder="${CKX(k).ap}"></textarea></label>
     <button data-a="ckgo" class="btn w-full"><i class="fa-solid fa-magnifying-glass-chart"></i>ពិនិត្យឥឡូវនេះ</button>
     <p class="text-[11px] text-slate-500">💡 ថតឱ្យភ្លឺ ត្រង់ និងអក្សរច្បាស់។ AI នឹងបង្ហាញអ្វីដែលវាអាន — បើអានខុស សូមថតម្តងទៀត។</p></div>`;
   const q=$('#ckq'),a=$('#cka');q.value=S0.q||'';a.value=S0.a||'';q.oninput=()=>{S0.q=q.value};a.oninput=()=>{S0.a=a.value};
