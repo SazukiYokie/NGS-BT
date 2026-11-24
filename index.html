@@ -346,6 +346,7 @@ onAuthStateChanged(auth,async u=>{
   if(!u){D={};chat={};if(TM){clearInterval(TM.iv);TM=null}if(X){clearInterval(X.iv);X=null;$('#xo')?.remove()}return}
   try{(await getDocs(collection(db,'users',u.uid,'subjects'))).forEach(d=>D[d.id]={...sd(d.id),...d.data()});streakN=await streak()}catch(e){toast('មិនអាចផ្ទុកទិន្នន័យ៖ '+(e.code||''))}
   try{const c=await getDoc(doc(db,'config','ai'));if(c.exists())KEYS={...c.data()}}catch(e){}
+  S.forEach(x=>tbLoad(x[0]).catch(()=>{}));
   applyClass();pbtn();syncPub();
   if(ME.profile?.name&&CLS())go('dash');else{go('profile');toast(ME.profile?.name?'សូមបញ្ចូលថ្នាក់រៀនរបស់អ្នកជាមុនសិន 👋':'សូមស្វាគមន៍! សូមកំណត់ឈ្មោះ និងថ្នាក់រៀនរបស់អ្នកជាមុនសិន 👋')}
 });
@@ -572,16 +573,17 @@ A.gos=k=>go(k);
 // ---------- FILES ----------
 let FT='មេរៀន';
 const ftsOf=k=>FTS.filter(t=>t[0]!='រូបមន្ត'||SCI.has(k));
-const FTS=[['មេរៀន','មេរៀន (Lesson)'],['កិច្ចការផ្ទះ','កិច្ចការផ្ទះ (Homework)'],['វិញ្ញាសា','វិញ្ញាសា (Exam)'],['រូបមន្ត','រូបមន្ត (Formulas)']];
+const FTS=[['សៀវភៅគោល','📘 សៀវភៅគោល MoEYS (Textbook)'],['មេរៀន','មេរៀន (Lesson)'],['កិច្ចការផ្ទះ','កិច្ចការផ្ទះ (Homework)'],['វិញ្ញាសា','វិញ្ញាសា (Exam)'],['រូបមន្ត','រូបមន្ត (Formulas)']];
 function files(){
   const d=sd(view),list=d.files.filter(f=>f.tag==FT);
-  $('#pane').innerHTML=`<div class="flex gap-2 mb-3">
+  $('#pane').innerHTML=`${tbCard()}<div class="flex gap-2 mb-3">
     <select id="tag" class="inp">${ftsOf(view).map(([v,l])=>`<option value="${v}" ${v==FT?'selected':''}>${l} · ${d.files.filter(f=>f.tag==v).length}</option>`).join('')}</select>
     <label class="btn cursor-pointer whitespace-nowrap"><i class="fa-solid fa-upload"></i>ផ្ទុកឡើង<input id="up" type="file" multiple accept=".pdf,.docx,.txt,.md,image/*" class="hide"></label>
   </div>
   <div class="space-y-2">${list.map(f=>`<div class="flex items-center gap-2.5 glass-soft p-3"><i class="fa-solid ${f.n?'fa-file-lines text-blue-400':'fa-image text-purple-400'} text-lg w-6 text-center"></i><div class="min-w-0 flex-1"><p class="text-sm font-medium truncate">${esc(f.name)}</p><p class="text-xs text-slate-400">${f.d}${f.cl>0?' · <span title="មើលបានគ្រប់ឧបករណ៍">☁️</span>':f.cl===-1?' · <span title="ធំជាង 2.5MB — មានតែលើឧបករណ៍នេះ">📱</span>':''}${f.pend?' · <span class="text-sky-300">⏳ AI នឹងអានពេលប្រើ</span>':f.n?` · AI អានបាន ${f.n} តួអក្សរ`:' · <span class="text-amber-300">AI មិនទាន់អាន</span>'}</p></div>${f.n&&!f.pend?'':`<button data-a="reread" data-v="${f.id}" class="text-amber-300 px-2 py-1 hover:bg-slate-800 rounded-lg" title="ឱ្យ AI អានម្តងទៀត"><i class="fa-solid fa-rotate"></i></button>`}<button data-a="open" data-v="${f.id}" class="text-blue-300 px-2 py-1 hover:bg-slate-800 rounded-lg" title="បើកមើល"><i class="fa-solid fa-eye"></i></button><button data-a="delf" data-v="${f.id}" class="text-red-400 px-2 py-1 hover:bg-slate-800 rounded-lg" title="លុប"><i class="fa-solid fa-trash"></i></button></div>`).join('')||`<p class="text-sm text-slate-400 py-4 text-center">មិនទាន់មាន ${FT} ទេ។ ជ្រើសប្រភេទខាងលើ រួចចុច «ផ្ទុកឡើង»។</p>`}</div>
   <p class="text-xs text-slate-500 mt-3">☁️ = មើលបានគ្រប់ឧបករណ៍ · 📱 = ធំជាង 2.5MB មានតែលើឧបករណ៍នេះ។ គ្រូ AI នឹងអានឯកសារពេលអ្នកប្រើវា។</p>`;
   $('#up').onchange=upload;$('#tag').onchange=e=>{FT=e.target.value;files()};backfillFiles(view);
+  {const k=view;if(!TBK[k]?.idx)tbLoad(k).then(R=>{if(R.books.length&&!R.rend2&&view==k&&tab=='files'){R.rend2=1;files()}})}
 }
 const sleep=ms=>new Promise(r=>setTimeout(r,ms)),prog=m=>{toast(m);clearTimeout(toast.t);toast.p=1;toast.t=setTimeout(()=>{$('#toast').classList.add('hide');toast.p=0},30000)},
   endProg=()=>{if(toast.p){toast.p=0;clearTimeout(toast.t);$('#toast').classList.add('hide')}}; // a progress message must disappear when its job ends
@@ -744,12 +746,12 @@ async function readPending(k,only){
   for(const f of todo){
     const b=await getFileBlob(k,f);
     if(!b){toast('ឯកសារ «'+f.name+'» ត្រូវអានលើឧបករណ៍ដែលបានផ្ទុកឡើង');continue}
-    if(!PENDP[f.id])PENDP[f.id]=(async()=>{prog('AI កំពុងអានឯកសារ៖ '+f.name+'…');let t='';try{t=(await extract(b)).trim().slice(0,200000)}catch(e){}f.pend=false;if(t){await setDoc(txtRef(k,f.id),{t});f.n=t.length;delete TXT[f.id]}else f.n=0;ch=true})();
+    if(!PENDP[f.id])PENDP[f.id]=(async()=>{prog('AI កំពុងអានឯកសារ៖ '+f.name+'…');let t='';try{t=capT((await extract(b)).trim(),f.tag)}catch(e){}f.pend=false;if(t){await setDoc(txtRef(k,f.id),{t});f.n=t.length;delete TXT[f.id]}else f.n=0;ch=true})();
     await PENDP[f.id];delete PENDP[f.id];
   }
   endProg();if(ch){await save(k);if(view==k&&tab=='files')files()}
 }
-A.reread=async id=>{delete TXT[id];const k=view,f=sd(k).files.find(x=>x.id==id),b=await getFileBlob(k,f);if(!b)return toast('សូមផ្ទុកឯកសារនេះឡើងម្តងទៀត');toast('កំពុងអានម្តងទៀត…');const t=(await extract(b)).trim().slice(0,200000);if(!t)return toast('AI នៅតែអានមិនបាន សូមពិនិត្យរូបភាពឱ្យច្បាស់ ឬប្រាប់ Admin ពិនិត្យ AI');await setDoc(txtRef(k,id),{t});f.n=t.length;f.pend=false;await save(k);files();toast('AI អានបានហើយ ✓')};
+A.reread=async id=>{delete TXT[id];const k=view,f=sd(k).files.find(x=>x.id==id),b=await getFileBlob(k,f);if(!b)return toast('សូមផ្ទុកឯកសារនេះឡើងម្តងទៀត');toast('កំពុងអានម្តងទៀត…');const t=capT((await extract(b)).trim(),f.tag);if(!t)return toast('AI នៅតែអានមិនបាន សូមពិនិត្យរូបភាពឱ្យច្បាស់ ឬប្រាប់ Admin ពិនិត្យ AI');await setDoc(txtRef(k,id),{t});f.n=t.length;f.pend=false;await save(k);files();toast('AI អានបានហើយ ✓')};
 A.delf=async id=>{delete TXT[id];if(!confirm('លុបឯកសារនេះឬ?'))return;const k=view,old=sd(k).files.find(f=>f.id==id);for(let i=0;i<(old?.cl>0?old.cl:0);i++)deleteDoc(blobRef(k,id,i)).catch(()=>{});sd(k).files=sd(k).files.filter(f=>f.id!=id);idbDel(id);deleteDoc(txtRef(k,id)).catch(()=>{});await save(k);pane()};
 
 // ---------- NOTES ----------
@@ -1016,10 +1018,10 @@ const SR={
   khm:'Answer Khmer language and literature questions in correct Khmer spelling; never invent poems, authors, dates or quotations — if unsure, say so.',
   hist:'Give dates, names and causes/effects precisely as in the MoEYS history textbook; if unsure of a date or name, say so instead of guessing.'
 };
-const sys=k=>{const s=subj(k),mem='';return `You are the dedicated ${s[2]} (${s[1]}) AI tutor for Grade 12 students (${CLS()?'class '+CLS()+', ':''}Cambodia, MoEYS BacII curriculum). You teach ONLY ${s[2]}. If the student asks about a different subject, politely tell them in ${k=='eng'?'English':'Khmer'} that this tutor covers only ${k=='eng'?s[2]:s[1]} and to open that subject's own tutor, and do not answer it. Never mix in other subjects, even if the provided files or notes contain them: ignore off-subject material. Student: ${ME.profile?.name||'a Grade 12 student'}. ${k=='eng'?'ALWAYS reply in clear, simple English (about CEFR B1-B2), because this is an English-medium class: explain grammar, vocabulary and answers in English with short examples. Add a Khmer translation in brackets only for hard words, or when the student writes in Khmer or asks for Khmer (then reply in Khmer). When the student writes a sentence or paragraph, correct it kindly: show the mistake, the correction and the rule.':'ALWAYS reply in natural, clear Khmer (keep key technical terms in English in brackets).'}  ${SR[k]||''} The student's own uploaded files (lessons មេរៀន, homework កិច្ចការផ្ទះ, past exams វិញ្ញាសា) and notes are given below as excerpts labelled with the file name. When the answer can come from them, answer from them. NEVER write file names, page numbers or source citations (such as "តាមឯកសារ «name»") inside the answer text; the app adds the list of files you read at the bottom automatically. If the excerpts do not contain it, say so in one short sentence, then answer from your own knowledge of ${s[2]}. The student's files and pictures are the authority: base your answer on them and never contradict them. Re-check every calculation step by step. If text read from a picture looks garbled or unclear, say exactly what is unclear and ask for a clearer photo instead of guessing. Follow the method, notation and Khmer terms of the Cambodian MoEYS Grade 12 textbooks used for the BacII exam; if you are not sure what the official textbook says, say so instead of guessing. Never invent file content. ACCURACY FIRST: take your time, reread the excerpts, copy Khmer technical terms exactly as written in the student's files (never invent or substitute terms), recompute every calculation and verify the final answer (for example by substitution) before replying. Never guess. If you are not sure about a fact, say so plainly. Lead with the core formula or final answer, then numbered steps. Write all math/science in LaTeX using $...$ or $$...$$.${mem?`\n\nWhat you remember about this student in ${s[1]} (use it to personalise your help): ${mem}`:''}`};
+const sys=k=>{const s=subj(k),mem='';return `You are the dedicated ${s[2]} (${s[1]}) AI tutor for Grade 12 students (${CLS()?'class '+CLS()+', ':''}Cambodia, MoEYS BacII curriculum). You teach ONLY ${s[2]}. If the student asks about a different subject, politely tell them in ${k=='eng'?'English':'Khmer'} that this tutor covers only ${k=='eng'?s[2]:s[1]} and to open that subject's own tutor, and do not answer it. Never mix in other subjects, even if the provided files or notes contain them: ignore off-subject material. Student: ${ME.profile?.name||'a Grade 12 student'}. ${k=='eng'?'ALWAYS reply in clear, simple English (about CEFR B1-B2), because this is an English-medium class: explain grammar, vocabulary and answers in English with short examples. Add a Khmer translation in brackets only for hard words, or when the student writes in Khmer or asks for Khmer (then reply in Khmer). When the student writes a sentence or paragraph, correct it kindly: show the mistake, the correction and the rule.':'ALWAYS reply in natural, clear Khmer (keep key technical terms in English in brackets).'}  ${SR[k]||''}${tbOn(k)?' '+TBRULE:''} The student's own uploaded files (lessons មេរៀន, homework កិច្ចការផ្ទះ, past exams វិញ្ញាសា) and notes are given below as excerpts labelled with the file name. When the answer can come from them, answer from them. NEVER write file names, page numbers or source citations (such as "តាមឯកសារ «name»") inside the answer text; the app adds the list of files you read at the bottom automatically. If the excerpts do not contain it, say so in one short sentence, then answer from your own knowledge of ${s[2]}. The student's files and pictures are the authority: base your answer on them and never contradict them. Re-check every calculation step by step. If text read from a picture looks garbled or unclear, say exactly what is unclear and ask for a clearer photo instead of guessing. Follow the method, notation and Khmer terms of the Cambodian MoEYS Grade 12 textbooks used for the BacII exam; if you are not sure what the official textbook says, say so instead of guessing. Never invent file content. ACCURACY FIRST: take your time, reread the excerpts, copy Khmer technical terms exactly as written in the student's files (never invent or substitute terms), recompute every calculation and verify the final answer (for example by substitution) before replying. Never guess. If you are not sure about a fact, say so plainly. Lead with the core formula or final answer, then numbered steps. Write all math/science in LaTeX using $...$ or $$...$$.${mem?`\n\nWhat you remember about this student in ${s[1]} (use it to personalise your help): ${mem}`:''}`};
 
 const LQ=k=>k=='eng'?'Write the questions, options and explanations in English.':'Write ALL questions, options and explanations in clear Khmer.';
-const srcSel=(k,all)=>`<select id="src" class="inp">${all?'<option value="all">📚 ឯកសារទាំងអស់ (AI ស្វែងរកក្នុងឯកសារទាំងអស់)</option>':''}<option value="">🧠 ចំណេះដឹងទូទៅ (មិនប្រើឯកសារ)</option>${ftsOf(view).map(([t])=>{const fs=sd(k).files.filter(f=>rd(f)&&f.tag==t);return fs.length?`<optgroup label="${t}">${fs.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join('')}</optgroup>`:''}).join('')}</select>`;
+const srcSel=(k,all)=>`<select id="src" class="inp">${all?'<option value="all">📚 ឯកសារទាំងអស់ (AI ស្វែងរកក្នុងឯកសារទាំងអស់)</option>':''}${all&&tbHas(k)?`<option value="tbk">📘 ${LE('សៀវភៅគោល MoEYS ប៉ុណ្ណោះ','MoEYS textbook only')}</option>`:''}<option value="">🧠 ចំណេះដឹងទូទៅ (មិនប្រើឯកសារ)</option>${ftsOf(view).map(([t])=>{const fs=sd(k).files.filter(f=>rd(f)&&f.tag==t);return fs.length?`<optgroup label="${t}">${fs.map(f=>`<option value="${f.id}">${esc(f.name)}</option>`).join('')}</optgroup>`:''}).join('')}</select>`;
 function printDoc(title,html){
   const w=window.open('','_blank');if(!w)return toast('សូមអនុញ្ញាតឱ្យបើកទំព័រថ្មី (pop-up)');
   w.document.write('<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>'+esc(title)+'</title><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css"><style>body{font-family:"Noto Sans Khmer",system-ui,sans-serif;max-width:760px;margin:18px auto;padding:0 14px;color:#111;line-height:1.75}h1{font-size:20px}h3{margin:18px 0 4px;color:#1d4ed8;font-size:17px;border-bottom:1px solid #dbeafe;padding-bottom:2px}.md p{margin:6px 0}.md h1,.md h2,.md h3,.md h4{margin:14px 0 4px;color:#111;font-size:15px;border:0}.md table{border-collapse:collapse;width:100%;margin:8px 0;font-size:13px}.md th,.md td{border:1px solid #9ca3af;padding:4px 8px;vertical-align:top}.md th{background:#eff6ff}.md blockquote{margin:8px 0;padding:2px 12px;border-left:3px solid #93c5fd;background:#f0f7ff}.md ul,.md ol{padding-left:22px;margin:6px 0}.md code{background:#f3f4f6;padding:0 4px;border-radius:4px}.md hr{border:0;border-top:1px solid #e5e7eb;margin:10px 0}@media print{h3{break-after:avoid}.md table,.md blockquote{break-inside:avoid}}</style></head><body><h1>'+esc(title)+' · NGS-HUB</h1>'+html+'<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"><\/script><script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"><\/script><script>addEventListener("load",function(){try{renderMathInElement(document.body,{delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false}],throwOnError:false})}catch(e){}setTimeout(function(){print()},800)})<\/script></body></html>');
@@ -1027,24 +1029,128 @@ function printDoc(title,html){
 }
 A.prf=()=>printDoc(subj(view)[1]+' · រូបមន្ត',fL(view).filter(x=>(x.src||'')==fsel(view)).map(({t,b})=>'<h3>'+esc(t)+'</h3>'+md(b)).join(''));
 A.prn=()=>{const n=sd(view).notes||'';if(!n.trim())return toast('មិនទាន់មានកំណត់ត្រា');printDoc(subj(view)[1]+' · កំណត់ត្រា',md(n))};
+// ---------- MoEYS TEXTBOOK (សៀវភៅគោល): the admin publishes it once, every student's AI reads it first ----------
+const TBT='សៀវភៅគោល',TBK={},LE=(kh,en)=>view=='eng'?en:kh;
+const capT=(t,tag)=>{t=String(t||'').slice(0,tag==TBT?300000:200000);const E=new TextEncoder;while(E.encode(t).length>930000)t=t.slice(0,t.length-8000);return t}; // a Firestore document is 1 MiB; Khmer letters take 3 bytes
+const tbHas=k=>!!(TBK[k]?.books?.length)||sd(k).files.some(f=>f.tag==TBT&&rd(f));
+const tbOn=k=>{const v=srcOf(k);return (v=='all'||v=='tbk')&&tbHas(k)};
+const TBRULE='TEXTBOOK PRIORITY: excerpts labelled "សៀវភៅគោល" come from the official Cambodian MoEYS Grade 12 textbook. It is the HIGHEST authority, above the student\'s own notes and above your own knowledge. Read those excerpts fully and understand them BEFORE answering, then teach exactly as the textbook does: its definitions, Khmer technical terms, notation, formulas and order of solution steps (the BacII exam is marked by the textbook method). Explain in your own clear words; do not just copy. If your general knowledge differs from the textbook, follow the textbook. If the textbook excerpts do not cover the question, say so in one short sentence and then answer from general knowledge, marking that part with "(ចំណេះដឹងទូទៅ)".';
+async function tbLoad(k,heavy){
+  const R=TBK[k]||(TBK[k]={books:[],dig:[],T:{},idx:0,full:0});
+  if(!R.idx){try{const s=await getDoc(doc(db,'config','tbk-'+k));R.books=s.exists()?(s.data().books||[]):[];R.idx=1}catch(e){return R}}
+  if(heavy&&!R.full&&R.books.length){
+    if(!R.busy)R.busy=(async()=>{
+      try{
+        const T={};
+        for(const b of R.books){let t='';for(let i=0;i<(b.parts||1);i++){const s=await getDoc(doc(db,'config','tbk-'+k+'-'+b.id+'-'+i));if(!s.exists())throw new Error('part');t+=s.data().t}T[b.id]=t}
+        let dg=[];try{const s=await getDoc(doc(db,'config','tbd-'+k));dg=s.exists()?(s.data().items||[]):[]}catch(e){}
+        R.T=T;R.dig=dg;R.full=1;
+      }catch(e){}
+    })();
+    await R.busy;R.busy=null;
+  }
+  return R;
+}
+const TBP=140000; // letters per stored part
+A.tbpub=async id=>{
+  if(U?.uid!==ADMIN_UID)return;const k=view,f=sd(k).files.find(x=>x.id==id);if(!f||needNet())return;
+  prog(LE('កំពុងអានសៀវភៅ… (អាចចំណាយពេលយូរ សូមកុំបិទកម្មវិធី)','Reading the book… (this can take a while — keep the app open)'));
+  await readPending(k,id);
+  let t='';try{const r=await getDoc(txtRef(k,id));t=r.exists()?r.data().t:''}catch(e){}
+  if(t.length<200){endProg();return toast(LE('អានអត្ថបទពីឯកសារនេះមិនបានទេ សូមពិនិត្យឯកសារ','Could not read text from this file'))}
+  const R=await tbLoad(k),parts=Math.ceil(t.length/TBP);
+  try{
+    for(let i=0;i<parts;i++)await setDoc(doc(db,'config','tbk-'+k+'-'+id+'-'+i),{t:t.slice(i*TBP,(i+1)*TBP)});
+    R.books=R.books.filter(b=>b.id!=id);R.books.push({id,name:f.name.replace(/\.[^.]+$/,''),n:t.length,parts,ts:Date.now()});
+    await setDoc(doc(db,'config','tbk-'+k),{books:R.books});R.T[id]=t;
+    toast(LE('បានចែកជូនថ្នាក់ហើយ ✓ — ឥឡូវចុច 🧠 អានឱ្យយល់','Published to the class ✓ — now press 🧠 Study'));
+  }catch(e){toast('⚠ '+String(e.message||e).slice(0,100))}
+  endProg();if(view==k&&tab=='files')files();
+};
+A.tbdel=async id=>{
+  if(U?.uid!==ADMIN_UID||!confirm(LE('ឈប់ចែកជូនសៀវភៅនេះឬ?','Stop sharing this book?')))return;
+  const k=view,R=await tbLoad(k),b=R.books.find(x=>x.id==id);if(!b)return;
+  for(let i=0;i<(b.parts||1);i++)deleteDoc(doc(db,'config','tbk-'+k+'-'+id+'-'+i)).catch(()=>{});
+  R.books=R.books.filter(x=>x.id!=id);R.dig=(R.dig||[]).filter(x=>x.b!=id);delete R.T[id];
+  try{await setDoc(doc(db,'config','tbk-'+k),{books:R.books});await setDoc(doc(db,'config','tbd-'+k),{items:R.dig})}catch(e){toast('⚠ '+String(e.message||e).slice(0,100))}
+  if(view==k&&tab=='files')files();
+};
+// "Read it to understand": the AI studies the whole book window by window and keeps a short digest of each part.
+const DSYS='You are studying one section of an official Cambodian MoEYS Grade 12 textbook so that you can later tutor students from it. The text may contain small reading (OCR) errors. Write a compact study digest of THIS excerpt only, in Khmer (keep the technical terms exactly as the book writes them; add English in brackets only when the book does). Format exactly: first line "TITLE: <title of the lesson/section or its main topic>"; then 3-7 lines starting with "- " with the key definitions, laws, formulas (maths in LaTeX inside $...$), methods and steps, important facts, dates and names exactly as the book states them; last line "TERMS: <up to 8 key terms separated by · >". At most 650 characters in total. Never add anything that is not in the excerpt.';
+function tbWin(t){
+  const W=[],segs=String(t).split(/(?=--- ទំព័រ \d+ ---)/).filter(s=>s.trim());let cur='',a=0,b=0;
+  const flush=()=>{if(cur.trim().length>200)W.push({pg:a&&b?(a==b?''+a:a+'-'+b):'',t:cur});cur='';a=b=0};
+  for(const s of segs){
+    const pg=+((s.match(/^--- ទំព័រ (\d+) ---/)||[])[1]||0);
+    if(s.length>6200){flush();for(let i=0;i<s.length;i+=5600){cur=s.slice(i,i+5600);if(pg)a=b=pg;flush()}continue}
+    if(cur&&cur.length+s.length>6200)flush();
+    cur+=s;if(pg){if(!a)a=pg;b=pg}
+  }
+  flush();return W.slice(0,90);
+}
+let TBX=false;
+const tbBar=()=>{const bar=document.createElement('div');bar.style.cssText='position:fixed;left:12px;right:12px;bottom:84px;z-index:80;background:#0f172af2;border:1px solid #334155;border-radius:16px;padding:10px 14px;display:flex;gap:10px;align-items:center;font-size:13px;color:#e2e8f0';bar.innerHTML='<span class="tbt" style="flex:1"></span><button class="tbc" style="color:#f87171;font-weight:700"></button>';const c=bar.querySelector('.tbc');c.textContent=LE('បោះបង់','Cancel');c.onclick=()=>{TBX=true};document.body.appendChild(bar);return {set:t=>{bar.querySelector('.tbt').textContent=t},end:()=>bar.remove()}};
+async function tbSave(k,R){try{await setDoc(doc(db,'config','tbd-'+k),{items:R.dig});await setDoc(doc(db,'config','tbk-'+k),{books:R.books});return true}catch(e){toast('⚠ '+String(e.message||e).slice(0,100));return false}}
+A.tbdig=async id=>{
+  if(U?.uid!==ADMIN_UID||needNet())return;
+  const k=view,R=await tbLoad(k,true),b=R.books.find(x=>x.id==id),t=R.T[id];
+  if(!b||!t)return toast(LE('មិនអាចផ្ទុកសៀវភៅបានទេ សូមព្យាយាមម្តងទៀត','Could not load the book — try again'));
+  const W=tbWin(t).map((w,i)=>({...w,i})),have=new Set((R.dig||[]).filter(x=>x.b==id).map(x=>x.i)),todo=W.filter(w=>!have.has(w.i));
+  b.w=W.length;
+  if(!todo.length){b.dg=W.length;await tbSave(k,R);if(view==k&&tab=='files')files();return toast(LE('AI បានអានសៀវភៅនេះយល់រួចហើយ ✓','The AI has already studied this book ✓'))}
+  TBX=false;try{navigator.wakeLock?.request('screen')?.catch(()=>{})}catch(e){}
+  const bar=tbBar(),t0=Date.now();let done=0,stop='';
+  for(const w of todo){
+    if(TBX){stop='cancel';break}
+    bar.set('🧠 '+LE('AI កំពុងអានឱ្យយល់','The AI is studying')+' '+(W.length-todo.length+done+1)+'/'+W.length+' · '+Math.round((Date.now()-t0)/1000)+'s — '+LE('សូមកុំបិទកម្មវិធី','keep the app open'));
+    let r=null;
+    for(let a=0;a<3&&!r&&!TBX;a++){r=await ask([{role:'system',content:DSYS},{role:'user',content:'Pages: '+(w.pg||'?')+'\n"""'+w.t+'"""'}],false,false,x=>/TITLE\s*:/i.test(x));if(!r&&a<2)await sleep(20000)}
+    if(!r){stop=TBX?'cancel':'fail';break}
+    const m=r.match(/TITLE\s*:\s*(.+)/i);
+    R.dig.push({b:id,i:w.i,pg:w.pg,t:(m?m[1]:'').trim().slice(0,120),s:r.replace(/TITLE\s*:.*\n?/i,'').trim().slice(0,700)});done++;
+    b.dg=(R.dig||[]).filter(x=>x.b==id).length;
+    if(done%4==0)await tbSave(k,R);
+  }
+  b.dg=(R.dig||[]).filter(x=>x.b==id).length;await tbSave(k,R);bar.end();
+  toast(stop=='fail'?LE('⚠ AI រវល់ — បានរក្សាទុក '+b.dg+'/'+W.length+' ។ ចុច 🧠 ម្តងទៀតក្រោយប៉ុន្មាននាទី ដើម្បីបន្ត','⚠ The AI is busy — saved '+b.dg+'/'+W.length+'. Press 🧠 again in a few minutes to continue'):stop=='cancel'?LE('បានបោះបង់ — រក្សាទុក '+b.dg+'/'+W.length,'Cancelled — saved '+b.dg+'/'+W.length):LE('AI អានសៀវភៅយល់ហើយ ✓ ('+b.dg+' ផ្នែក)','The AI has studied the whole book ✓ ('+b.dg+' parts)'));
+  if(view==k&&tab=='files')files();
+};
+function tbCard(){
+  const k=view,R=TBK[k]||{books:[]},adm=U?.uid===ADMIN_UID;
+  if(!R.books.length&&!adm)return '';
+  const mine=sd(k).files.filter(f=>f.tag==TBT&&rd(f)&&!R.books.some(b=>b.id==f.id));
+  return `<details id="tbc" ${R.books.length||mine.length?'open':''} class="glass-soft p-3 mb-3 border border-amber-500/30"><summary class="cursor-pointer"><b class="text-sm">📘 ${LE('សៀវភៅគោល MoEYS របស់ថ្នាក់','Class MoEYS textbooks')}</b></summary>
+    <p class="text-[11px] text-slate-400 mt-1.5">${LE('AI របស់សិស្សទាំងថ្នាក់ឆ្លើយតាមសៀវភៅទាំងនេះមុនគេ។','Every student\'s AI answers from these books first.')}</p>
+    ${R.books.map(b=>`<div class="flex items-center gap-2 mt-2 text-sm"><span class="min-w-0 flex-1 truncate">📖 ${esc(b.name)}</span><span class="text-[11px] ${b.dg?'text-emerald-300':'text-slate-500'}" title="${LE('AI អានយល់','AI studied')}">🧠 ${b.dg||0}/${b.w||'?'}</span>${adm?`<button data-a="tbdig" data-v="${b.id}" class="chip text-[11px]">🧠 ${LE('អានឱ្យយល់','Study')}</button><button data-a="tbdel" data-v="${b.id}" class="text-red-400 text-xs px-1" title="${LE('ឈប់ចែកជូន','Unpublish')}"><i class="fa-solid fa-trash"></i></button>`:''}</div>`).join('')}
+    ${adm?mine.map(f=>`<button data-a="tbpub" data-v="${f.id}" class="chip mt-2 w-full justify-start">📤 ${LE('ចែកជូនថ្នាក់','Publish to class')}: ${esc(f.name)}</button>`).join('')+(!R.books.length&&!mine.length?`<p class="text-[11px] text-slate-400 mt-2">${LE('ផ្ទុកសៀវភៅឡើង ដោយជ្រើសស្លាក «📘 សៀវភៅគោល» ខាងក្រោម រួចចុច «ចែកជូនថ្នាក់» នៅទីនេះ។ បន្ទាប់មកចុច 🧠 អានឱ្យយល់។ ធ្វើតែម្តងគត់ — សិស្សទាំងថ្នាក់ប្រើរួមគ្នា មិនបាច់ផ្ទុកឡើងទៀតទេ។','Upload the book with the “📘 Textbook” tag below, then press “Publish to class” here, then 🧠 Study. One time only — the whole class shares it, nobody else needs to upload.')}</p>`:''):''}
+  </details>`;
+}
+
 const TXT={};let LASTSRC=[];
-async function getRel(k,q,max=8000,tag='',only=''){
+async function getRel(k,q,max=8000,tag='',only='',tbOnly=false){
   await readPending(k,only);
   const d=sd(k),docs=[];
-  if(!only&&d.notes.trim())docs.push(['កំណត់ត្រា',d.notes.slice(0,6000)]);
-  for(const f of d.files.filter(f=>rd(f)&&(!tag||f.tag==tag)&&(!only||f.id==only)).slice(-25)){try{let t=TXT[f.id];if(t==null){const r=await getDoc(txtRef(k,f.id));t=TXT[f.id]=r.exists()?r.data().t:''}if(t)docs.push([f.tag+': '+f.name,t])}catch(e){}}
-  const ALL=[];docs.forEach(([n,t])=>{t.split(/(?=--- ទំព័រ \d+ ---)/).forEach(sg=>{const pg=+((sg.match(/^--- ទំព័រ (\d+) ---/)||[])[1]||0);for(let i=0;i<sg.length;i+=900)ALL.push({n,pg,t:sg.slice(i,i+900),i})})});
+  if(!only&&!tbOnly&&d.notes.trim())docs.push(['កំណត់ត្រា',d.notes.slice(0,6000)]);
+  const R0=!only&&!tag?await tbLoad(k,true):null,pubd=new Set((R0?.books||[]).filter(b=>R0.T[b.id]).map(b=>b.id)); // the admin's own copy of a published book is not read twice
+  for(const f of d.files.filter(f=>rd(f)&&(!tag||f.tag==tag)&&(!only||f.id==only)&&(!tbOnly||f.tag==TBT)&&!pubd.has(f.id)).slice(-25)){try{let t=TXT[f.id];if(t==null){const r=await getDoc(txtRef(k,f.id));t=TXT[f.id]=r.exists()?r.data().t:''}if(t)docs.push([f.tag+': '+f.name,t,f.tag==TBT])}catch(e){}}
+  if(R0)for(const b of R0.books)if(R0.T[b.id])docs.push([TBT+': '+b.name,R0.T[b.id],1]); // class textbooks published by the admin
+  const ALL=[];docs.forEach(([n,t,tb])=>{t.split(/(?=--- ទំព័រ \d+ ---)/).forEach(sg=>{const pg=+((sg.match(/^--- ទំព័រ (\d+) ---/)||[])[1]||0);for(let i=0;i<sg.length;i+=900)ALL.push({n,pg,t:sg.slice(i,i+900),i,tb})})});
+  if(!only&&!tag){const R=TBK[k];(R?.dig||[]).forEach(x=>{const b=R.books.find(y=>y.id==x.b);if(b)ALL.push({n:TBT+': '+b.name,pg:+String(x.pg||'').split('-')[0]||0,t:'['+(x.t||'')+'] '+x.s,i:0,tb:1,dg:1})})} // the AI's own digest of each textbook part
   const qn=(q||'').replace(/[០-៩]/g,d=>'០១២៣៤៥៦៧៨៩'.indexOf(d)),pm=qn.match(/(?:ទំព័រ|pages?)\s*(\d+)\s*(?:[-–—~]|ដល់|to)\s*(\d+)/i)||qn.match(/(?:ទំព័រ|page)\s*(\d+)()/i);
   let ch=ALL;if(pm){const a=+pm[1],b=+(pm[2]||pm[1]),inr=ALL.filter(c=>c.pg>=a&&c.pg<=b);if(inr.length)ch=inr}
   const g=x=>{const a=x.replace(/\s+/g,'').toLowerCase(),m=new Set;for(let i=0;i<a.length-2;i++)m.add(a.slice(i,i+3));return m},qs=g(q||'');
-  ch.forEach(c=>{if(!qs.size){c.s=Math.random()-c.i/1e5;return}let n=0;g(c.t).forEach(x=>{if(qs.has(x))n++});c.s=n});
-  ch.sort((a,b)=>b.s-a.s);let o='';const used=new Set;
-  for(const c of ch){if(o.length+c.t.length>max)break;o+='['+c.n+(c.pg?' · ទំព័រ '+c.pg:'')+']\n'+c.t+'\n\n';used.add(c.n)}
+  ch.forEach(c=>{if(!qs.size){c.s=(c.tb?1:0)+Math.random()-c.i/1e5;return}let n=0;g(c.t).forEach(x=>{if(qs.has(x))n++});c.s=c.tb?n*(c.dg?2.2:1.6)+(n?3:0):n});
+  ch.sort((a,b)=>b.s-a.s);let o='';const used=new Set,add=c=>{o+='['+c.n+(c.pg?' · ទំព័រ '+c.pg:'')+']\n'+c.t+'\n\n';used.add(c.n)};
+  // textbook excerpts come first and get most of the room (all of it when the student has nothing else)
+  const tbB=ch.some(c=>c.tb)?(ch.some(c=>!c.tb)?Math.round(max*.65):max):0;let tl=0;
+  if(tbB)for(const c of ch){if(!c.tb)continue;if(tl+c.t.length>tbB)break;add(c);tl+=c.t.length}
+  for(const c of ch){if(c.tb)continue;if(o.length+c.t.length>max)break;add(c)}
   LASTSRC=[...used];return o;
 }
 async function getSrc(k,v,q){
-  LASTSRC=[];if(v&&v!='all'&&v!='notes'){const f=sd(k).files.find(x=>x.id==v);if(f)LASTSRC=[f.tag+': '+f.name]}
+  LASTSRC=[];if(v&&v!='all'&&v!='notes'&&v!='tbk'){const f=sd(k).files.find(x=>x.id==v);if(f)LASTSRC=[f.tag+': '+f.name]}
   if(!v)return'';if(v=='notes')return sd(k).notes;
+  if(v=='tbk')return getRel(k,q,5200,'','',true);
   if(v=='all')return getRel(k,q,5200);
   if(v=='all-old'){const d=sd(k);let o=d.notes.trim()?'[កំណត់ត្រា]\n'+d.notes.slice(0,3000)+'\n\n':'';for(const f of d.files.filter(f=>f.n).slice(-6)){try{const r=await getDoc(txtRef(k,f.id));if(r.exists())o+=`[${f.tag}: ${f.name}]\n`+r.data().t.slice(0,3500)+'\n\n'}catch(e){}}return o}
   return getRel(k,q,5200,'',v);
@@ -1103,7 +1209,7 @@ const CHE=[
   CH[4]
 ],chs=()=>view=='eng'?CHE:SCI.has(view)?CH:CHN;
 const CHP={},DRAFT={},PEND={};let AIK='',AOPT=false; // unsent text and "answer on its way" flags per chat, so they survive leaving the tab
-const SRC={},srcOf=k=>SRC[k]===undefined?'all':SRC[k],FM=k=>{const v=srcOf(k);return !!v&&v!='all'};
+const SRC={},srcOf=k=>SRC[k]===undefined?'all':SRC[k],FM=k=>{const v=srcOf(k);return !!v&&v!='all'&&v!='tbk'};
 const ck=k=>{const v=srcOf(k);return v=='all'?k:k+'|'+(v||'g')},cdoc=c=>{const q=c.split('|');return q[1]?'_chat_'+q[1]:'_chat'};
 const loadChat=c=>chat[c]?Promise.resolve():(CHP[c]=CHP[c]||getDoc(txtRef(c.split('|')[0],cdoc(c))).then(r=>{if(!chat[c])chat[c]=r.exists()?JSON.parse(r.data().t||'[]'):[]}).catch(()=>{if(!chat[c])chat[c]=[]}).finally(()=>{delete CHP[c]}));
 const saveChat=c=>setDoc(txtRef(c.split('|')[0],cdoc(c)),{t:JSON.stringify((chat[c]||[]).slice(-40))}).catch(()=>{});
@@ -1129,6 +1235,7 @@ function autoLearn(k){const d=sd(k);if(LRN[k]||!d.files.some(f=>f.n&&!f.pend&&!(
 function ai(){
   const k=view,cc=ck(k),c=chat[cc]||[];if(AIK!==k){IMG=null;ATT=null;AIK=k}
   $('#pane').innerHTML=`<div class="flex gap-2 mb-2">${srcSel(k,true)}<button data-a="aopt" class="btn btn-sec px-3" title="ជម្រើស" aria-label="ជម្រើស"><i class="fa-solid fa-sliders"></i></button>${c.length?`<button data-a="clrai" class="btn btn-sec px-3" title="សម្អាតការសន្ទនា"><i class="fa-solid fa-broom"></i></button>`:''}</div>
+  ${tbOn(k)?`<p class="text-[11px] text-amber-300/90 mb-2 -mt-1">📘 ${LE('AI ឆ្លើយតាមសៀវភៅគោល MoEYS មុនគេ','The AI answers from the MoEYS textbook first')}</p>`:''}
   <div id="aopt" class="${AOPT?'':'hide '}glass-soft p-2.5 mb-2 flex flex-wrap gap-2 text-xs"><button data-a="sty" class="chip">✍️ ចម្លើយ៖ ${STYS[STY][0]}</button><button data-a="strict" class="chip">${STRICT?'🔒 តាមឯកសារតែប៉ុណ្ណោះ៖ បើក':'🔓 តាមឯកសារតែប៉ុណ្ណោះ៖ បិទ'}</button>${SCI.has(k)?`<button data-a="vfy" class="chip">${VERIFY?'🔍 ពិនិត្យចម្លើយ២ដង៖ បើក':'🔍 ពិនិត្យចម្លើយ២ដង៖ បិទ'}</button>`:''}</div>
   <div id="cl" class="space-y-3 mb-3 min-h-[32vh] max-h-[54vh] overflow-y-auto pr-1"><p class="text-sm text-slate-400 text-center py-6">សួរមេរៀន ឬលំហាត់អ្វីក៏បាន — ឬចុច ✅ ដើម្បីឱ្យ AI ពិនិត្យការងាររបស់អ្នក។</p></div>
   <div id="ckw" class="mb-2.5"></div>
@@ -1146,6 +1253,7 @@ function ai(){
   if(c.length)draw($('#cl'),c,!!PEND[cc]&&Date.now()-PEND[cc]<3e5);
   else if(!chat[cc])loadChat(cc).then(()=>{if(view==k&&tab=='ai')ai()});
   $('#src').value=srcOf(k);$('#src').onchange=e=>{SRC[k]=e.target.value;ai()};autoLearn(k);
+  if(!TBK[k]?.idx)tbLoad(k).then(R=>{if(R.books.length&&!R.rend&&view==k&&tab=='ai'){R.rend=1;ai()}});
   ckUI();
   const ci=$('#ci');ci.value=DRAFT[cc]||'';ci.oninput=()=>{DRAFT[cc]=ci.value};if(IMG)$('#pc').classList.remove('hide');if(ATT){$('#pa').classList.remove('hide');$('#pan').textContent=ATT.name}
   $('#ci').onkeydown=e=>{if(e.key=='Enter')A.send()};
