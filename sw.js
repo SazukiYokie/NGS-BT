@@ -4,7 +4,7 @@
 //  - third-party libraries, styles and fonts (Tailwind, Font Awesome, KaTeX, Firebase modules, Google Fonts…): kept in a
 //    separate cache so the whole app can start with NO internet;
 //  - Firebase / Firestore / Auth / AI API calls are never touched (the Firestore SDK has its own offline cache).
-const CACHE_NAME = 'ngs-hub-v33';
+const CACHE_NAME = 'ngs-hub-v34';
 const LIBS = 'ngs-libs-v1';
 const ASSETS = [
   './',
