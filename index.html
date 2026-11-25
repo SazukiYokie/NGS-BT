@@ -308,6 +308,7 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const today=()=>new Date().toLocaleDateString('en-CA');
 const toast=m=>{const t=$('#toast');toast.p=0;t.textContent=m;t.classList.remove('hide');clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.add('hide'),2700)};
+const toastL=(m,ms=8000)=>{toast(m);clearTimeout(toast.t);toast.t=setTimeout(()=>$('#toast').classList.add('hide'),ms)}; // a message the student must really read
 const subj=k=>S.find(x=>x[0]==k);
 let U,D={},view='dash',tab='files',chat={},Q,streakN=1,ME={},TM=null,IMG=null,X=null,RAIN=null;
 // ---------- CLASS (ថ្នាក់រៀន): matching ignores case and any spaces, e.g. "12ngs-b " == "12NGS-B" ----------
@@ -593,68 +594,93 @@ const parseRange=(txt,N)=>{const st=new Set;String(txt||'').split(/[,\s]+/).forE
 // All image regions of all pages go through ONE pool of a few workers (no waiting at page boundaries). Every request can be aborted,
 // so "បោះបង់" stops at once. When the free AI says "busy", all workers rest a few seconds instead of hammering it.
 const abortSleep=(ms,sig)=>new Promise(r=>{if(sig?.aborted)return r();const f=()=>{clearTimeout(t);sig?.removeEventListener('abort',f);r()},t=setTimeout(f,ms);sig?.addEventListener('abort',f,{once:true})});
-let COOL=0;
 const TILE_PROMPT='This image is one region of a textbook or cheat-sheet page (Khmer, English and maths). Transcribe EXACTLY all the text you can see, in reading order. Do not summarize, do not skip anything, do not add anything. Keep Khmer words exactly as printed. Write maths in LaTeX inside $...$. Take your time and double-check every word against the image. Output only the transcription.';
 const blankAI=t=>{t=(t||'').trim();return t.replace(/\s/g,'').length<8||(!/[ក-៿]/.test(t)&&t.length<90&&/\b(no (visible )?text|not (contain|see)|cannot (see|read)|can't (see|read)|blank|empty (page|region|image))\b/i.test(t))};
-async function scanTile(img,sig){
+// one image region → text.  null = the AI could not read it (busy / error), '' = nothing to read there.
+// Waiting for a busy AI happens inside ask() (it knows exactly how long each model must rest), so nobody hammers it.
+const halves=async img=>{const im=new Image();await new Promise((ok,no)=>{im.onload=ok;im.onerror=no;im.src=img});const h=Math.ceil(im.height/2),ov=Math.round(im.height*.04),mk=(y,hh)=>{const c=document.createElement('canvas');c.width=im.width;c.height=hh;c.getContext('2d').drawImage(im,0,y,im.width,hh,0,0,im.width,hh);return c.toDataURL('image/jpeg',.85)};return [mk(0,Math.min(im.height,h+ov)),mk(Math.max(0,h-ov),im.height-Math.max(0,h-ov))]};
+async function scanTile(img,sig,mt=2600,depth=0){
   const msg=[{role:'user',content:[{type:'text',text:TILE_PROMPT},{type:'image_url',image_url:{url:img}}]}];
-  for(let a=0;a<2&&!sig.aborted;a++){
-    const w=COOL-Date.now();if(w>0)await abortSleep(w,sig);
-    if(sig.aborted)break;
-    const r=await ask(msg,false,true,null,sig);
-    if(r!==null)return blankAI(r)?'':r; // the AI answered (a blank region gives an empty answer)
+  for(let a=0;a<3&&!sig.aborted;a++){
+    const r=await ask(msg,false,true,null,sig,{mt,budget:100000,maxWait:60000}); // only as many tokens as this region needs: Groq counts max_tokens against the per-minute limit
+    if(r!==null){
+      if(LASTCUT&&depth<2&&!sig.aborted){ // the answer hit the limit = the region holds more text than fits: read its two halves separately so nothing is lost
+        try{const [x,y]=await halves(img),p1=await scanTile(x,sig,mt,depth+1),p2=await scanTile(y,sig,mt,depth+1);if(p1!==null&&p2!==null)return (p1+'\n'+p2).trim()}catch(e){if(e.message=='fatal'||e.message=='quota')throw e}
+      }
+      return blankAI(r)?'':r;
+    }
     if(/មិនទាន់មានកូនសោ|គ្មានអ៊ីនធឺណិត/.test(ERR))throw new Error('fatal'); // no AI key / no internet: waiting will not help
-    COOL=Math.max(COOL,Date.now()+(a?10000:5000)); // it failed or is busy: everybody waits a moment, then one more try
+    if(ASKLONG>60000)throw new Error('quota'); // the free allowance is used up for a while
+    await abortSleep(2500*(a+1),sig);
   }
-  return '';
+  return sig.aborted?'':null;
 }
 async function tilesOf(s){
-  const {g,base,land,rows,cols}=s,sc=Math.min(3.2,Math.max(1.6,(land?2600:1900)/base.width)),vp=g.getViewport({scale:sc}),c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;
+  const {g,base,land,rows,cols,gem}=s,sc=gem?Math.min(2.6,Math.max(1.4,2300/Math.max(base.width,base.height))):Math.min(3.2,Math.max(1.6,(land?2600:1900)/base.width)),vp=g.getViewport({scale:sc}),c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;
   await g.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
   const tw=c.width/cols,th=c.height/rows,ov=Math.round(th*.06),tiles=[];
   for(let r=0;r<rows;r++)for(let k=0;k<cols;k++){const y=Math.max(0,r*th-ov),h=Math.min(c.height-y,th+ov*(r?2:1)),t=document.createElement('canvas');t.width=Math.round(tw);t.height=Math.round(h);t.getContext('2d').drawImage(c,k*tw,y,tw,h,0,0,t.width,t.height);tiles.push(t.toDataURL('image/jpeg',.82))}
   return tiles;
 }
+// Reads every page in `need` and does not give up: pages the AI could not read are tried again (a few rounds, with a rest in between)
+// so the student does not have to press 🔄 again and again. Returns the pages that are still unread.
 async function scanPages(p,need,T,P,SK,sig,st,upd){
-  const PG={},Q=[],failed=[];
-  for(const n of need){
-    if(sig.aborted)return failed;
-    const g=await p.getPage(n),base=g.getViewport({scale:1}),land=base.width>base.height,dense=(T[n]||'').length>1500,rows=dense?3:2,cols=land&&dense?2:1;
-    PG[n]={g,base,land,rows,cols,outs:[],left:rows*cols,tiles:null};
-    for(let i=0;i<rows*cols;i++)Q.push({n,i});
+  const gem=kl('gemini').length>0; // Gemini reads a whole page in one request; Groq's vision model needs the page cut into regions
+  st.cap=3;st.max=4;st.parts={};let active=0,streak=0,capT=0;
+  const pool=async list=>{
+    const PG={},Q=[],bad=[];
+    for(const n of list){
+      if(sig.aborted)return bad;
+      const g=await p.getPage(n),base=g.getViewport({scale:1}),land=base.width>base.height,dense=(T[n]||'').length>1500,rows=gem?1:dense?3:2,cols=gem?1:land&&dense?2:1;
+      PG[n]={g,base,land,rows,cols,gem,outs:[],left:rows*cols,tiles:null,mt:(T[n]||'').length>=60?Math.min(5000,Math.max(1500,Math.ceil((T[n].length/(rows*cols))*2.4)+400)):4000}; // ≈ tokens this region needs (Khmer is token-hungry); no text layer to judge by → roomy
+      for(let i=0;i<rows*cols;i++)Q.push({n,i});
+    }
+    st.total=Q.length;st.tiles=0;upd();
+    const finish=async n=>{
+      const s=PG[n],okOuts=s.outs.filter(x=>x!=null&&String(x).trim()),out=okOuts.map(x=>String(x).trim()).join('\n'),missing=s.outs.some(x=>x==null)||s.outs.length<s.rows*s.cols;
+      if(missing){if(out)st.parts[n]='--- ទំព័រ '+n+' ---\n'+out+((T[n]||'').length>=30?'\n[អត្ថបទដើមក្នុង PDF]\n'+T[n]:'');bad.push(n)} // some part of the page is unread: try this page again later
+      else{
+        let o=out;if(!o)o=(T[n]||'').length>=30?T[n]:''; // a blank-looking page: keep the PDF's own text, if any
+        else if((T[n]||'').length>=30&&khc(o)<khc(T[n])/1.4*.5)o+='\n[អត្ថបទដើមក្នុង PDF]\n'+T[n];
+        P[n]='--- ទំព័រ '+n+' ---\n'+o;delete st.parts[n];st.pages++;
+        try{localStorage.setItem(SK,JSON.stringify(P))}catch(e){}
+      }
+      PG[n]=null;upd();
+    };
+    let qi=0;
+    const worker=async()=>{
+      for(;;){
+        while(active>=st.cap&&!sig.aborted&&!st.stop)await abortSleep(300,sig);
+        if(sig.aborted||st.stop)return;
+        const t=Q[qi++];if(!t)return;
+        const s=PG[t.n],r0=RLN;active++;
+        try{s.tiles=s.tiles||tilesOf(s);const tiles=await s.tiles;if(sig.aborted)return;s.outs[t.i]=await scanTile(tiles[t.i],sig,s.mt)}
+        catch(e){s.outs[t.i]=null;if(e.message=='fatal'||e.message=='quota'){st.stop=1;st.why=e.message}}
+        finally{active--}
+        if(sig.aborted||st.stop)return;
+        // adapt to the AI: fewer at once when it says "busy", more again when it is happy
+        if(RLN>r0){if(Date.now()-capT>4000){st.cap=Math.max(1,st.cap-1);capT=Date.now()}streak=0}else if(++streak>=6){st.cap=Math.min(st.max,st.cap+1);streak=0}
+        st.tiles++;upd();
+        if(--s.left==0)await finish(t.n);
+      }
+    };
+    await Promise.all(Array.from({length:Math.min(4,Q.length)},worker));
+    return bad;
+  };
+  let todo=need.slice();
+  for(let pass=0;pass<4&&todo.length&&!sig.aborted&&!st.stop;pass++){
+    if(pass){st.pass=pass;upd();await abortSleep(3000*pass,sig);if(sig.aborted)break}
+    todo=await pool(todo);
   }
-  st.total=Q.length;upd();
-  const finish=async n=>{
-    const s=PG[n];let out=s.outs.map(x=>(x||'').trim()).filter(Boolean).join('\n');
-    if(!out){ // the AI could not read this page right now: keep the PDF's own text (if any) and let the student retry later
-      let o='';if((T[n]||'').length<30){try{const tl=await s.tiles;o=tl?(await ocr(tl[0])).trim():''}catch(e){}}
-      if(o){P[n]='--- ទំព័រ '+n+' ---\n'+o;st.pages++}else failed.push(n);
-    }else{
-      if((T[n]||'').length>=30&&khc(out)<khc(T[n])/1.4*.5)out+='\n[អត្ថបទដើមក្នុង PDF]\n'+T[n];
-      P[n]='--- ទំព័រ '+n+' ---\n'+out;st.pages++;
-    }
-    try{localStorage.setItem(SK,JSON.stringify(P))}catch(e){}
-    PG[n]=null;upd();
-  };
-  let qi=0;
-  const worker=async()=>{
-    for(;;){
-      if(sig.aborted||st.stop)return;
-      const t=Q[qi++];if(!t)return;
-      const s=PG[t.n];
-      try{s.tiles=s.tiles||tilesOf(s);const tiles=await s.tiles;if(sig.aborted)return;s.outs[t.i]=await scanTile(tiles[t.i],sig)}catch(e){s.outs[t.i]='';if(e.message=='fatal')st.stop=1}
-      if(sig.aborted||st.stop)return;
-      st.tiles++;upd();
-      if(--s.left==0)await finish(t.n);
-    }
-  };
-  await Promise.all(Array.from({length:Math.min(4,Q.length)},worker));
-  if(!sig.aborted)for(const n of need)if(P[n]==null&&!failed.includes(n))failed.push(n);
-  return failed;
+  if(sig.aborted)return [];
+  for(const n of need.filter(n=>P[n]==null)){ // last resort for a page with no text at all: the offline reader (weak for Khmer, but better than nothing)
+    if((T[n]||'').length<30&&!st.parts[n]){try{const g=await p.getPage(n),base=g.getViewport({scale:1}),tl=await tilesOf({g,base,land:base.width>base.height,rows:1,cols:1}),o=(await ocr(tl[0])).trim();if(o){P[n]='--- ទំព័រ '+n+' ---\n'+o;st.pages++}}catch(e){}}
+  }
+  return need.filter(n=>P[n]==null);
 }
-let SCANRES=null; // set by readPdf: was the last scan cut short (cancelled / AI busy)?
+let SCANRES=null,SCANST=null; // set by readPdf: was the last scan cut short (cancelled / AI busy)?
 async function readPdf(p){
-  SCANRES=null;const N=Math.min(p.numPages,600),T=[],P={},SK='scan4:'+(p.fingerprints?.[0]||'')+':'+p.numPages;
+  SCANRES=null;SCANST=null;const N=Math.min(p.numPages,600),T=[],P={},SK='scan4:'+(p.fingerprints?.[0]||'')+':'+p.numPages;
   try{Object.assign(P,JSON.parse(localStorage.getItem(SK)||'{}'))}catch(e){}
   for(let i=1;i<=N;i++)T[i]=(await(await p.getPage(i)).getTextContent()).items.map(y=>y.str).join(' ').trim();
   const lack=[];for(let i=1;i<=N;i++)if(T[i].length<30||garbled(T[i]))lack.push(i);
@@ -668,23 +694,23 @@ async function readPdf(p){
   let cancelled=false,failed=[];
   if(need.length){
     try{navigator.wakeLock?.request('screen')?.catch(()=>{})}catch(e){}
-    const ctl=new AbortController(),sig=ctl.signal,st={tiles:0,total:0,pages:0},t0=Date.now();
+    const ctl=new AbortController(),sig=ctl.signal,st={tiles:0,total:0,pages:0},t0=Date.now();SCANST=st;
     const bar=document.createElement('div');bar.style.cssText='position:fixed;left:12px;right:12px;bottom:84px;z-index:90;background:#0f172af2;border:1px solid #334155;border-radius:16px;padding:10px 14px;display:flex;gap:10px;align-items:center;font-size:13px;color:#e2e8f0';
     bar.innerHTML='<span class="scant" style="flex:1"></span><button class="scanc" style="color:#f87171;font-weight:700;padding:10px 14px;margin:-8px -8px -8px 0;touch-action:manipulation">បោះបង់</button>';document.body.appendChild(bar);
     const txt=bar.querySelector('.scant'),upd=()=>{
       if(sig.aborted)return;
       const s=Math.round((Date.now()-t0)/1000),eta=st.tiles>=2&&st.total>st.tiles?Math.round((Date.now()-t0)/st.tiles*(st.total-st.tiles)/1000):0;
-      txt.textContent='AI កំពុងអាន · ទំព័រ '+st.pages+'/'+need.length+' · '+st.tiles+'/'+(st.total||'…')+' ផ្នែក · '+s+' វិ'+(eta?' · នៅសល់ ~'+eta+' វិ':'')+(COOL>Date.now()?' · ⏳ AI រវល់ កំពុងរង់ចាំ':'')};
+      txt.textContent='AI កំពុងអាន · ទំព័រ '+st.pages+'/'+need.length+' · '+st.tiles+'/'+(st.total||'…')+' ផ្នែក · '+s+' វិ'+(eta?' · នៅសល់ ~'+eta+' វិ':'')+(st.pass?' · ↻ ព្យាយាមម្តងទៀត '+st.pass:'')+(ASKW>0?' · ⏳ AI រវល់ កំពុងរង់ចាំ':'')};
     const stop=()=>{if(sig.aborted)return;ctl.abort();txt.textContent='កំពុងបោះបង់…';bar.querySelector('.scanc').disabled=true};
     bar.querySelector('.scanc').onclick=stop;upd();const iv=setInterval(upd,1000);
     try{failed=await scanPages(p,need,T,P,SK,sig,st,upd)}finally{clearInterval(iv);bar.remove()}
     cancelled=sig.aborted;
-    const m=cancelled?'បានបោះបង់ — ទំព័រដែលអានរួចត្រូវបានរក្សា។ ចុច 🔄 លើឯកសារ ដើម្បីបន្តអាន':failed.length?'⚠ AI អានមិនបាន '+failed.length+' ទំព័រ — '+(ERR?String(ERR).slice(0,90):'AI រវល់')+' · ចុច 🔄 លើឯកសារម្តងទៀតក្រោយ':'';
-    if(m){toast(m);clearTimeout(toast.t);toast.t=setTimeout(()=>$('#toast').classList.add('hide'),7000)}
+    const done=need.length-failed.length,m=cancelled?'បានបោះបង់ — ទំព័រដែលអានរួចត្រូវបានរក្សា។ ចុច 🔄 លើឯកសារ ដើម្បីបន្តអាន':failed.length?(st.why=='quota'?'⏳ AI ឥតគិតថ្លៃអស់កូតាសម្រាប់ពេលនេះ — អានរួច '+done+'/'+need.length+' ទំព័រ (រក្សាទុកហើយ)។ ':'⚠ AI អានមិនបាន '+failed.length+' ទំព័រ ទោះព្យាយាមច្រើនដង — ')+(ERR?String(ERR).slice(0,110):'AI រវល់')+' · ចុច 🔄 លើឯកសារ ដើម្បីអានទំព័រដែលនៅសល់':'';
+    if(m)toastL(m,10000)
   }
   SCANRES={partial:cancelled||failed.length>0};
   if(!cancelled&&!failed.length)try{localStorage.removeItem(SK)}catch(e){}
-  let out='';for(let i=1;i<=N;i++)out+=(P[i]!=null?P[i]:'--- ទំព័រ '+i+' ---\n'+T[i])+'\n';
+  let out='';for(let i=1;i<=N;i++)out+=(P[i]!=null?P[i]:SCANST?.parts?.[i]??'--- ទំព័រ '+i+' ---\n'+T[i])+'\n';
   return out;
 }
 let TJ=null;
@@ -939,7 +965,7 @@ A.hask=v=>{const [k,id]=v.split('|'),h=sd(k).hw.find(x=>x.id==id);go(k);tab='ai'
 // ---------- AI ENGINE (100% Free: Groq + OpenRouter + Free Fallback) ----------
 const VIS=['meta-llama/llama-4-scout-17b-16e-instruct','meta-llama/llama-4-maverick-17b-128e-instruct'];
 const PREF=['openai/gpt-oss-120b','qwen/qwen3.8-27b','openai/gpt-oss-20b','llama-3.3-70b-versatile','qwen/qwen3-32b','llama-3.1-8b-instant'];
-const GQ='https://api.groq.com/openai/v1/chat/completions',OR='https://openrouter.ai/api/v1/chat/completions',PL='https://text.pollinations.ai/openai';
+const GQ='https://api.groq.com/openai/v1/chat/completions',OR='https://openrouter.ai/api/v1/chat/completions',PL='https://text.pollinations.ai/openai',GEM='gemini',GEMU='https://generativelanguage.googleapis.com/v1beta';
 
 async function checkKeys(){
   const e=$('#kst');if(!e)return;const g=kl('groq')[0];
@@ -994,18 +1020,53 @@ const orList=async()=>{
 let ORV=null;
 const orVis=async()=>{if(ORV?.length)return ORV;try{const j=await (await tf('https://openrouter.ai/api/v1/models',{},8000)).json();ORV=(j.data||[]).filter(x=>String(x.id).endsWith(':free')&&(x.architecture?.input_modalities||[]).includes('image')).map(x=>x.id).slice(0,4)}catch(e){ORV=[]}return ORV};
 let SPEED=0;
-async function oaCall(u,k,m,messages,json,vision,sig){
-  const body={model:m,messages,temperature:.2,max_tokens:5000};
-  if(/gpt-oss/.test(m))body.reasoning_effort='high';
+// ---- rate limits: every model rests when the free tier says "try again in N s", and callers WAIT for it instead of giving up ----
+const CD={},cdId=x=>x.u+'|'+String(x.k).slice(-6)+'|'+x.m; // 'provider|key|model' → time until which that model is resting
+let ASKW=0,ASKLONG=0,RLN=0,CUT=false,LASTCUT=false; // CUT: the last answer stopped because it hit max_tokens // callers currently waiting · ms until the soonest model is ready when a call refused to wait · rate-limit hits so far
+const retryOf=(h,msg)=>{ // seconds to wait: retry-after header, "try again in 1m3.5s / 250ms" text, or Gemini's retryDelay
+  const ra=parseFloat(h&&h.get&&h.get('retry-after'));if(ra>0)return ra;
+  msg=String(msg||'');let m=/try again in\s*(?:(\d+)h)?\s*(?:(\d+)m(?!s))?\s*(?:([\d.]+)s)?\s*(?:([\d.]+)ms)?/i.exec(msg);
+  if(m&&(m[1]||m[2]||m[3]||m[4]))return (+m[1]||0)*3600+(+m[2]||0)*60+(+m[3]||0)+(+m[4]||0)/1000;
+  m=/retryDelay"?\s*[:=]\s*"?([\d.]+)s/i.exec(msg);if(m)return +m[1];
+  return 0;
+};
+const httpErr=async(r,u)=>{let j={},raw='';try{raw=await r.text();j=JSON.parse(raw)}catch(e){}const msg=String(j.error?.message||j.message||raw||'');const e=new Error(r.status+' '+msg.slice(0,95));e.status=r.status;
+  if(r.status==429||r.status==503||r.status==500){e.retry=retryOf(r.headers,msg+' '+raw)||(r.status==429?6:4);if(/PerDay/i.test(raw))e.retry=Math.max(e.retry,3600)} // Gemini's per-day quota names itself "PerDay"
+  return e};
+async function oaCall(u,k,m,messages,json,vision,sig,o={}){
+  if(u==GEM)return gemCall(k,m,messages,json,vision,sig);
+  const body={model:m,messages,temperature:.2,max_tokens:o.mt||5000}; // Groq counts max_tokens toward the per-minute limit, so a task asks only for what it needs
+  if(/gpt-oss/.test(m))body.reasoning_effort=o.effort||'high';
   else if(u==GQ&&/qwen/i.test(m))body.reasoning_effort=vision?'none':'default'; // transcribing a page needs no reasoning (it only makes it slow)
   if(json&&u==GQ)body.response_format={type:'json_object'};
   const go=()=>tf(u,{method:'POST',headers:{'Content-Type':'application/json',...(k?{Authorization:'Bearer '+k}:{})},body:JSON.stringify(body)},vision?60000:180000,sig);
   let r=await go();
   if(!r.ok&&body.reasoning_effort&&!/gpt-oss/.test(m)){const t=await r.clone().text().catch(()=>'');if(/reasoning/i.test(t)){delete body.reasoning_effort;r=await go()}}
-  if(!r.ok){let j={};try{j=await r.json()}catch(e){}throw new Error(r.status+' '+(j.error?.message||j.message||'').slice(0,95))}
-  const data=await r.json();
+  if(!r.ok)throw await httpErr(r,u);
+  const data=await r.json();CUT=data.choices?.[0]?.finish_reason=='length';
   return data.choices?.[0]?.message?.content||'';
 }
+// Google Gemini (free key from aistudio.google.com/apikey): much better at reading Khmer pages, and a whole page fits in one request
+async function gemCall(k,m,messages,json,vision,sig){
+  const sys=messages.filter(x=>x.role=='system').map(x=>typeof x.content=='string'?x.content:'').join('\n');
+  const part=c=>typeof c=='string'?[{text:c}]:c.map(p=>{if(p.type=='text')return {text:p.text};const mm=/^data:([^;]+);base64,([\s\S]*)$/.exec(p.image_url?.url||'');return mm?{inline_data:{mime_type:mm[1],data:mm[2]}}:{text:''}});
+  const contents=messages.filter(x=>x.role!='system').map(x=>({role:x.role=='assistant'?'model':'user',parts:part(x.content)}));
+  const gc={temperature:.2,maxOutputTokens:8192};if(json)gc.responseMimeType='application/json';if(vision&&/2\.5-flash/.test(m))gc.thinkingConfig={thinkingBudget:0};
+  const body={contents,generationConfig:gc};if(sys)body.systemInstruction={parts:[{text:sys}]};
+  const r=await tf(GEMU+'/models/'+m+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':k},body:JSON.stringify(body)},vision?70000:150000,sig);
+  if(!r.ok)throw await httpErr(r);
+  const j=await r.json(),c=j.candidates?.[0];
+  if(!c)throw new Error('Gemini: '+(j.promptFeedback?.blockReason||'គ្មានចម្លើយ'));
+  CUT=c.finishReason=='MAX_TOKENS';
+  return (c.content?.parts||[]).map(x=>x.text||'').join('');
+}
+let GV=null;
+const gemModels=async k=>{
+  if(GV)return GV;let ids=[];
+  try{const r=await tf(GEMU+'/models?pageSize=200',{headers:{'x-goog-api-key':k}},8000);if(r.ok)ids=((await r.json()).models||[]).filter(x=>(x.supportedGenerationMethods||[]).includes('generateContent')).map(x=>String(x.name).replace(/^models\//,''))}catch(e){}
+  const v=x=>parseFloat((x.match(/^gemini-([\d.]+)/)||[0,0])[1]),fl=ids.filter(i=>/^gemini-\d+(\.\d+)?-flash(-lite)?$/.test(i)).sort((a,b)=>v(b)-v(a)||(/lite/.test(a)-/lite/.test(b)));
+  return GV=fl.length?fl.slice(0,3):['gemini-2.5-flash','gemini-2.5-flash-lite'];
+};
 
 // Free AI tiers cap a single request (Groq: "413 Request too large" / tokens-per-minute). When a provider says the prompt is too big,
 // retry the same model with a shorter one (older chat turns dropped, long excerpts clipped) instead of failing.
@@ -1014,40 +1075,59 @@ function shrinkMsgs(ms,f){
   const sy=ms.filter(m=>m.role=='system'),rest=ms.filter(m=>m.role!='system'),keep=rest.slice(-Math.max(1,Math.ceil(rest.length*f)));
   return [...sy,...keep].map(m=>{if(typeof m.content!='string')return m;const n=Math.max(1500,Math.floor(m.content.length*f));return m.content.length>n?{...m,content:m.content.slice(0,n)+'…'}:m});
 }
-async function ask(messages,json,vision,check,sig){
+async function ask(messages,json,vision,check,sig,o={}){
   messages=messages.map(m=>({role:m.role,content:m.content}));
   // answer checkers must see the whole answer, so they are never shortened
   let msgs=messages,lvl=0;const canShrink=!vision&&!/^You are a strict /.test(typeof messages[0]?.content=='string'?messages[0].content:'');
   if(OFFLINE()){ERR='គ្មានអ៊ីនធឺណិត — AI ត្រូវការអ៊ីនធឺណិត';return null}
-  ERR='';const t0=Date.now(),EM={},dead=new Set(),L=[],gKeys=kl('groq');
+  ERR='';ASKLONG=0;const t0=Date.now(),EM={},dead=new Set(),L=[],gKeys=kl('groq'),mKeys=kl('gemini'),GL=[];
+  if(mKeys.length)(await gemModels(mKeys[0])).slice(0,2).forEach(m=>mKeys.slice(0,2).forEach(k=>GL.push({m,u:GEM,k})));
+  if(vision)L.push(...GL); // reading a page: Gemini first (best Khmer), then Groq
   if(gKeys.length){
     const av=await avail();let models;
     if(vision)models=av.filter(m=>/qwen3\.8|qwen.*vl|vision|scout|maverick|llava|pixtral/i.test(m)).sort((a,b)=>/qwen/i.test(b)-/qwen/i.test(a));
     else{models=PREF.filter(m=>av.includes(m));if(av.length)models=[...new Set([...models,...av])];if(!models.length)models=PREF.slice(0,3)}
-    models.slice(0,vision?2:5).forEach(m=>shuf(gKeys).slice(0,2).forEach(k=>L.push({m,u:GQ,k})));
+    let base=models.slice(0,vision?2:5);if(o.rot&&base.length>1){const r=o.rot%Math.min(base.length,4);base=[...base.slice(r),...base.slice(0,r)]} // parallel jobs start on different models: each model has its own per-minute allowance
+    base.forEach(m=>shuf(gKeys).slice(0,2).forEach(k=>L.push({m,u:GQ,k})));
   }
+  if(!vision)L.push(...GL);
   const orKeys=kl('openrouter');
   if(orKeys.length)(vision?await orVis():(await orList()).slice(0,4)).forEach(m=>L.push({m,u:OR,k:orKeys[0]}));
-  if(!L.length){ERR='មិនទាន់មានកូនសោ AI — Admin ត្រូវដាក់កូនសោ Groq ក្នុង Profile';return null}
-  for(const x of L){
-    if(sig?.aborted){ERR='បានបោះបង់';return null}
-    const dk=x.u+'|'+x.k;if(dead.has(dk))continue;if(Date.now()-t0>(vision?90000:420000))break;
-    try{
-      let t;
-      for(;;){try{t=await oaCall(x.u,x.k,x.m,msgs,json,vision,sig);break}catch(e){if(canShrink&&lvl<3&&tooBig(e.message)){msgs=shrinkMsgs(messages,[.6,.4,.25][lvl++]);continue}throw e}}
-      t=(t||'').replace(/<think>[\s\S]*?<\/think>/g,'').trim();
-      if(!t)throw new Error('គ្មានចម្លើយ');
-      if(check&&!check(t))throw new Error('ទម្រង់មិនត្រឹមត្រូវ');
-      WHO=(x.u==GQ?'Groq':x.u==OR?'OpenRouter':'AI បម្រុង')+' · '+x.m.split('/').pop();
-      return t;
-    }catch(e){
+  if(!L.length){ERR='មិនទាន់មានកូនសោ AI — Admin ត្រូវដាក់កូនសោ Groq ឬ Gemini ក្នុង Profile';return null}
+  const end=t0+(o.budget??(vision?110000:420000)),maxWait=o.maxWait??40000;let round=0,soon=0;
+  for(;;){
+    soon=0;let hadRL=false,h5=false;
+    for(const x of L){
       if(sig?.aborted){ERR='បានបោះបង់';return null}
-      const m=e.name=='AbortError'?'អស់ពេលរង់ចាំ':e.message||'កំហុសបណ្តាញ',lb=x.u==GQ?'Groq':x.u==OR?'OpenRouter':'AI បម្រុង';
-      EM[lb]=EM[lb]||x.m.split('/').pop()+' → '+m;
-      if(/\b(401|403)\b|invalid_api_key|unauthor/i.test(m))dead.add(dk);
+      const dk=x.u+'|'+x.k,id=cdId(x);if(dead.has(dk))continue;
+      if((CD[id]||0)>Date.now()){hadRL=true;soon=soon?Math.min(soon,CD[id]):CD[id];continue} // this model is resting after "try again in N s"
+      if(Date.now()>end)break;
+      try{
+        let t;
+        for(;;){try{t=await oaCall(x.u,x.k,x.m,msgs,json,vision,sig,o);var cut=CUT;break}catch(e){if(canShrink&&lvl<3&&tooBig(e.message)){msgs=shrinkMsgs(messages,[.6,.4,.25][lvl++]);continue}throw e}}
+        t=(t||'').replace(/<think>[\s\S]*?<\/think>/g,'').trim();
+        if(!t)throw new Error('គ្មានចម្លើយ');
+        if(check&&!check(t))throw new Error('ទម្រង់មិនត្រឹមត្រូវ');
+        WHO=(x.u==GQ?'Groq':x.u==OR?'OpenRouter':x.u==GEM?'Gemini':'AI បម្រុង')+' · '+x.m.split('/').pop();
+        LASTCUT=!!cut;return t;
+      }catch(e){
+        if(sig?.aborted){ERR='បានបោះបង់';return null}
+        const m=e.name=='AbortError'?'អស់ពេលរង់ចាំ':e.message||'កំហុសបណ្តាញ',lb=x.u==GQ?'Groq':x.u==OR?'OpenRouter':x.u==GEM?'Gemini':'AI បម្រុង';
+        EM[lb]=EM[lb]||x.m.split('/').pop()+' → '+m;
+        if(/\b(401|403)\b|invalid_api_key|unauthor|API key not valid/i.test(m))dead.add(dk);
+        if(e.retry){if(e.status==429){hadRL=true;RLN++}else h5=true;CD[id]=Date.now()+e.retry*1000+250;soon=soon?Math.min(soon,CD[id]):CD[id]}
+      }
     }
+    // nobody answered this round. If the models are only resting (rate limit), wait for the first one and go round again.
+    const w=Math.max(soon-Date.now(),300);
+    if((hadRL||h5)&&soon){
+      if(w>maxWait||Date.now()+w>=end){ASKLONG=w;break} // a long rest (daily limit): do not make the student stare at a spinner
+      if(round<(hadRL?(o.rounds??10):2)){round++;ASKW++;try{await abortSleep(w,sig)}finally{ASKW--}continue} // a server error is retried only twice
+    }
+    break;
   }
-  ERR=(gKeys.length?'':'មិនទាន់មានកូនសោ Groq · ')+(Object.entries(EM).map(([a,b])=>a+': '+b).join(' | ')||'សូមពិនិត្យអ៊ីនធឺណិត')+(/401|Invalid API/i.test(EM.Groq||'')?' · Admin៖ កូនសោ Groq មិនត្រឹមត្រូវ — ដាក់កូនសោថ្មីក្នុង Profile → API រួមសម្រាប់ថ្នាក់':'');
+  ERR=(gKeys.length||mKeys.length?'':'មិនទាន់មានកូនសោ Groq · ')+(Object.entries(EM).map(([a,b])=>a+': '+b).join(' | ')||'សូមពិនិត្យអ៊ីនធឺណិត')+(/401|Invalid API/i.test(EM.Groq||'')?' · Admin៖ កូនសោ Groq មិនត្រឹមត្រូវ — ដាក់កូនសោថ្មីក្នុង Profile → API រួមសម្រាប់ថ្នាក់':'');
+  if(ASKLONG)ERR='AI ឥតគិតថ្លៃអស់កូតា/រវល់ — សាកម្តងទៀតក្រោយ ~'+Math.ceil(ASKLONG/60000)+' នាទី · '+ERR;
   ERR=ERR.replace(/org_[A-Za-z0-9]+/g,'org').replace(/`/g,'').slice(0,320);
   return null;
 }
@@ -1056,7 +1136,8 @@ async function diag(){
   const msg=[{role:'user',content:'Reply with the single word OK'}],av=await avail();
   const T=[
     ['Groq',kl('groq')[0]&&(async()=>{let e;for(const m of (av.length?[PREF.find(m=>av.includes(m))||av[0]]:PREF.slice(0,3))){try{return await oaCall(GQ,kl('groq')[0],m,msg)}catch(x){e=x}}throw e})],
-    ['OpenRouter',kl('openrouter')[0]&&(async()=>{let e;for(const m of (await orList()).slice(0,3)){try{return await oaCall(OR,kl('openrouter')[0],m,msg)}catch(x){e=x}}throw e})]
+    ['OpenRouter',kl('openrouter')[0]&&(async()=>{let e;for(const m of (await orList()).slice(0,3)){try{return await oaCall(OR,kl('openrouter')[0],m,msg)}catch(x){e=x}}throw e})],
+    ['Gemini',kl('gemini')[0]&&(async()=>{let e;for(const m of (await gemModels(kl('gemini')[0])).slice(0,2)){try{return await oaCall(GEM,kl('gemini')[0],m,msg)}catch(x){e=x}}throw e})]
   ];
   return (await Promise.all(T.map(async([n,f])=>{
     if(!f)return '➖ '+n+'៖ មិនទាន់ដាក់កូនសោ';
@@ -1609,13 +1690,18 @@ function cardList(k){
 A.delcard=i=>{const d=sd(view);d.cards=(d.cards||[]).filter((_,j)=>j!=+i);save(view);cards();$('#pane details')?.setAttribute('open','')};
 async function genMany(...a){SPEED=1;try{return await genMany0(...a)}finally{SPEED=0}}
 async function genMany0(total,label,mk,key){
-  const out=[];let fail=0;
-  while(out.length<total&&fail<2){
-    prog(label+' '+out.length+'/'+total+'…');
-    const part=await mk(Math.min(8,total-out.length),out.slice(-40).map(x=>x[key]));
-    const fresh=part.filter(x=>!out.some(y=>y[key]==x[key]));
-    if(!fresh.length){fail++;continue}
-    fail=0;out.push(...fresh);
+  // The free AI returns only a few items per request and rests when it is busy. So: several batches in parallel (each starts on a different
+  // model), duplicates removed, and the missing ones are asked for again — waiting for the AI when it says "busy" — until the number is reached.
+  const out=[],seen=new Set(),norm=x=>String(x).toLowerCase().replace(/[\s.,;:!?()\[\]{}"'“”‘’។៕\-–—_*$\\]+/g,'').slice(0,70),t0=Date.now();
+  let fails=0,round=0;
+  while(out.length<total&&fails<4&&Date.now()-t0<420000){
+    const need=total-out.length,nb=Math.min(3,Math.ceil(need/8)),per=Math.min(9,Math.ceil(need*1.08/nb)),prev=out.slice(-40).map(x=>x[key]);
+    prog(label+' '+out.length+'/'+total+(fails?' · ព្យាយាមម្តងទៀត':'')+'…');
+    const res=await Promise.all(Array.from({length:nb},(_,i)=>mk(per,prev,{rot:round*nb+i,part:i,of:nb}).catch(()=>[])));
+    let got=0;
+    for(const part of res)for(const x of part||[]){const nk=norm(x[key]);if(!nk||seen.has(nk))continue;seen.add(nk);out.push(x);got++}
+    if(got)fails=0;else{fails++;await new Promise(r=>setTimeout(r,1500*fails))}
+    round++;
   }
   endProg();return out.slice(0,total);
 }
@@ -1623,14 +1709,15 @@ A.mkc=async(_,b)=>{
   const k=view;if(needNet())return;if(GENC[k]&&Date.now()-GENC[k]<6e5)return toast('កំពុងបង្កើតប័ណ្ណ… សូមរង់ចាំបន្តិច');
   const N=Math.max(1,Math.floor(+$('#cn').value||10));if(N>60&&!confirm('ប័ណ្ណ '+N+' ត្រូវប្រើពេលយូរ។ បន្តឬ?'))return;
   GENC[k]=Date.now();b.disabled=true;$('#cs').innerHTML='<p class="text-sm text-slate-400">កំពុងបង្កើតប័ណ្ណចងចាំ… អ្នកអាចទៅផ្ទាំងផ្សេងបាន ប័ណ្ណនឹងរង់ចាំអ្នក</p>';
-  const top=$('#qt').value.trim(),ctx=await getSrc(k,$('#src').value,top);
-  const cs=await genMany(N,'កំពុងបង្កើតប័ណ្ណ',async(n,prev)=>{
-    const r=await ask([{role:'system',content:sys(k)+' Output ONLY '+n+' flashcards in this exact plain-text format, each separated by a line containing only ---. No JSON, no code fences.\nF: <front: a question or term>\nB: <back: short clear answer, under 30 words>\nDouble-check every fact against the source before writing it.\n'+(SCI.has(k)?MATHF+' ':'')+LQ(k)+(prev.length?' Do NOT repeat these: '+prev.join(' | ').slice(0,1500)+'.':'')},{role:'user',content:`Make ${n} flashcards${top?` about: ${top}`:''}.${ctx?`\nBase them on:\n"""${ctx.slice(0,5200)}"""`:''}`}],false,false,t=>parseCards(t).length>0);
+  const top=$('#qt').value.trim(),src=$('#src').value,ctx=await getSrc(k,src,top);
+  const cs=await genMany(N,'កំពុងបង្កើតប័ណ្ណ',async(n,prev,o)=>{
+    const cx=o.rot&&!top?await getSrc(k,src,top):ctx; // no topic: every batch looks at a different part of the files
+    const r=await ask([{role:'system',content:sys(k)+' Output ONLY '+n+' flashcards in this exact plain-text format, each separated by a line containing only ---. No JSON, no code fences.\nF: <front: a question or term>\nB: <back: short clear answer, under 30 words>\nDouble-check every fact against the source before writing it.\n'+(SCI.has(k)?MATHF+' ':'')+LQ(k)+(prev.length?' Do NOT repeat these: '+prev.join(' | ').slice(0,1500)+'.':'')},{role:'user',content:`Make ${n} flashcards${top?` about: ${top}`:''}.${o.of>1?` (This is part ${o.part+1} of ${o.of}: cover different points from the other parts.)`:''}${cx?`\nBase them on:\n"""${cx.slice(0,5200)}"""`:''}`}],false,false,t=>parseCards(t).length>0,undefined,{rot:o.rot,mt:1200+n*200,effort:'medium'});
     return parseCards(r);
   },'f');
   b.disabled=false;GENC[k]=0;
   if(!cs.length){if(view==k&&tab=='cards'&&$('#cs'))$('#cs').innerHTML=`<p class="text-sm text-amber-300">មិនអាចបង្កើតប័ណ្ណបានទេ ${esc(ERR||'សូមព្យាយាមម្តងទៀត')}</p>`;return}
-  const d=sd(k);d.cards=[...(d.cards||[]),...cs.map(x=>({...x,box:1,due:today()}))].slice(-1000);await save(k);toast('បានបង្កើត '+cs.length+' ប័ណ្ណ ✓');if(view==k&&tab=='cards')cards();
+  const d=sd(k);d.cards=[...(d.cards||[]),...cs.map(x=>({...x,box:1,due:today()}))].slice(-1000);await save(k);if(cs.length<N)toastL('⚠ បានតែ '+cs.length+'/'+N+' ប័ណ្ណ — AI ឥតគិតថ្លៃរវល់/អស់កូតា ('+(ERR?ERR.slice(0,70):'ឆ្លើយមិនគ្រប់')+') · ចុចបង្កើតម្តងទៀតដើម្បីបន្ថែម');else toast('បានបង្កើត '+cs.length+' ប័ណ្ណ ✓');if(view==k&&tab=='cards')cards();
 };
 A.cstudy=()=>{CQ=dueC(view).sort(()=>Math.random()-.5);CI=0;CF=false;CQK=view;showC()};
 function showC(){
@@ -1800,22 +1887,22 @@ A.import=()=>{$('#bk-in')?.click()};
 A.export=()=>{const o={exported:new Date().toISOString(),profile:{...ME.profile,avatar:undefined},subjects:D},a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(o,null,1)],{type:'application/json'}));a.download='ngs-hub-backup.json';a.click()};
 
 // ---------- AI TOOLS (Admin only) ----------
-const KN=['groq','openrouter'];
+const KN=['groq','openrouter','gemini'];
 const readKeys=()=>{const o={};KN.forEach(n=>{const v=$('#pk-'+n)?.value.trim();if(v)o[n]=v});return o};
 const aiAdmin=()=>`<div class="glass-soft p-3.5 space-y-2.5">
   <p class="font-bold text-xs text-amber-300"><i class="fa-solid fa-key mr-1"></i>API រួមសម្រាប់ថ្នាក់</p>
   <p id="kst" class="text-xs text-slate-400">${(setTimeout(checkKeys,150),'')}</p>
-  ${[['groq','Groq (gsk_...)'],['openrouter','OpenRouter (sk-or-...)']].map(([n,l])=>`<label class="block text-xs text-slate-400">${l}<input id="pk-${n}" type="password" autocomplete="off" class="inp mt-1 font-mono text-xs" value="${esc(KEYS[n]||'')}"></label>`).join('')}
+  ${[['groq','Groq (gsk_...)'],['gemini','Gemini (AIza...) — អានខ្មែរលឿន+ត្រឹមត្រូវជាង · ឥតគិតថ្លៃ aistudio.google.com/apikey'],['openrouter','OpenRouter (sk-or-...)']].map(([n,l])=>`<label class="block text-xs text-slate-400">${l}<input id="pk-${n}" type="password" autocomplete="off" class="inp mt-1 font-mono text-xs" value="${esc(KEYS[n]||'')}"></label>`).join('')}
   <div class="grid grid-cols-2 gap-2"><button data-a="testai" class="btn btn-sec text-xs"><i class="fa-solid fa-heart-pulse text-emerald-400"></i>សាកល្បង AI</button><button data-a="sharekeys" class="btn text-xs"><i class="fa-solid fa-share-nodes"></i>រក្សាទុកសម្រាប់ថ្នាក់</button></div>
 </div>`;
-A.testai=async(_,b)=>{const o=readKeys();if(Object.keys(o).length)KEYS=o;AV=null;ORM=null;b.disabled=true;toast('កំពុងសាកល្បង AI…');const t=await diag();b.disabled=false;alert(t)};
+A.testai=async(_,b)=>{const o=readKeys();if(Object.keys(o).length)KEYS=o;AV=null;ORM=null;GV=null;b.disabled=true;toast('កំពុងសាកល្បង AI…');const t=await diag();b.disabled=false;alert(t)};
 A.cpid=()=>navigator.clipboard?.writeText(U.uid).then(()=>toast('បានចម្លង ID ✓'));
 A.sharekeys=async()=>{
   const o=readKeys();if(!Object.keys(o).length)return toast('សូមដាក់កូនសោយ៉ាងតិចមួយ');
   for(const n of Object.keys(o)){o[n]=String(o[n]).split(/[\s,;]+/).map(x=>x.replace(/[^A-Za-z0-9_\-\.]/g,'')).filter(x=>x.length>10).join(',');if(!o[n])delete o[n]}
   if(!Object.keys(o).length)return toast('កូនសោមិនត្រឹមត្រូវ (មានអក្សរចម្លែក) សូមចម្លងម្តងទៀត');
   if(o.groq){try{const r=await fetch('https://api.groq.com/openai/v1/models',{headers:{Authorization:'Bearer '+o.groq.split(',')[0]}});if(r.status==401&&!confirm('កូនសោ Groq មិនត្រឹមត្រូវ (401 Invalid API Key)។\nរក្សាទុកដដែលឬ?'))return}catch(e){}}
-  try{await setDoc(doc(db,'config','ai'),o,{merge:true});KEYS={...KEYS,...o};AV=null;ORM=null;toast('បានរក្សាទុកសម្រាប់ថ្នាក់ទាំងមូល ✓');checkKeys()}catch(e){alert('មានតែ Admin ប៉ុណ្ណោះដែលរក្សាទុកបាន។ '+(e.code||''))}
+  try{await setDoc(doc(db,'config','ai'),o,{merge:true});KEYS={...KEYS,...o};AV=null;ORM=null;GV=null;toast('បានរក្សាទុកសម្រាប់ថ្នាក់ទាំងមូល ✓');checkKeys()}catch(e){alert('មានតែ Admin ប៉ុណ្ណោះដែលរក្សាទុកបាន។ '+(e.code||''))}
 };
 
 // ---------- DAILY MISSIONS & CHEAT SHEET ----------
@@ -1939,14 +2026,16 @@ A.mk=async(_,b)=>{
   const N=Math.max(1,Math.floor(+$('#qn').value||10)),LV=$('#ql').value;if(N>60&&!confirm('សំណួរ '+N+' ត្រូវប្រើពេលយូរ។ បន្តឬ?'))return;
   GENQ[k]=Date.now();QOPT[k]={t:$('#qt').value,n:$('#qn').value,l:LV};
   b.disabled=true;$('#qz').innerHTML='<p class="text-sm text-slate-400">កំពុងបង្កើតសំណួរតេស្ត… អ្នកអាចទៅផ្ទាំងផ្សេងបាន សំណួរនឹងរង់ចាំអ្នក</p>';
-  const top=$('#qt').value.trim(),ctx=await getSrc(k,$('#src').value,top);
-  const qs=await genMany(N,'កំពុងបង្កើតសំណួរ',async(n,prev)=>{
-    const r=await ask([{role:'system',content:sys(k)+' Output ONLY '+n+' '+LV+' multiple-choice questions in this exact plain-text format, each separated by a line containing only ---. No JSON, no code fences.\nQ: <question>\nA) <option>\nB) <option>\nC) <option>\nD) <option>\nANSWER: <A, B, C or D>\nWHY: <short explanation>\nSolve every question yourself first and double-check that the marked answer is really correct. Exactly one option is correct and the options must be different. '+(SCI.has(k)?MATHF+' ':'')+LQ(k)+(prev.length?' Do NOT repeat these questions: '+prev.join(' | ').slice(0,1500)+'.':'')},{role:'user',content:`Make ${n} questions${top?` about: ${top}`:''}.${ctx?`\nBase them on:\n"""${ctx.slice(0,5200)}"""`:''}`}],false,false,t=>parseQuiz(t,k).length>0);
+  const top=$('#qt').value.trim(),src=$('#src').value,ctx=await getSrc(k,src,top);
+  const qs=await genMany(N,'កំពុងបង្កើតសំណួរ',async(n,prev,o)=>{
+    const cx=o.rot&&!top?await getSrc(k,src,top):ctx; // no topic: every batch looks at a different part of the files
+    const r=await ask([{role:'system',content:sys(k)+' Output ONLY '+n+' '+LV+' multiple-choice questions in this exact plain-text format, each separated by a line containing only ---. No JSON, no code fences.\nQ: <question>\nA) <option>\nB) <option>\nC) <option>\nD) <option>\nANSWER: <A, B, C or D>\nWHY: <short explanation>\nSolve every question yourself first and double-check that the marked answer is really correct. Exactly one option is correct and the options must be different. '+(SCI.has(k)?MATHF+' ':'')+LQ(k)+(prev.length?' Do NOT repeat these questions: '+prev.join(' | ').slice(0,1500)+'.':'')},{role:'user',content:`Make ${n} questions${top?` about: ${top}`:''}.${o.of>1?` (This is part ${o.part+1} of ${o.of}: cover different points from the other parts.)`:''}${cx?`\nBase them on:\n"""${cx.slice(0,5200)}"""`:''}`}],false,false,t=>parseQuiz(t,k).length>0,undefined,{rot:o.rot,mt:1400+n*330,effort:'medium'});
     return await verifyQuiz(k,parseQuiz(r,k));
   },'q');
   b.disabled=false;GENQ[k]=0;const here=view==k&&tab=='quiz'&&$('#qz');
   if(!qs.length){if(here)$('#qz').innerHTML='<p class="text-sm text-amber-300">មិនអាចបង្កើតសំណួរបានទេ '+esc(ERR||'សូមព្យាយាមម្តងទៀត')+'</p>';else toast('មិនអាចបង្កើតសំណួរបានទេ — សូមព្យាយាមម្តងទៀត');return}
   setQ({k,qs,i:0,s:0});if(here)showQ();else toast('✅ សំណួររួចរាល់ — បើកផ្ទាំង «សំណួរ» ដើម្បីធ្វើ');
+  if(qs.length<N)toastL('⚠ បានតែ '+qs.length+'/'+N+' សំណួរ — AI ឥតគិតថ្លៃរវល់/អស់កូតា ('+(ERR?ERR.slice(0,70):'ឆ្លើយមិនគ្រប់')+') · ចុចបង្កើតម្តងទៀតដើម្បីបន្ថែម');
 };
 function showQ(){
   const z=$('#qz');if(!z||!Q||Q.k!==view)return;const q=Q.qs[Q.i];
