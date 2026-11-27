@@ -317,6 +317,9 @@ const CLS=()=>normCls(ME.profile&&ME.profile.cls);
 const LEGACY_CLS='12NGS-B'; // notices posted before classes existed belong to the original class
 const sd=k=>D[k]||(D[k]={notes:'',hw:[],files:[],scores:[],lang:'km'});
 const save=k=>setDoc(doc(db,'users',U.uid,'subjects',k),sd(k)).catch(e=>toast('រក្សាទុកមិនបាន៖ '+e.code));
+// Some models copy the template of the prompt and answer "<front: …>" / "<back: …>": strip those brackets and labels. Thai/Lao letters mean the model drifted into the wrong language.
+const unang=x=>{let t=String(x??'').trim(),had=false;t=t.replace(/^<\s*(?:front|back|question|option|answer|why|explanation|term)\s*[:：]\s*/i,()=>(had=true,''));t=t.replace(/^<([^<>]*)>$/,'$1');if(had)t=t.replace(/>\s*$/,'');return t.trim()};
+const wrongLang=x=>/[\u0E00-\u0EFF]/.test(String(x||''));
 const txtRef=(k,id)=>doc(db,'users',U.uid,'subjects',k,'texts',id);
 
 // IndexedDB for local files
@@ -345,7 +348,7 @@ async function streak(){
 onAuthStateChanged(auth,async u=>{
   U=u;$('#auth').classList.toggle('hide',!!u);$('#app').classList.toggle('hide',!u);
   if(!u){D={};chat={};if(TM){clearInterval(TM.iv);TM=null}if(X){clearInterval(X.iv);X=null;$('#xo')?.remove()}return}
-  try{(await getDocs(collection(db,'users',u.uid,'subjects'))).forEach(d=>{D[d.id]={...sd(d.id),...d.data()};D[d.id].files=(D[d.id].files||[]).map(f=>f.tag=='សៀវភៅគោល'?{...f,tag:'មេរៀន'}:f)}); // the removed 'textbook' tag: such files go back to Lessons so they never disappear
+  try{(await getDocs(collection(db,'users',u.uid,'subjects'))).forEach(d=>{D[d.id]={...sd(d.id),...d.data()};D[d.id].files=(D[d.id].files||[]).map(f=>f.tag=='សៀវភៅគោល'?{...f,tag:'មេរៀន'}:f);if(D[d.id].cards?.length){let ch=0;D[d.id].cards=D[d.id].cards.map(c=>{const f=unang(c.f),b=unang(c.b);if(f===c.f&&b===c.b)return c;ch++;return{...c,f,b}});if(ch)setTimeout(()=>save(d.id),2500)}}); // the removed 'textbook' tag: such files go back to Lessons so they never disappear
   streakN=await streak()}catch(e){toast('មិនអាចផ្ទុកទិន្នន័យ៖ '+(e.code||''))}
   try{const c=await getDoc(doc(db,'config','ai'));if(c.exists())KEYS={...c.data()}}catch(e){}
   applyClass();pbtn();syncPub();
@@ -976,7 +979,7 @@ const kl=n=>(KEYS[n]||'').split(/[\s,;]+/).map(x=>x.replace(/[^A-Za-z0-9_\-\.]/g
 const shuf=a=>[...a].sort(()=>Math.random()-.5);
 const jparse=t=>JSON.parse(String(t||'').replace(/^[\s\S]*?(\{[\s\S]*\})[\s\S]*$/,'$1'));
 const MATHF='MATH FORMAT: write every formula in LaTeX — inline $...$, display $$...$$ on its own line. Never plain-text math (no x^2, sqrt(), 1/2): use $x^{2}$, $\\sqrt{x}$, $\\frac{1}{2}$, $\\lim_{x\\to 0}$, $\\vec{AB}$. Never put ** or _ markdown inside formulas.';
-const parseQuiz=(t,k)=>String(t||'').replace(/```[a-z]*/gi,'').split(/^\s*-{3,}\s*$/m).map(b=>{const m=b.match(/Q\s*\d*\s*[:：.)]\s*([\s\S]*?)\n\s*A\s*[):.：]\s*([\s\S]*?)\n\s*B\s*[):.：]\s*([\s\S]*?)\n\s*C\s*[):.：]\s*([\s\S]*?)\n\s*D\s*[):.：]\s*([\s\S]*?)\n\s*(?:ANSWER|ANS|ចម្លើយ)\s*[:：]\s*\(?([A-Da-d])\)?[^\n]*(?:\n\s*(?:WHY|EXPLANATION|ហេតុផល)\s*[:：]\s*([\s\S]*))?/i);if(!m)return null;return{q:m[1].trim(),options:[m[2],m[3],m[4],m[5]].map(x=>x.trim()),answer:'ABCD'.indexOf(m[6].toUpperCase()),why:(m[7]||'').trim(),k}}).filter(x=>x&&x.q&&x.options.every(Boolean)&&x.answer>=0);
+const parseQuiz=(t,k)=>String(t||'').replace(/```[a-z]*/gi,'').split(/^\s*-{3,}\s*$/m).map(b=>{const m=b.match(/Q\s*\d*\s*[:：.)]\s*([\s\S]*?)\n\s*A\s*[):.：]\s*([\s\S]*?)\n\s*B\s*[):.：]\s*([\s\S]*?)\n\s*C\s*[):.：]\s*([\s\S]*?)\n\s*D\s*[):.：]\s*([\s\S]*?)\n\s*(?:ANSWER|ANS|ចម្លើយ)\s*[:：]\s*\(?([A-Da-d])\)?[^\n]*(?:\n\s*(?:WHY|EXPLANATION|ហេតុផល)\s*[:：]\s*([\s\S]*))?/i);if(!m)return null;return{q:unang(m[1]),options:[m[2],m[3],m[4],m[5]].map(unang),answer:'ABCD'.indexOf(m[6].toUpperCase()),why:unang(m[7]||''),k}}).filter(x=>x&&x.q&&x.options.every(Boolean)&&x.answer>=0&&!wrongLang(x.q+x.options.join('')+x.why));
 const mathy=c=>!/\$/.test((c.f||'')+(c.b||''))&&/[|^√*\/²³≠≤≥∈θπ]|\b[a-z]\d\b|\([^)]*[+\-*\/][^)]*\)/i.test((c.f||'')+(c.b||''));
 async function verifyQuiz(k,items){
   if(!SCI.has(k)||!items.length)return items;
@@ -986,7 +989,7 @@ async function verifyQuiz(k,items){
   const key={};r.split('\n').forEach(l=>{const m=l.match(/^\s*(\d+)\s*[:.)\-]\s*([A-Da-dXx])/);if(m)key[+m[1]]=m[2].toUpperCase()});
   return items.filter((x,i)=>{const a=key[i+1];return !a||a==='ABCD'[x.answer]});
 }
-const parseCards=t=>String(t||'').replace(/```[a-z]*/gi,'').split(/^\s*-{3,}\s*$/m).map(b=>{const m=b.match(/F\s*[:：]\s*([\s\S]*?)\n\s*B\s*[:：]\s*([\s\S]*)/i);return m?{f:m[1].trim(),b:m[2].trim()}:null}).filter(x=>x&&x.f&&x.b);
+const parseCards=t=>String(t||'').replace(/```[a-z]*/gi,'').split(/^\s*-{3,}\s*$/m).map(b=>{const m=b.match(/F\s*[:：]\s*([\s\S]*?)\n\s*B\s*[:：]\s*([\s\S]*)/i);return m?{f:unang(m[1]),b:unang(m[2])}:null}).filter(x=>x&&x.f&&x.b&&!wrongLang(x.f+x.b));
 const okJ=k=>t=>{try{return jparse(t)[k].some(x=>x.q||x.f)}catch(e){return false}};
 let AV=null,ERR='',WHO='',ORM=null;
 
@@ -1365,7 +1368,7 @@ A.ktai=async(_,b)=>{
   let got=[];
   try{
     const ctx=await getSrc(k,src,top);
-    const r=await ask([{role:'system',content:sys(k)+' Output ONLY '+N+' items: '+M.x+'. Use this exact plain-text format, items separated by a line containing only ---. No JSON, no code fences.\nF: <the term, word, name or event>\nB: <'+M.b+'>\nWhen a source is given use ONLY facts that appear in it. '+(en?'Write in English.':'Write in clear Khmer (keep technical terms in English in brackets).')+(L.length?' Do NOT repeat these: '+L.slice(-80).map(x=>x.w).join(' | ').slice(0,1500)+'.':'')},{role:'user',content:`List ${N} items${top?` about: ${top}`:''}.${ctx?`\nBase them on:\n"""${ctx.slice(0,5200)}"""`:''}`}],false,false,t=>parseCards(t).length>0);
+    const r=await ask([{role:'system',content:sys(k)+' Output ONLY '+N+' items: '+M.x+'. Use this exact plain-text format, items separated by a line containing only ---. No JSON, no code fences.\nF: <the term, word, name or event>\nB: <'+M.b+'>\nReplace each <…> with real text — never write the < > symbols. Write only Khmer and English, never Thai or Lao.\nWhen a source is given use ONLY facts that appear in it. '+(en?'Write in English.':'Write in clear Khmer (keep technical terms in English in brackets).')+(L.length?' Do NOT repeat these: '+L.slice(-80).map(x=>x.w).join(' | ').slice(0,1500)+'.':'')},{role:'user',content:`List ${N} items${top?` about: ${top}`:''}.${ctx?`\nBase them on:\n"""${ctx.slice(0,5200)}"""`:''}`}],false,false,t=>parseCards(t).length>0);
     got=parseCards(r);
   }finally{GENT[k]=0;b.disabled=false;endProg()}
   const have=new Set(L.map(x=>x.w.toLowerCase())),fresh=got.filter(x=>!have.has(x.f.toLowerCase())).slice(0,N);
@@ -1687,7 +1690,7 @@ A.mkc=async(_,b)=>{
   const top=$('#qt').value.trim(),src=$('#src').value,ctx=await getSrc(k,src,top);
   const cs=await genMany(N,'កំពុងបង្កើតប័ណ្ណ',async(n,prev,o)=>{
     const cx=o.rot&&!top?await getSrc(k,src,top):ctx; // no topic: every batch looks at a different part of the files
-    const r=await ask([{role:'system',content:sys(k)+' Output ONLY '+n+' flashcards in this exact plain-text format, each separated by a line containing only ---. No JSON, no code fences.\nF: <front: a question or term>\nB: <back: short clear answer, under 30 words>\nDouble-check every fact against the source before writing it.\n'+(SCI.has(k)?MATHF+' ':'')+LQ(k)+(prev.length?' Do NOT repeat these: '+prev.join(' | ').slice(0,1500)+'.':'')},{role:'user',content:`Make ${n} flashcards${top?` about: ${top}`:''}.${o.of>1?` (This is part ${o.part+1} of ${o.of}: cover different points from the other parts.)`:''}${cx?`\nBase them on:\n"""${cx.slice(0,5200)}"""`:''}`}],false,false,t=>parseCards(t).length>0,undefined,{rot:o.rot,mt:1200+n*200,effort:'medium'});
+    const r=await ask([{role:'system',content:sys(k)+' Output ONLY '+n+' flashcards in this exact plain-text format, each separated by a line containing only ---. No JSON, no code fences.\nF: <a question or term>\nB: <a short clear answer, under 30 words>\nReplace each <…> with the real text — never write the < > symbols or the words front/back. Write only Khmer and English, never Thai or Lao.\nDouble-check every fact against the source before writing it.\n'+(SCI.has(k)?MATHF+' ':'')+LQ(k)+(prev.length?' Do NOT repeat these: '+prev.join(' | ').slice(0,1500)+'.':'')},{role:'user',content:`Make ${n} flashcards${top?` about: ${top}`:''}.${o.of>1?` (This is part ${o.part+1} of ${o.of}: cover different points from the other parts.)`:''}${cx?`\nBase them on:\n"""${cx.slice(0,5200)}"""`:''}`}],false,false,t=>parseCards(t).length>0,undefined,{rot:o.rot,mt:1200+n*200,effort:'medium'});
     return parseCards(r);
   },'f');
   b.disabled=false;GENC[k]=0;
@@ -1744,7 +1747,7 @@ A.mock=async(_,b)=>{
   const parts=await Promise.all(pick.map(async s=>{
     const k=s[0],d=sd(k),fs=d.files.filter(f=>f.n);let ctx=d.notes.slice(0,2500);
     if(fs.length)ctx=await getRel(k,'',4000,fs.some(f=>f.tag=='វិញ្ញាសា')?'វិញ្ញាសា':'');
-    return await genMany(per,'កំពុងរៀបចំវិញ្ញាសា',async(n,prev)=>{const r=await ask([{role:'system',content:sys(k)+' Output ONLY '+n+' multiple-choice questions in this exact plain-text format, each separated by a line containing only ---. No JSON, no code fences.\nQ: <question>\nA) <option>\nB) <option>\nC) <option>\nD) <option>\nANSWER: <A, B, C or D>\nWHY: <short explanation>\nSolve every question yourself first and double-check that the marked answer is really correct. Exactly one option is correct. '+(SCI.has(k)?MATHF+' ':'')+LQ(k)+(prev.length?' Do NOT repeat these: '+prev.join(' | ').slice(0,1200)+'.':'')},{role:'user',content:`Make ${n} Grade 12 exam questions${ctx?`\nBase them on:\n"""${ctx}"""`:''}`}],false,false,t=>parseQuiz(t,k).length>0);return (await verifyQuiz(k,parseQuiz(r,k))).map(x=>({...x,k}))},'q')
+    return await genMany(per,'កំពុងរៀបចំវិញ្ញាសា',async(n,prev)=>{const r=await ask([{role:'system',content:sys(k)+' Output ONLY '+n+' multiple-choice questions in this exact plain-text format, each separated by a line containing only ---. No JSON, no code fences.\nQ: <question>\nA) <option>\nB) <option>\nC) <option>\nD) <option>\nANSWER: <A, B, C or D>\nWHY: <short explanation>\nReplace each <…> with real text — never write the < > symbols. Write only Khmer and English, never Thai or Lao.\nSolve every question yourself first and double-check that the marked answer is really correct. Exactly one option is correct. '+(SCI.has(k)?MATHF+' ':'')+LQ(k)+(prev.length?' Do NOT repeat these: '+prev.join(' | ').slice(0,1200)+'.':'')},{role:'user',content:`Make ${n} Grade 12 exam questions${ctx?`\nBase them on:\n"""${ctx}"""`:''}`}],false,false,t=>parseQuiz(t,k).length>0);return (await verifyQuiz(k,parseQuiz(r,k))).map(x=>({...x,k}))},'q')
   }));
   b.disabled=false;const qs=parts.flat().filter((x,i,a)=>a.findIndex(y=>y.q==x.q)==i).sort(()=>Math.random()-.5).slice(0,N);
   if(!qs.length){if($('#mx'))$('#mx').innerHTML=`<p class="text-sm text-amber-300">មិនអាចរៀបចំវិញ្ញាសាបានទេ សូមព្យាយាមម្តងទៀត។</p>`;return}
@@ -2004,7 +2007,7 @@ A.mk=async(_,b)=>{
   const top=$('#qt').value.trim(),src=$('#src').value,ctx=await getSrc(k,src,top);
   const qs=await genMany(N,'កំពុងបង្កើតសំណួរ',async(n,prev,o)=>{
     const cx=o.rot&&!top?await getSrc(k,src,top):ctx; // no topic: every batch looks at a different part of the files
-    const r=await ask([{role:'system',content:sys(k)+' Output ONLY '+n+' '+LV+' multiple-choice questions in this exact plain-text format, each separated by a line containing only ---. No JSON, no code fences.\nQ: <question>\nA) <option>\nB) <option>\nC) <option>\nD) <option>\nANSWER: <A, B, C or D>\nWHY: <short explanation>\nSolve every question yourself first and double-check that the marked answer is really correct. Exactly one option is correct and the options must be different. '+(SCI.has(k)?MATHF+' ':'')+LQ(k)+(prev.length?' Do NOT repeat these questions: '+prev.join(' | ').slice(0,1500)+'.':'')},{role:'user',content:`Make ${n} questions${top?` about: ${top}`:''}.${o.of>1?` (This is part ${o.part+1} of ${o.of}: cover different points from the other parts.)`:''}${cx?`\nBase them on:\n"""${cx.slice(0,5200)}"""`:''}`}],false,false,t=>parseQuiz(t,k).length>0,undefined,{rot:o.rot,mt:1400+n*330,effort:'medium'});
+    const r=await ask([{role:'system',content:sys(k)+' Output ONLY '+n+' '+LV+' multiple-choice questions in this exact plain-text format, each separated by a line containing only ---. No JSON, no code fences.\nQ: <question>\nA) <option>\nB) <option>\nC) <option>\nD) <option>\nANSWER: <A, B, C or D>\nWHY: <short explanation>\nReplace each <…> with real text — never write the < > symbols. Write only Khmer and English, never Thai or Lao.\nSolve every question yourself first and double-check that the marked answer is really correct. Exactly one option is correct and the options must be different. '+(SCI.has(k)?MATHF+' ':'')+LQ(k)+(prev.length?' Do NOT repeat these questions: '+prev.join(' | ').slice(0,1500)+'.':'')},{role:'user',content:`Make ${n} questions${top?` about: ${top}`:''}.${o.of>1?` (This is part ${o.part+1} of ${o.of}: cover different points from the other parts.)`:''}${cx?`\nBase them on:\n"""${cx.slice(0,5200)}"""`:''}`}],false,false,t=>parseQuiz(t,k).length>0,undefined,{rot:o.rot,mt:1400+n*330,effort:'medium'});
     return await verifyQuiz(k,parseQuiz(r,k));
   },'q');
   b.disabled=false;GENQ[k]=0;const here=view==k&&tab=='quiz'&&$('#qz');
