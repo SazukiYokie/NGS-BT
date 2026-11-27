@@ -616,7 +616,7 @@ async function scanTile(img,sig,mt=2600,depth=0){
   return sig.aborted?'':null;
 }
 async function tilesOf(s){
-  const {g,base,land,rows,cols,gem}=s,sc=gem?Math.min(2.6,Math.max(1.4,2300/Math.max(base.width,base.height))):Math.min(3.2,Math.max(1.6,(land?2600:1900)/base.width)),vp=g.getViewport({scale:sc}),c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;
+  const {g,base,land,rows,cols}=s,sc=Math.min(3.2,Math.max(1.6,(land?2600:1900)/base.width)),vp=g.getViewport({scale:sc}),c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;
   await g.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
   const tw=c.width/cols,th=c.height/rows,ov=Math.round(th*.06),tiles=[];
   for(let r=0;r<rows;r++)for(let k=0;k<cols;k++){const y=Math.max(0,r*th-ov),h=Math.min(c.height-y,th+ov*(r?2:1)),t=document.createElement('canvas');t.width=Math.round(tw);t.height=Math.round(h);t.getContext('2d').drawImage(c,k*tw,y,tw,h,0,0,t.width,t.height);tiles.push(t.toDataURL('image/jpeg',.82))}
@@ -625,14 +625,13 @@ async function tilesOf(s){
 // Reads every page in `need` and does not give up: pages the AI could not read are tried again (a few rounds, with a rest in between)
 // so the student does not have to press 🔄 again and again. Returns the pages that are still unread.
 async function scanPages(p,need,T,P,SK,sig,st,upd){
-  const gem=kl('gemini').length>0; // Gemini reads a whole page in one request; Groq's vision model needs the page cut into regions
   st.cap=3;st.max=4;st.parts={};let active=0,streak=0,capT=0;
   const pool=async list=>{
     const PG={},Q=[],bad=[];
     for(const n of list){
       if(sig.aborted)return bad;
-      const g=await p.getPage(n),base=g.getViewport({scale:1}),land=base.width>base.height,dense=(T[n]||'').length>1500,rows=gem?1:dense?3:2,cols=gem?1:land&&dense?2:1;
-      PG[n]={g,base,land,rows,cols,gem,outs:[],left:rows*cols,tiles:null,mt:(T[n]||'').length>=60?Math.min(5000,Math.max(1500,Math.ceil((T[n].length/(rows*cols))*2.4)+400)):4000}; // ≈ tokens this region needs (Khmer is token-hungry); no text layer to judge by → roomy
+      const g=await p.getPage(n),base=g.getViewport({scale:1}),land=base.width>base.height,dense=(T[n]||'').length>1500,rows=dense?3:2,cols=land&&dense?2:1; // the free vision models need a page cut into regions
+      PG[n]={g,base,land,rows,cols,outs:[],left:rows*cols,tiles:null,mt:(T[n]||'').length>=60?Math.min(5000,Math.max(1500,Math.ceil((T[n].length/(rows*cols))*2.4)+400)):4000}; // ≈ tokens this region needs (Khmer is token-hungry); no text layer to judge by → roomy
       for(let i=0;i<rows*cols;i++)Q.push({n,i});
     }
     st.total=Q.length;st.tiles=0;upd();
@@ -965,10 +964,11 @@ A.hask=v=>{const [k,id]=v.split('|'),h=sd(k).hw.find(x=>x.id==id);go(k);tab='ai'
 // ---------- AI ENGINE (100% Free: Groq + OpenRouter + Free Fallback) ----------
 const VIS=['meta-llama/llama-4-scout-17b-16e-instruct','meta-llama/llama-4-maverick-17b-128e-instruct'];
 const PREF=['openai/gpt-oss-120b','qwen/qwen3.8-27b','openai/gpt-oss-20b','llama-3.3-70b-versatile','qwen/qwen3-32b','llama-3.1-8b-instant'];
-const GQ='https://api.groq.com/openai/v1/chat/completions',OR='https://openrouter.ai/api/v1/chat/completions',PL='https://text.pollinations.ai/openai',GEM='gemini',GEMU='https://generativelanguage.googleapis.com/v1beta';
+const GQ='https://api.groq.com/openai/v1/chat/completions',OR='https://openrouter.ai/api/v1/chat/completions',PL='https://text.pollinations.ai/openai';
 
 async function checkKeys(){
   const e=$('#kst');if(!e)return;const g=kl('groq')[0];
+  if(KEYS.gemini){try{await setDoc(doc(db,'config','ai'),{gemini:null},{merge:true});delete KEYS.gemini;toast('បានលុបកូនសោ Gemini ចេញពីប្រព័ន្ធ ✓')}catch(x){}} // Gemini was removed: also erase the key that was shared with the class
   if(!g){e.textContent='⚠ មិនទាន់មានកូនសោ Groq';return}
   try{const r=await fetch('https://api.groq.com/openai/v1/models',{headers:{Authorization:'Bearer '+g}});e.textContent=r.ok?'✅ កូនសោ Groq ដំណើរការ':(r.status==401?'❌ កូនសោ Groq មិនត្រឹមត្រូវ (401) — បង្កើតកូនសោថ្មីនៅ console.groq.com/keys':'⚠ Groq ឆ្លើយ '+r.status)}catch(x){e.textContent='⚠ មិនអាចភ្ជាប់ Groq'}
 }
@@ -1023,7 +1023,7 @@ let SPEED=0;
 // ---- rate limits: every model rests when the free tier says "try again in N s", and callers WAIT for it instead of giving up ----
 const CD={},cdId=x=>x.u+'|'+String(x.k).slice(-6)+'|'+x.m; // 'provider|key|model' → time until which that model is resting
 let ASKW=0,ASKLONG=0,RLN=0,CUT=false,LASTCUT=false; // CUT: the last answer stopped because it hit max_tokens // callers currently waiting · ms until the soonest model is ready when a call refused to wait · rate-limit hits so far
-const retryOf=(h,msg)=>{ // seconds to wait: retry-after header, "try again in 1m3.5s / 250ms" text, or Gemini's retryDelay
+const retryOf=(h,msg)=>{ // seconds to wait: retry-after header or "try again in 1m3.5s / 250ms" text
   const ra=parseFloat(h&&h.get&&h.get('retry-after'));if(ra>0)return ra;
   msg=String(msg||'');let m=/try again in\s*(?:(\d+)h)?\s*(?:(\d+)m(?!s))?\s*(?:([\d.]+)s)?\s*(?:([\d.]+)ms)?/i.exec(msg);
   if(m&&(m[1]||m[2]||m[3]||m[4]))return (+m[1]||0)*3600+(+m[2]||0)*60+(+m[3]||0)+(+m[4]||0)/1000;
@@ -1031,10 +1031,9 @@ const retryOf=(h,msg)=>{ // seconds to wait: retry-after header, "try again in 1
   return 0;
 };
 const httpErr=async(r,u)=>{let j={},raw='';try{raw=await r.text();j=JSON.parse(raw)}catch(e){}const msg=String(j.error?.message||j.message||raw||'');const e=new Error(r.status+' '+msg.slice(0,95));e.status=r.status;
-  if(r.status==429||r.status==503||r.status==500){e.retry=retryOf(r.headers,msg+' '+raw)||(r.status==429?6:4);if(/PerDay/i.test(raw))e.retry=Math.max(e.retry,3600)} // Gemini's per-day quota names itself "PerDay"
+  if(r.status==429||r.status==503||r.status==500){e.retry=retryOf(r.headers,msg+' '+raw)||(r.status==429?6:4);if(/PerDay/i.test(raw))e.retry=Math.max(e.retry,3600)} // a per-day quota names itself "PerDay"
   return e};
 async function oaCall(u,k,m,messages,json,vision,sig,o={}){
-  if(u==GEM)return gemCall(k,m,messages,json,vision,sig);
   const body={model:m,messages,temperature:.2,max_tokens:o.mt||5000}; // Groq counts max_tokens toward the per-minute limit, so a task asks only for what it needs
   if(/gpt-oss/.test(m))body.reasoning_effort=o.effort||'high';
   else if(u==GQ&&/qwen/i.test(m))body.reasoning_effort=vision?'none':'default'; // transcribing a page needs no reasoning (it only makes it slow)
@@ -1046,28 +1045,6 @@ async function oaCall(u,k,m,messages,json,vision,sig,o={}){
   const data=await r.json();CUT=data.choices?.[0]?.finish_reason=='length';
   return data.choices?.[0]?.message?.content||'';
 }
-// Google Gemini (free key from aistudio.google.com/apikey): much better at reading Khmer pages, and a whole page fits in one request
-async function gemCall(k,m,messages,json,vision,sig){
-  const sys=messages.filter(x=>x.role=='system').map(x=>typeof x.content=='string'?x.content:'').join('\n');
-  const part=c=>typeof c=='string'?[{text:c}]:c.map(p=>{if(p.type=='text')return {text:p.text};const mm=/^data:([^;]+);base64,([\s\S]*)$/.exec(p.image_url?.url||'');return mm?{inline_data:{mime_type:mm[1],data:mm[2]}}:{text:''}});
-  const contents=messages.filter(x=>x.role!='system').map(x=>({role:x.role=='assistant'?'model':'user',parts:part(x.content)}));
-  const gc={temperature:.2,maxOutputTokens:8192};if(json)gc.responseMimeType='application/json';if(vision&&/2\.5-flash/.test(m))gc.thinkingConfig={thinkingBudget:0};
-  const body={contents,generationConfig:gc};if(sys)body.systemInstruction={parts:[{text:sys}]};
-  const r=await tf(GEMU+'/models/'+m+':generateContent',{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':k},body:JSON.stringify(body)},vision?70000:150000,sig);
-  if(!r.ok)throw await httpErr(r);
-  const j=await r.json(),c=j.candidates?.[0];
-  if(!c)throw new Error('Gemini: '+(j.promptFeedback?.blockReason||'គ្មានចម្លើយ'));
-  CUT=c.finishReason=='MAX_TOKENS';
-  return (c.content?.parts||[]).map(x=>x.text||'').join('');
-}
-let GV=null;
-const gemModels=async k=>{
-  if(GV)return GV;let ids=[];
-  try{const r=await tf(GEMU+'/models?pageSize=200',{headers:{'x-goog-api-key':k}},8000);if(r.ok)ids=((await r.json()).models||[]).filter(x=>(x.supportedGenerationMethods||[]).includes('generateContent')).map(x=>String(x.name).replace(/^models\//,''))}catch(e){}
-  const v=x=>parseFloat((x.match(/^gemini-([\d.]+)/)||[0,0])[1]),fl=ids.filter(i=>/^gemini-\d+(\.\d+)?-flash(-lite)?$/.test(i)).sort((a,b)=>v(b)-v(a)||(/lite/.test(a)-/lite/.test(b)));
-  return GV=fl.length?fl.slice(0,3):['gemini-2.5-flash','gemini-2.5-flash-lite'];
-};
-
 // Free AI tiers cap a single request (Groq: "413 Request too large" / tokens-per-minute). When a provider says the prompt is too big,
 // retry the same model with a shorter one (older chat turns dropped, long excerpts clipped) instead of failing.
 const tooBig=m=>{m=String(m||'');if(/\b413\b|request too large|too large|reduce the length|context[ _-]?(length|window)|maximum context/i.test(m))return true;const r=/Limit (\d+)[\s\S]*?Requested (\d+)/i.exec(m);return !!r&&+r[2]>+r[1]};
@@ -1080,9 +1057,7 @@ async function ask(messages,json,vision,check,sig,o={}){
   // answer checkers must see the whole answer, so they are never shortened
   let msgs=messages,lvl=0;const canShrink=!vision&&!/^You are a strict /.test(typeof messages[0]?.content=='string'?messages[0].content:'');
   if(OFFLINE()){ERR='គ្មានអ៊ីនធឺណិត — AI ត្រូវការអ៊ីនធឺណិត';return null}
-  ERR='';ASKLONG=0;const t0=Date.now(),EM={},dead=new Set(),L=[],gKeys=kl('groq'),mKeys=kl('gemini'),GL=[];
-  if(mKeys.length)(await gemModels(mKeys[0])).slice(0,2).forEach(m=>mKeys.slice(0,2).forEach(k=>GL.push({m,u:GEM,k})));
-  if(vision)L.push(...GL); // reading a page: Gemini first (best Khmer), then Groq
+  ERR='';ASKLONG=0;const t0=Date.now(),EM={},dead=new Set(),L=[],gKeys=kl('groq');
   if(gKeys.length){
     const av=await avail();let models;
     if(vision)models=av.filter(m=>/qwen3\.8|qwen.*vl|vision|scout|maverick|llava|pixtral/i.test(m)).sort((a,b)=>/qwen/i.test(b)-/qwen/i.test(a));
@@ -1090,10 +1065,9 @@ async function ask(messages,json,vision,check,sig,o={}){
     let base=models.slice(0,vision?2:5);if(o.rot&&base.length>1){const r=o.rot%Math.min(base.length,4);base=[...base.slice(r),...base.slice(0,r)]} // parallel jobs start on different models: each model has its own per-minute allowance
     base.forEach(m=>shuf(gKeys).slice(0,2).forEach(k=>L.push({m,u:GQ,k})));
   }
-  if(!vision)L.push(...GL);
   const orKeys=kl('openrouter');
   if(orKeys.length)(vision?await orVis():(await orList()).slice(0,4)).forEach(m=>L.push({m,u:OR,k:orKeys[0]}));
-  if(!L.length){ERR='មិនទាន់មានកូនសោ AI — Admin ត្រូវដាក់កូនសោ Groq ឬ Gemini ក្នុង Profile';return null}
+  if(!L.length){ERR='មិនទាន់មានកូនសោ AI — Admin ត្រូវដាក់កូនសោ Groq ក្នុង Profile';return null}
   const end=t0+(o.budget??(vision?110000:420000)),maxWait=o.maxWait??40000;let round=0,soon=0;
   for(;;){
     soon=0;let hadRL=false,h5=false;
@@ -1108,11 +1082,11 @@ async function ask(messages,json,vision,check,sig,o={}){
         t=(t||'').replace(/<think>[\s\S]*?<\/think>/g,'').trim();
         if(!t)throw new Error('គ្មានចម្លើយ');
         if(check&&!check(t))throw new Error('ទម្រង់មិនត្រឹមត្រូវ');
-        WHO=(x.u==GQ?'Groq':x.u==OR?'OpenRouter':x.u==GEM?'Gemini':'AI បម្រុង')+' · '+x.m.split('/').pop();
+        WHO=(x.u==GQ?'Groq':x.u==OR?'OpenRouter':'AI បម្រុង')+' · '+x.m.split('/').pop();
         LASTCUT=!!cut;return t;
       }catch(e){
         if(sig?.aborted){ERR='បានបោះបង់';return null}
-        const m=e.name=='AbortError'?'អស់ពេលរង់ចាំ':e.message||'កំហុសបណ្តាញ',lb=x.u==GQ?'Groq':x.u==OR?'OpenRouter':x.u==GEM?'Gemini':'AI បម្រុង';
+        const m=e.name=='AbortError'?'អស់ពេលរង់ចាំ':e.message||'កំហុសបណ្តាញ',lb=x.u==GQ?'Groq':x.u==OR?'OpenRouter':'AI បម្រុង';
         EM[lb]=EM[lb]||x.m.split('/').pop()+' → '+m;
         if(/\b(401|403)\b|invalid_api_key|unauthor|API key not valid/i.test(m))dead.add(dk);
         if(e.retry){if(e.status==429){hadRL=true;RLN++}else h5=true;CD[id]=Date.now()+e.retry*1000+250;soon=soon?Math.min(soon,CD[id]):CD[id]}
@@ -1126,7 +1100,7 @@ async function ask(messages,json,vision,check,sig,o={}){
     }
     break;
   }
-  ERR=(gKeys.length||mKeys.length?'':'មិនទាន់មានកូនសោ Groq · ')+(Object.entries(EM).map(([a,b])=>a+': '+b).join(' | ')||'សូមពិនិត្យអ៊ីនធឺណិត')+(/401|Invalid API/i.test(EM.Groq||'')?' · Admin៖ កូនសោ Groq មិនត្រឹមត្រូវ — ដាក់កូនសោថ្មីក្នុង Profile → API រួមសម្រាប់ថ្នាក់':'');
+  ERR=(gKeys.length?'':'មិនទាន់មានកូនសោ Groq · ')+(Object.entries(EM).map(([a,b])=>a+': '+b).join(' | ')||'សូមពិនិត្យអ៊ីនធឺណិត')+(/401|Invalid API/i.test(EM.Groq||'')?' · Admin៖ កូនសោ Groq មិនត្រឹមត្រូវ — ដាក់កូនសោថ្មីក្នុង Profile → API រួមសម្រាប់ថ្នាក់':'');
   if(ASKLONG)ERR='AI ឥតគិតថ្លៃអស់កូតា/រវល់ — សាកម្តងទៀតក្រោយ ~'+Math.ceil(ASKLONG/60000)+' នាទី · '+ERR;
   ERR=ERR.replace(/org_[A-Za-z0-9]+/g,'org').replace(/`/g,'').slice(0,320);
   return null;
@@ -1136,8 +1110,7 @@ async function diag(){
   const msg=[{role:'user',content:'Reply with the single word OK'}],av=await avail();
   const T=[
     ['Groq',kl('groq')[0]&&(async()=>{let e;for(const m of (av.length?[PREF.find(m=>av.includes(m))||av[0]]:PREF.slice(0,3))){try{return await oaCall(GQ,kl('groq')[0],m,msg)}catch(x){e=x}}throw e})],
-    ['OpenRouter',kl('openrouter')[0]&&(async()=>{let e;for(const m of (await orList()).slice(0,3)){try{return await oaCall(OR,kl('openrouter')[0],m,msg)}catch(x){e=x}}throw e})],
-    ['Gemini',kl('gemini')[0]&&(async()=>{let e;for(const m of (await gemModels(kl('gemini')[0])).slice(0,2)){try{return await oaCall(GEM,kl('gemini')[0],m,msg)}catch(x){e=x}}throw e})]
+    ['OpenRouter',kl('openrouter')[0]&&(async()=>{let e;for(const m of (await orList()).slice(0,3)){try{return await oaCall(OR,kl('openrouter')[0],m,msg)}catch(x){e=x}}throw e})]
   ];
   return (await Promise.all(T.map(async([n,f])=>{
     if(!f)return '➖ '+n+'៖ មិនទាន់ដាក់កូនសោ';
@@ -1889,22 +1862,22 @@ A.import=()=>{$('#bk-in')?.click()};
 A.export=()=>{const o={exported:new Date().toISOString(),profile:{...ME.profile,avatar:undefined},subjects:D},a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(o,null,1)],{type:'application/json'}));a.download='ngs-hub-backup.json';a.click()};
 
 // ---------- AI TOOLS (Admin only) ----------
-const KN=['groq','openrouter','gemini'];
+const KN=['groq','openrouter'];
 const readKeys=()=>{const o={};KN.forEach(n=>{const v=$('#pk-'+n)?.value.trim();if(v)o[n]=v});return o};
 const aiAdmin=()=>`<div class="glass-soft p-3.5 space-y-2.5">
   <p class="font-bold text-xs text-amber-300"><i class="fa-solid fa-key mr-1"></i>API រួមសម្រាប់ថ្នាក់</p>
   <p id="kst" class="text-xs text-slate-400">${(setTimeout(checkKeys,150),'')}</p>
-  ${[['groq','Groq (gsk_...)'],['gemini','Gemini (AIza...) — អានខ្មែរលឿន+ត្រឹមត្រូវជាង · ឥតគិតថ្លៃ aistudio.google.com/apikey'],['openrouter','OpenRouter (sk-or-...)']].map(([n,l])=>`<label class="block text-xs text-slate-400">${l}<input id="pk-${n}" type="password" autocomplete="off" class="inp mt-1 font-mono text-xs" value="${esc(KEYS[n]||'')}"></label>`).join('')}
+  ${[['groq','Groq (gsk_...)'],['openrouter','OpenRouter (sk-or-...)']].map(([n,l])=>`<label class="block text-xs text-slate-400">${l}<input id="pk-${n}" type="password" autocomplete="off" class="inp mt-1 font-mono text-xs" value="${esc(KEYS[n]||'')}"></label>`).join('')}
   <div class="grid grid-cols-2 gap-2"><button data-a="testai" class="btn btn-sec text-xs"><i class="fa-solid fa-heart-pulse text-emerald-400"></i>សាកល្បង AI</button><button data-a="sharekeys" class="btn text-xs"><i class="fa-solid fa-share-nodes"></i>រក្សាទុកសម្រាប់ថ្នាក់</button></div>
 </div>`;
-A.testai=async(_,b)=>{const o=readKeys();if(Object.keys(o).length)KEYS=o;AV=null;ORM=null;GV=null;b.disabled=true;toast('កំពុងសាកល្បង AI…');const t=await diag();b.disabled=false;alert(t)};
+A.testai=async(_,b)=>{const o=readKeys();if(Object.keys(o).length)KEYS=o;AV=null;ORM=null;b.disabled=true;toast('កំពុងសាកល្បង AI…');const t=await diag();b.disabled=false;alert(t)};
 A.cpid=()=>navigator.clipboard?.writeText(U.uid).then(()=>toast('បានចម្លង ID ✓'));
 A.sharekeys=async()=>{
   const o=readKeys();if(!Object.keys(o).length)return toast('សូមដាក់កូនសោយ៉ាងតិចមួយ');
   for(const n of Object.keys(o)){o[n]=String(o[n]).split(/[\s,;]+/).map(x=>x.replace(/[^A-Za-z0-9_\-\.]/g,'')).filter(x=>x.length>10).join(',');if(!o[n])delete o[n]}
   if(!Object.keys(o).length)return toast('កូនសោមិនត្រឹមត្រូវ (មានអក្សរចម្លែក) សូមចម្លងម្តងទៀត');
   if(o.groq){try{const r=await fetch('https://api.groq.com/openai/v1/models',{headers:{Authorization:'Bearer '+o.groq.split(',')[0]}});if(r.status==401&&!confirm('កូនសោ Groq មិនត្រឹមត្រូវ (401 Invalid API Key)។\nរក្សាទុកដដែលឬ?'))return}catch(e){}}
-  try{await setDoc(doc(db,'config','ai'),o,{merge:true});KEYS={...KEYS,...o};AV=null;ORM=null;GV=null;toast('បានរក្សាទុកសម្រាប់ថ្នាក់ទាំងមូល ✓');checkKeys()}catch(e){alert('មានតែ Admin ប៉ុណ្ណោះដែលរក្សាទុកបាន។ '+(e.code||''))}
+  try{await setDoc(doc(db,'config','ai'),o,{merge:true});KEYS={...KEYS,...o};AV=null;ORM=null;toast('បានរក្សាទុកសម្រាប់ថ្នាក់ទាំងមូល ✓');checkKeys()}catch(e){alert('មានតែ Admin ប៉ុណ្ណោះដែលរក្សាទុកបាន។ '+(e.code||''))}
 };
 
 // ---------- DAILY MISSIONS & CHEAT SHEET ----------
