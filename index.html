@@ -785,7 +785,7 @@ function fvClose(){FVT++;FVU.forEach(u=>URL.revokeObjectURL(u));FVU=[];FVB=null;
 function fvOpen(title,h,dl){
   let o=$('#fv');
   if(!o){o=document.createElement('div');o.id='fv';o.className='fixed inset-0 z-50 overflow-y-auto ovbg';document.body.appendChild(o);
-    o.onclick=e=>{const a=e.target.closest('[data-fv]');if(!a)return;if(a.dataset.fv=='x')fvClose();else if(a.dataset.fv=='dl'&&FVB){const l=document.createElement('a');l.href=URL.createObjectURL(FVB);l.download=FVB.name||'file';l.click();setTimeout(()=>URL.revokeObjectURL(l.href),4000)}}}
+    o.onclick=e=>{const a=e.target.closest('[data-fv]');if(!a)return;if(a.dataset.fv=='x')fvClose();else if(a.dataset.fv=='pd')A.hpdel(a.dataset.v);else if(a.dataset.fv=='dl'&&FVB){const l=document.createElement('a');l.href=URL.createObjectURL(FVB);l.download=FVB.name||'file';l.click();setTimeout(()=>URL.revokeObjectURL(l.href),4000)}}}
   o.innerHTML=`<div class="sticky top-0 z-10 ovbg border-b border-slate-700/40"><div class="max-w-3xl mx-auto flex items-center gap-2 px-4 py-2.5"><b class="text-sm truncate flex-1">${esc(title)}</b>${dl?'<button data-fv="dl" class="text-blue-300 px-2 py-1" title="ទាញយក"><i class="fa-solid fa-download"></i></button>':''}<button data-fv="x" class="btn btn-sec px-3 py-1.5" aria-label="បិទ"><i class="fa-solid fa-xmark"></i></button></div></div><div id="fvb" class="max-w-3xl mx-auto px-4 py-4">${h}</div>`;
 }
 addEventListener('keydown',e=>{if(e.key=='Escape'&&$('#fv'))fvClose()});
@@ -938,7 +938,7 @@ A.aiForm=async(_,b,auto)=>{
 // ---------- HOMEWORK ----------
 const rh=()=>view=='allhw'?allhw():pane();
 const dl=h=>{if(!h.due)return null;const n=Math.round((new Date(h.due+'T00:00')-new Date(today()+'T00:00'))/864e5);return n<0?['ហួសកំណត់','#ef4444']:n==0?['ផុតកំណត់ថ្ងៃនេះ','#f59e0b']:['នៅសល់ '+n+' ថ្ងៃ',n<=2?'#f59e0b':'#3b82f6']};
-const hwRow=(h,k)=>{const s=subj(k),v=k+'|'+h.id,b=!h.done&&dl(h);return `<div class="flex items-center gap-2.5 p-3 rounded-xl glass-soft mb-2"><input type="checkbox" data-a="tg" data-v="${v}" ${h.done?'checked':''} class="w-5 h-5 accent-emerald-500 flex-shrink-0 cursor-pointer"><div class="min-w-0 flex-1"><p class="text-sm ${h.done?'line-through text-slate-500':'font-medium'}">${tb(h)}${esc(htitle(h))}</p><p class="text-xs text-slate-400"><i class="fa-solid ${s[3]}" style="color:${s[4]}"></i> ${s[1]}${h.due?' · ប្រគល់ '+h.due:''}</p></div>${b?`<span class="text-[11px] px-2.5 py-0.5 rounded-full font-medium whitespace-nowrap" style="background:${b[1]}28;color:${b[1]}">${b[0]}</span>`:''}<button data-a="hask" data-v="${v}" class="text-blue-300 px-1.5" title="សួរ AI"><i class="fa-solid fa-wand-magic-sparkles"></i></button><button data-a="dh" data-v="${v}" class="text-red-400 px-1.5" title="លុប"><i class="fa-solid fa-xmark"></i></button></div>`};
+const hwRow=(h,k)=>{const s=subj(k),v=k+'|'+h.id,b=!h.done&&dl(h);return `<div class="flex items-center gap-2.5 p-3 rounded-xl glass-soft mb-2"><input type="checkbox" data-a="tg" data-v="${v}" ${h.done?'checked':''} class="w-5 h-5 accent-emerald-500 flex-shrink-0 cursor-pointer"><div class="min-w-0 flex-1"><p class="text-sm ${h.done?'line-through text-slate-500':'font-medium'}">${tb(h)}${esc(htitle(h))}</p><p class="text-xs text-slate-400"><i class="fa-solid ${s[3]}" style="color:${s[4]}"></i> ${s[1]}${h.due?' · ប្រគល់ '+h.due:''}</p>${picStrip(h,k)}</div>${b?`<span class="text-[11px] px-2.5 py-0.5 rounded-full font-medium whitespace-nowrap" style="background:${b[1]}28;color:${b[1]}">${b[0]}</span>`:''}<button data-a="hwadd" data-v="${v}" class="text-emerald-300 px-1.5" title="បន្ថែមរូបភាព"><i class="fa-solid fa-camera"></i></button><button data-a="hask" data-v="${v}" class="text-blue-300 px-1.5" title="សួរ AI"><i class="fa-solid fa-wand-magic-sparkles"></i></button><button data-a="dh" data-v="${v}" class="text-red-400 px-1.5" title="លុប"><i class="fa-solid fa-xmark"></i></button></div>`};
 function hwGroups(items){
   const so=(a,b)=>(a[0].due||'9').localeCompare(b[0].due||'9')||nextCls(a[1])-nextCls(b[1]),u=items.filter(x=>!x[0].done).sort(so),d=items.filter(x=>x[0].done).sort(so);
   return u.map(([h,k])=>hwRow(h,k)).join('')+(d.length?`<h4 class="text-xs font-bold mt-3.5 mb-1.5 text-emerald-400">បានបញ្ចប់ (${d.length})</h4>`+d.map(([h,k])=>hwRow(h,k)).join(''):'')||'<p class="text-sm text-slate-400 py-3 text-center">មិនទាន់មានកិច្ចការទេ 🎉</p>';
@@ -948,20 +948,83 @@ const htitle=h=>{const t=(h.t||'').trim();return /^(សន្លឹកកិច�
 const hty=h=>{let a=Array.isArray(h.ty)?h.ty:h.ty!=null?[h.ty]:[];if(!a.length&&h.ty==null){const i=HC.findIndex(c=>(h.t||'').includes(c[0]));if(i>=0)a=[i]}return a.map(i=>HC[i]).filter(Boolean)};
 const tb=h=>hty(h).map(c=>`<span class="text-[10px] px-1.5 py-0.5 rounded-full mr-1.5 align-middle whitespace-nowrap inline-block mb-0.5" style="color:${c[1]};background:${c[1]}22">${c[0]}</span>`).join('');
 const pills=()=>HC.map((c,i)=>`<button data-a="hty" data-v="${i}" class="hpill" style="color:${c[1]};border-color:${HSEL.has(i)?c[1]:c[1]+'44'};background:${HSEL.has(i)?c[1]+'33':'transparent'}">${HSEL.has(i)?'✓ ':''}${c[0]}</button>`).join('');
-const hwForm=sel=>`<div class="space-y-2 mb-3">${sel?`<select id="hs" class="inp">${S.map(s=>`<option value="${s[0]}">${s[1]}</option>`).join('')}</select>`:''}<div id="hp" class="flex flex-wrap gap-1.5">${pills()}</div><input id="ht" class="inp" placeholder="ប្រធានបទ (មិនបាច់វាយក៏បាន)…"><label class="block text-xs text-slate-400">ថ្ងៃកំណត់ប្រគល់ (Deadline)<input id="hd" type="date" class="inp mt-1"></label><button data-a="addhw" class="btn w-full"><i class="fa-solid fa-plus"></i>បន្ថែមកិច្ចការ</button></div>`;
+// ---------- PHOTOS ON HOMEWORK ----------
+// a photo = {id, ct, cl (cloud chunks), th (small preview uploaded)} inside the task; the image bytes live in IndexedDB (this device) and in Firestore blobs (other devices), like Files
+const MAXPICS=6,TH={},HWP=[],PSKIP={};
+const jpegOf=(f,mx,q)=>new Promise(r=>{const i=new Image(),u=URL.createObjectURL(f),t=setTimeout(()=>{URL.revokeObjectURL(u);r(null)},12000);
+  i.onload=()=>{clearTimeout(t);try{const k=Math.min(1,mx/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(i.width*k));c.height=Math.max(1,Math.round(i.height*k));const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(i,0,0,c.width,c.height);URL.revokeObjectURL(u);c.toBlob(b=>r(b),'image/jpeg',q)}catch(e){r(null)}};
+  i.onerror=()=>{clearTimeout(t);URL.revokeObjectURL(u);r(null)};i.src=u});
+const findPic=(k,pid)=>{for(const h of sd(k).hw)for(const p of h.pics||[])if(p.id==pid)return p};
+async function mkPic(f){
+  const full=await jpegOf(f,1600,.82);if(!full)return null;
+  const id=Date.now().toString(36)+Math.random().toString(36).slice(2,5),th=await jpegOf(full,220,.7);
+  await idbPut(id,full);if(th){await idbPut(id+'t',th);TH[id]=URL.createObjectURL(th)}
+  return {id,ct:'image/jpeg'};
+}
+async function thumbURL(k,p){
+  if(TH[p.id])return TH[p.id];
+  const keep=t=>{if(t)idbPut(p.id+'t',t).catch(()=>{});return t};
+  let t=await idbGet(p.id+'t').catch(()=>null);
+  if(!t){const full=await idbGet(p.id).catch(()=>null);if(full)t=keep(await jpegOf(full,220,.7))}
+  if(!t&&p.th){try{const r=await getDoc(blobRef(k,p.id,'t'));if(r.exists())t=keep(unb64(r.data().d,'image/jpeg','t.jpg'))}catch(e){}}
+  if(!t&&p.cl>0){const full=await getFileBlob(k,p);if(full)t=keep(await jpegOf(full,220,.7))}
+  return t?(TH[p.id]=URL.createObjectURL(t)):null;
+}
+function hydrateThumbs(){document.querySelectorAll('img[data-th]').forEach(async im=>{
+  if(im.dataset.ok)return;im.dataset.ok=1;
+  const [k,pid]=im.dataset.th.split('|'),p=findPic(k,pid),u=p&&await thumbURL(k,p);if(!im.isConnected)return;
+  if(u){im.src=u;im.classList.remove('opacity-0')}else im.replaceWith(Object.assign(document.createElement('i'),{className:'fa-solid fa-image text-slate-500'}))})}
+async function picCopy(k,p){
+  if(OFFLINE()||SYNCING[p.id]||PSKIP[p.id])return;SYNCING[p.id]=1;
+  try{
+    if(!p.cl)await cloudCopy(k,p);
+    if(p.cl>0&&!p.th){const t=await idbGet(p.id+'t');if(t){await fsSetDoc(blobRef(k,p.id,'t'),{d:await b64(t)});p.th=1}}
+    if(!p.cl)PSKIP[p.id]=1;
+  }catch(e){}finally{delete SYNCING[p.id]}
+}
+async function syncPics(k){
+  if(OFFLINE())return;let ch=false;
+  for(const h of [...sd(k).hw])for(const p of h.pics||[]){if(!PSKIP[p.id]&&(!p.cl||(p.cl>0&&!p.th))){const c=p.cl,t=p.th;await picCopy(k,p);if(p.cl!==c||p.th!==t)ch=true}}
+  if(ch)await save(k);
+}
+function dropPics(k,ps){for(const p of ps||[]){if(!p)continue;idbDel(p.id).catch(()=>{});idbDel(p.id+'t').catch(()=>{});for(let i=0;i<(p.cl>0?p.cl:0);i++)deleteDoc(blobRef(k,p.id,i)).catch(()=>{});if(p.th)deleteDoc(blobRef(k,p.id,'t')).catch(()=>{});if(TH[p.id]){URL.revokeObjectURL(TH[p.id]);delete TH[p.id]}}}
+const picStrip=(h,k)=>{const ps=h.pics||[];return ps.length?`<div class="flex flex-wrap gap-1.5 mt-2">${ps.map((p,i)=>`<button data-a="hwv" data-v="${k}|${h.id}|${i}" class="relative w-14 h-14 rounded-lg overflow-hidden border border-slate-600/60 bg-slate-800/70 flex items-center justify-center flex-shrink-0" aria-label="មើលរូបធំ"><img data-th="${k}|${p.id}" alt="" class="w-full h-full object-cover opacity-0 transition-opacity"><span class="absolute bottom-0 right-0 text-[10px] leading-none px-1.5 py-1 bg-black/65 text-white rounded-tl-lg"><i class="fa-solid fa-eye"></i></span></button>`).join('')}</div>`:''};
+const hpPics=()=>HWP.map(p=>`<div class="relative w-14 h-14 rounded-lg overflow-hidden border border-slate-600/60 bg-slate-800"><img src="${TH[p.id]||''}" alt="" class="w-full h-full object-cover"><button data-a="hprm" data-v="${p.id}" class="absolute top-0 right-0 w-5 h-5 text-[11px] leading-none bg-black/70 text-white rounded-bl-md" aria-label="ដកចេញ">✕</button></div>`).join('');
+const hpBox=()=>`<div class="flex items-center gap-2 flex-wrap"><button data-a="hpick" class="btn btn-sec px-3 py-2 text-sm"><i class="fa-solid fa-camera"></i> បន្ថែមរូបភាព</button><span class="text-xs text-slate-400">ថតរូប ឬជ្រើសពីវិចិត្រសាល (អតិបរមា ${MAXPICS})</span></div><div id="hpp" class="flex flex-wrap gap-1.5">${hpPics()}</div>`;
+function pickPics(cb){let i=$('#hpf');if(!i){i=document.createElement('input');i.type='file';i.accept='image/*';i.multiple=true;i.id='hpf';i.className='hide';document.body.appendChild(i)}i.onchange=()=>{const fs=[...i.files];i.value='';if(fs.length)cb(fs)};i.click()}
+async function takePics(fs,room){const out=[];let bad=0;for(const f of fs.slice(0,Math.max(0,room))){const p=await mkPic(f).catch(()=>null);p?out.push(p):bad++}if(fs.length>room)toast('ដាក់រូបបានអតិបរមា '+MAXPICS+' សន្លឹកក្នុងមួយកិច្ចការ');if(bad)toast('មិនអាចអានរូប '+bad+' សន្លឹកបានទេ');return out}
+A.hpick=()=>pickPics(async fs=>{const ps=await takePics(fs,MAXPICS-HWP.length);HWP.push(...ps);const e=$('#hpp');if(e)e.innerHTML=hpPics()});
+A.hprm=id=>{const i=HWP.findIndex(p=>p.id==id);if(i<0)return;dropPics('',[HWP[i]]);HWP.splice(i,1);const e=$('#hpp');if(e)e.innerHTML=hpPics()};
+A.hwadd=v=>{const [k,id]=v.split('|'),h=sd(k).hw.find(x=>x.id==id);if(!h)return;const room=MAXPICS-(h.pics||[]).length;if(room<=0)return toast('រូបពេញ '+MAXPICS+' សន្លឹកហើយ');pickPics(async fs=>{const ps=await takePics(fs,room);if(!ps.length)return;h.pics=[...(h.pics||[]),...ps];await save(k);rh();syncPics(k)})};
+A.hwv=async v=>{
+  const [k,hid,i0]=v.split('|'),h=sd(k).hw.find(x=>x.id==hid),ps=h?.pics||[];if(!ps.length)return;
+  const tk=++FVT,ttl=htitle(h)||hty(h).map(c=>c[0]).join(' + ')||'កិច្ចការ',bl=ps.map(p=>getFileBlob(k,p));
+  fvOpen(ttl+' · រូបភាព '+ps.length,ps.map((p,i)=>`<div class="mb-5" id="hv${i}" style="scroll-margin-top:64px"><div class="flex items-center gap-1 mb-1.5 text-xs text-slate-400"><span class="flex-1">រូបទី ${i+1}/${ps.length}</span><span class="dl"></span><button data-fv="pd" data-v="${k}|${hid}|${p.id}" class="text-red-400 px-2 py-1" title="លុបរូបនេះ"><i class="fa-solid fa-trash"></i></button></div><div class="hvb rounded-xl bg-slate-800/50 min-h-[10rem] flex items-center justify-center text-sm text-slate-400 animate-pulse">កំពុងបើក…</div></div>`).join(''),false);
+  for(let i=0;i<ps.length;i++){
+    const b=await bl[i].catch(()=>null);if(tk!==FVT)return;const box=$('#hv'+i);if(!box)continue;
+    const ar=box.querySelector('.hvb');
+    if(b){const u=URL.createObjectURL(b);FVU.push(u);ar.className='hvb';ar.innerHTML=`<img src="${u}" alt="" class="w-full rounded-xl">`;box.querySelector('.dl').innerHTML=`<a href="${u}" download="រូបកិច្ចការ-${i+1}.jpg" class="text-blue-300 px-2 py-1" title="ទាញយក"><i class="fa-solid fa-download"></i></a>`}
+    else{ar.classList.remove('animate-pulse');ar.textContent='រូបនេះមិនទាន់មាននៅលើឧបករណ៍នេះទេ (មិនទាន់ផ្ទុកឡើងពីឧបករណ៍ដើម)'}
+    if(i==+i0&&i>0)box.scrollIntoView({block:'start'});
+  }
+};
+A.hpdel=v=>{const [k,hid,pid]=v.split('|'),h=sd(k).hw.find(x=>x.id==hid);if(!h||!confirm('លុបរូបនេះឬ?'))return;const p=(h.pics||[]).find(x=>x.id==pid);h.pics=(h.pics||[]).filter(x=>x.id!=pid);if(!h.pics.length)delete h.pics;dropPics(k,[p]);save(k);fvClose();rh()};
+const hwForm=sel=>`<div class="space-y-2 mb-3">${sel?`<select id="hs" class="inp">${S.map(s=>`<option value="${s[0]}">${s[1]}</option>`).join('')}</select>`:''}<div id="hp" class="flex flex-wrap gap-1.5">${pills()}</div><input id="ht" class="inp" placeholder="ប្រធានបទ (មិនបាច់វាយក៏បាន)…">${hpBox()}<label class="block text-xs text-slate-400">ថ្ងៃកំណត់ប្រគល់ (Deadline)<input id="hd" type="date" class="inp mt-1"></label><button data-a="addhw" class="btn w-full"><i class="fa-solid fa-plus"></i>បន្ថែមកិច្ចការ</button></div>`;
 A.hty=v=>{v=+v;HSEL.has(v)?HSEL.delete(v):HSEL.add(v);$('#hp').innerHTML=pills()};
 function hw(){
   const k=view,l=sd(k).hw,dn=l.filter(h=>h.done).length;
   $('#pane').innerHTML=hwForm(false)+(l.length?`<div class="h-1.5 rounded bg-slate-800 mb-1"><div class="h-1.5 rounded bg-emerald-500 transition-all" style="width:${dn/l.length*100}%"></div></div><p class="text-xs text-slate-400 mb-2">បានបញ្ចប់ ${dn}/${l.length} · តម្រៀបតាមថ្ងៃកំណត់ជិតបំផុត</p>`:'')+hwGroups(l.map(h=>[h,k]));
   $('#ht').onkeydown=e=>{if(e.key=='Enter')A.addhw()};
+  hydrateThumbs();syncPics(k);
 }
 function allhw(){
   $('#ttl').textContent='កិច្ចការទាំងអស់';const it=[];S.forEach(s=>sd(s[0]).hw.forEach(h=>it.push([h,s[0]])));
   $('#main').innerHTML=`<div class="max-w-3xl mx-auto"><h2 class="font-extrabold text-xl mb-1">កិច្ចការទាំងអស់</h2><p class="text-xs text-slate-400 mb-3">តម្រៀបតាមថ្ងៃកំណត់ជិតបំផុតមុន</p><div class="glass p-4 md:p-5">${hwForm(true)}${hwGroups(it)}</div></div>`;
+  hydrateThumbs();S.forEach(s=>syncPics(s[0]));
 }
-A.addhw=()=>{const sl=[...HSEL].sort(),t=$('#ht').value.trim(),k=$('#hs')?.value||view;if(!t&&!sl.length)return toast('សូមជ្រើសប្រភេទ ឬវាយប្រធានបទសិន');sd(k).hw.push({id:Date.now().toString(36),t,ty:sl,due:$('#hd').value,done:false});save(k);rh()};
+A.addhw=()=>{const sl=[...HSEL].sort(),t=$('#ht').value.trim(),k=$('#hs')?.value||view;if(!t&&!sl.length&&!HWP.length)return toast('សូមជ្រើសប្រភេទ វាយប្រធានបទ ឬដាក់រូបសិន');const pics=HWP.splice(0);sd(k).hw.push({id:Date.now().toString(36),t,ty:sl,due:$('#hd').value,done:false,...(pics.length?{pics}:{})});save(k);rh();if(pics.length)syncPics(k)};
 A.tg=v=>{const [k,id]=v.includes('|')?v.split('|'):[view,v],h=sd(k).hw.find(x=>x.id==id);h.done=!h.done;save(k);rh()};
-A.dh=v=>{if(!confirm('លុបកិច្ចការនេះឬ?'))return;const [k,id]=v.includes('|')?v.split('|'):[view,v];sd(k).hw=sd(k).hw.filter(x=>x.id!=id);save(k);rh()};
+A.dh=v=>{if(!confirm('លុបកិច្ចការនេះឬ?'))return;const [k,id]=v.includes('|')?v.split('|'):[view,v];dropPics(k,sd(k).hw.find(x=>x.id==id)?.pics);sd(k).hw=sd(k).hw.filter(x=>x.id!=id);save(k);rh()};
 A.hask=v=>{const [k,id]=v.split('|'),h=sd(k).hw.find(x=>x.id==id);go(k);tab='ai';render();const i=$('#ci');if(i){i.value='ជួយខ្ញុំដោះស្រាយកិច្ចការនេះមួយជំហានម្តងៗ៖ '+(htitle(h)||hty(h).map(c=>c[0]).join(' + ')||'កិច្ចការ');i.focus()}};
 
 // ---------- AI ENGINE (100% Free: Groq + OpenRouter + Free Fallback) ----------
