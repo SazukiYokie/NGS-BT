@@ -605,8 +605,8 @@ const blankAI=t=>{t=(t||'').trim();return t.replace(/\s/g,'').length<8||(!/[ក-
 const halves=async img=>{const im=new Image();await new Promise((ok,no)=>{im.onload=ok;im.onerror=no;im.src=img});const h=Math.ceil(im.height/2),ov=Math.round(im.height*.04),mk=(y,hh)=>{const c=document.createElement('canvas');c.width=im.width;c.height=hh;c.getContext('2d').drawImage(im,0,y,im.width,hh,0,0,im.width,hh);return c.toDataURL('image/jpeg',.85)};return [mk(0,Math.min(im.height,h+ov)),mk(Math.max(0,h-ov),im.height-Math.max(0,h-ov))]};
 async function scanTile(img,sig,mt=2600,depth=0){
   const msg=[{role:'user',content:[{type:'text',text:TILE_PROMPT},{type:'image_url',image_url:{url:img}}]}];
-  for(let a=0;a<3&&!sig.aborted;a++){
-    const r=await ask(msg,false,true,null,sig,{mt,budget:100000,maxWait:60000}); // only as many tokens as this region needs: Groq counts max_tokens against the per-minute limit
+  for(let a=0;a<2&&!sig.aborted;a++){
+    const r=await ask(msg,false,true,null,sig,{mt,budget:80000,maxWait:60000}); // only as many tokens as this region needs: Groq counts max_tokens against the per-minute limit
     if(r!==null){
       if(LASTCUT&&depth<2&&!sig.aborted){ // the answer hit the limit = the region holds more text than fits: read its two halves separately so nothing is lost
         try{const [x,y]=await halves(img),p1=await scanTile(x,sig,mt,depth+1),p2=await scanTile(y,sig,mt,depth+1);if(p1!==null&&p2!==null)return (p1+'\n'+p2).trim()}catch(e){if(e.message=='fatal'||e.message=='quota')throw e}
@@ -657,7 +657,7 @@ async function scanPages(p,need,T,P,SK,sig,st,upd){
         if(sig.aborted||st.stop)return;
         const t=Q[qi++];if(!t)return;
         const s=PG[t.n],r0=RLN;active++;
-        try{s.tiles=s.tiles||tilesOf(s);const tiles=await s.tiles;if(sig.aborted)return;s.outs[t.i]=await scanTile(tiles[t.i],sig,s.mt)}
+        try{s.tiles=s.tiles||tilesOf(s);const tiles=await s.tiles;if(sig.aborted)return;const v=await scanTile(tiles[t.i],sig,s.mt);s.outs[t.i]=v;if(v!==null)st.lastOk=Date.now();else if(!sig.aborted){st.fails++;if(ERR&&!/បានបោះបង់/.test(ERR))st.err=ERR}}
         catch(e){s.outs[t.i]=null;if(e.message=='fatal'||e.message=='quota'){st.stop=1;st.why=e.message}}
         finally{active--}
         if(sig.aborted||st.stop)return;
@@ -675,8 +675,8 @@ async function scanPages(p,need,T,P,SK,sig,st,upd){
     if(pass){st.pass=pass;upd();await abortSleep(3000*pass,sig);if(sig.aborted)break}
     todo=await pool(todo);
   }
-  if(sig.aborted)return [];
-  for(const n of need.filter(n=>P[n]==null)){ // last resort for a page with no text at all: the offline reader (weak for Khmer, but better than nothing)
+  if(sig.aborted&&!st.why)return [];
+  if(st.why!='stall')for(const n of need.filter(n=>P[n]==null)){ // last resort for a page with no text at all: the offline reader (weak for Khmer, but better than nothing)
     if((T[n]||'').length<30&&!st.parts[n]){try{const g=await p.getPage(n),base=g.getViewport({scale:1}),tl=await tilesOf({g,base,land:base.width>base.height,rows:1,cols:1}),o=(await ocr(tl[0])).trim();if(o){P[n]='--- ទំព័រ '+n+' ---\n'+o;st.pages++}}catch(e){}}
   }
   return need.filter(n=>P[n]==null);
@@ -697,18 +697,20 @@ async function readPdf(p){
   let cancelled=false,failed=[];
   if(need.length){
     try{navigator.wakeLock?.request('screen')?.catch(()=>{})}catch(e){}
-    const ctl=new AbortController(),sig=ctl.signal,st={tiles:0,total:0,pages:0},t0=Date.now();SCANST=st;
+    const ctl=new AbortController(),sig=ctl.signal,st={tiles:0,total:0,pages:0,fails:0,err:'',lastOk:Date.now()},t0=Date.now();SCANST=st;
     const bar=document.createElement('div');bar.style.cssText='position:fixed;left:12px;right:12px;bottom:84px;z-index:90;background:#0f172af2;border:1px solid #334155;border-radius:16px;padding:10px 14px;display:flex;gap:10px;align-items:center;font-size:13px;color:#e2e8f0';
     bar.innerHTML='<span class="scant" style="flex:1"></span><button class="scanc" style="color:#f87171;font-weight:700;padding:10px 14px;margin:-8px -8px -8px 0;touch-action:manipulation">បោះបង់</button>';document.body.appendChild(bar);
     const txt=bar.querySelector('.scant'),upd=()=>{
       if(sig.aborted)return;
       const s=Math.round((Date.now()-t0)/1000),eta=st.tiles>=2&&st.total>st.tiles?Math.round((Date.now()-t0)/st.tiles*(st.total-st.tiles)/1000):0;
-      txt.textContent='AI កំពុងអាន · ទំព័រ '+st.pages+'/'+need.length+' · '+st.tiles+'/'+(st.total||'…')+' ផ្នែក · '+s+' វិ'+(eta?' · នៅសល់ ~'+eta+' វិ':'')+(st.pass?' · ↻ ព្យាយាមម្តងទៀត '+st.pass:'')+(ASKW>0?' · ⏳ AI រវល់ កំពុងរង់ចាំ':'')};
+      txt.textContent='AI កំពុងអាន · ទំព័រ '+st.pages+'/'+need.length+' · '+st.tiles+'/'+(st.total||'…')+' ផ្នែក · '+s+' វិ'+(eta?' · នៅសល់ ~'+eta+' វិ':'')+(st.pass?' · ↻ ព្យាយាមម្តងទៀត '+st.pass:'')+(ASKW>0?' · ⏳ AI រវល់ កំពុងរង់ចាំ':'')+(st.fails&&Date.now()-st.lastOk>60000?' · ⚠ AI មិនឆ្លើយ '+Math.round((Date.now()-st.lastOk)/1000)+' វិ':'')};
+    // watchdog: when the free AI has not given ONE answer for a few minutes it is down or out of allowance: stop and say why instead of waiting for hours
+    const STALL=window.__STALL||240000,watch=()=>{if(sig.aborted||st.why||!st.fails)return;if(Date.now()-st.lastOk>STALL){st.why='stall';ctl.abort()}};
     const stop=()=>{if(sig.aborted)return;ctl.abort();txt.textContent='កំពុងបោះបង់…';bar.querySelector('.scanc').disabled=true};
-    bar.querySelector('.scanc').onclick=stop;upd();const iv=setInterval(upd,1000);
+    bar.querySelector('.scanc').onclick=stop;upd();const iv=setInterval(()=>{upd();watch()},1000);
     try{failed=await scanPages(p,need,T,P,SK,sig,st,upd)}finally{clearInterval(iv);bar.remove()}
-    cancelled=sig.aborted;
-    const done=need.length-failed.length,m=cancelled?'បានបោះបង់ — ទំព័រដែលអានរួចត្រូវបានរក្សា។ ចុច 🔄 លើឯកសារ ដើម្បីបន្តអាន':failed.length?(st.why=='quota'?'⏳ AI ឥតគិតថ្លៃអស់កូតាសម្រាប់ពេលនេះ — អានរួច '+done+'/'+need.length+' ទំព័រ (រក្សាទុកហើយ)។ ':'⚠ AI អានមិនបាន '+failed.length+' ទំព័រ ទោះព្យាយាមច្រើនដង — ')+(ERR?String(ERR).slice(0,110):'AI រវល់')+' · ចុច 🔄 លើឯកសារ ដើម្បីអានទំព័រដែលនៅសល់':'';
+    cancelled=sig.aborted&&!st.why;
+    const done=need.length-failed.length,m=cancelled?'បានបោះបង់ — ទំព័រដែលអានរួចត្រូវបានរក្សា។ ចុច 🔄 លើឯកសារ ដើម្បីបន្តអាន':failed.length?(st.why=='stall'?'⚠ ឈប់អាន ព្រោះ AI មិនឆ្លើយអស់ '+Math.round(STALL/60000*10)/10+' នាទី — អានរួច '+done+'/'+need.length+' ទំព័រ (រក្សាទុកហើយ)។ '+(st.err?'មូលហេតុ៖ '+String(st.err).slice(0,160):''):st.why=='quota'?'⏳ AI ឥតគិតថ្លៃអស់កូតាសម្រាប់ពេលនេះ — អានរួច '+done+'/'+need.length+' ទំព័រ (រក្សាទុកហើយ)។ ':'⚠ AI អានមិនបាន '+failed.length+' ទំព័រ ទោះព្យាយាមច្រើនដង — ')+(st.why=='stall'?'':(ERR?String(ERR).slice(0,110):'AI រវល់'))+' · ចុច 🔄 លើឯកសារ ដើម្បីអានទំព័រដែលនៅសល់ (វាអានបន្តពីកន្លែងដដែល)':'';
     if(m)toastL(m,10000)
   }
   SCANRES={partial:cancelled||failed.length>0};
@@ -1153,15 +1155,18 @@ async function ask(messages,json,vision,check,sig,o={}){
   return null;
 }
 
+const vmsg=()=>{const c=document.createElement('canvas');c.width=220;c.height=80;const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,220,80);x.fillStyle='#000';x.font='bold 48px sans-serif';x.fillText('OK 42',24,58);return [{role:'user',content:[{type:'text',text:'What text is written in the image? Reply with the text only.'},{type:'image_url',image_url:{url:c.toDataURL('image/jpeg',.9)}}]}]};
 async function diag(){
   const msg=[{role:'user',content:'Reply with the single word OK'}],av=await avail();
   const T=[
     ['Groq',kl('groq')[0]&&(async()=>{let e;for(const m of (av.length?[PREF.find(m=>av.includes(m))||av[0]]:PREF.slice(0,3))){try{return await oaCall(GQ,kl('groq')[0],m,msg)}catch(x){e=x}}throw e})],
-    ['OpenRouter',kl('openrouter')[0]&&(async()=>{let e;for(const m of (await orList()).slice(0,3)){try{return await oaCall(OR,kl('openrouter')[0],m,msg)}catch(x){e=x}}throw e})]
+    ['OpenRouter',kl('openrouter')[0]&&(async()=>{let e;for(const m of (await orList()).slice(0,3)){try{return await oaCall(OR,kl('openrouter')[0],m,msg)}catch(x){e=x}}throw e})],
+    ['Groq 👁 (អានរូបភាព)',kl('groq')[0]&&(async()=>{const vm=av.filter(m=>/qwen3\.8|qwen.*vl|vision|scout|maverick|llava|pixtral/i.test(m));if(!vm.length)throw new Error('គ្មាន model មើលរូបភាពក្នុង Groq ទេ');let e;for(const m of vm.slice(0,2)){const t0=Date.now();try{const r=await oaCall(GQ,kl('groq')[0],m,vmsg(),false,true,undefined,{mt:20});return '"'+String(r).trim().slice(0,30)+'" · '+m.split('/').pop()+' · '+((Date.now()-t0)/1000).toFixed(1)+' វិ'}catch(x){e=x}}throw e})],
+    ['OpenRouter 👁 (អានរូបភាព)',kl('openrouter')[0]&&(async()=>{const vm=await orVis();if(!vm.length)throw new Error('គ្មាន model ឥតគិតថ្លៃដែលមើលរូបភាពបានទេ');let e;for(const m of vm.slice(0,2)){const t0=Date.now();try{const r=await oaCall(OR,kl('openrouter')[0],m,vmsg(),false,true,undefined,{mt:20});return '"'+String(r).trim().slice(0,30)+'" · '+m.split('/').pop()+' · '+((Date.now()-t0)/1000).toFixed(1)+' វិ'}catch(x){e=x}}throw e})]
   ];
   return (await Promise.all(T.map(async([n,f])=>{
     if(!f)return '➖ '+n+'៖ មិនទាន់ដាក់កូនសោ';
-    try{return (await f())?'✅ '+n+'៖ ដំណើរការ':'❌ '+n+'៖ គ្មានចម្លើយ'}
+    try{const r=await f();return r?'✅ '+n+'៖ '+(/👁/.test(n)?r:'ដំណើរការ'):'❌ '+n+'៖ គ្មានចម្លើយ'}
     catch(e){const m=e.name=='AbortError'?'អស់ពេលរង់ចាំ':e.message;return '❌ '+n+'៖ '+(/failed to fetch|load failed|networkerror/i.test(m)?'browser រារាំង ឬគ្មានអ៊ីនធឺណិត — AI នេះប្រើពីគេហទំព័រមិនបាន សូមប្រើ Groq/OpenRouter ជំនួស (មិនប៉ះពាល់ដល់ AI ផ្សេង)':m)}
   }))).join('\n\n');
 }
